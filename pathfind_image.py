@@ -15,14 +15,14 @@ cells_width  = math.floor(dim[1] / CELLS_SIZE)
 
 print((cells_height, cells_width))
 
-for y in range(0, dim[0], CELLS_SIZE):
-    for x in range(0, dim[1], CELLS_SIZE):
-        img2show = cv2.rectangle(img, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,0,0), 1)
-
 colors = []
 
 for y in range(0, dim[0], CELLS_SIZE):
     for x in range(0, dim[1], CELLS_SIZE):
+        # draw rectangles
+        img2show = cv2.rectangle(img, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,0,0), 1)
+        
+        # determine what the cell is
         cell_known = False
         for u in range(y, y + CELLS_SIZE, 1):
             if u >= dim[0]:
@@ -32,9 +32,11 @@ for y in range(0, dim[0], CELLS_SIZE):
                 if v >= dim[1]:
                     break
                 
+                # keep a record of all the different colors
                 if tuple(img[u,v]) not in colors:
                     colors.append(tuple(img[u,v]))
-                    
+                
+                # mark the cells if its corosponding color exists in the cell
                 if tuple(img[u,v]) == (128,0,255):
                     cell_known = True
                     img2show = cv2.putText(img2show, 'H',(x+3, y+CELLS_SIZE-3), 2, 1, (0,0,0),1)
@@ -45,9 +47,10 @@ for y in range(0, dim[0], CELLS_SIZE):
                 if tuple(img[u,v]) == (0, 255, 0):
                     cell_known = True
                     img2show = cv2.putText(img2show, 'S',(x+3, y+CELLS_SIZE-3), 2, 1, (0,0,0),1)
-
+            # Exit loop if we know the cell type
             if cell_known:
                 break
+        # if we dont know the cell type (its all white), mark it as a clean cell
         if not cell_known:    
             img2show = cv2.putText(img2show, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (0,0,0),1)
 
