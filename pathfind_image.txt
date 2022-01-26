@@ -1,0 +1,24 @@
+
+
+
+
+
+
+
+// read image
+// split into cells
+// check cells for colors (output image with cell boundries, C for clean, S for start, F for finish, H for hazard)
+  1 2 3 4
+1 H C C F
+2 H H C H
+3 C C C H
+4 S C C H
+// create state diagram
+// 2D array
+  1 2 3 4
+1 9 1 1 1
+2 1 9 1 1
+3 1 1 9 1
+4 1 1 1 9
+// apply D algo%
+// draw path on image
