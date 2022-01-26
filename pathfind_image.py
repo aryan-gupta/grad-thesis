@@ -3,10 +3,10 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 
-CELLS_SIZE = 31 # 32 pixels
+CELLS_SIZE = 64 # 32 pixels
 MAX_WEIGHT = 999999999
 
-img = cv2.imread('./sample.png', cv2.IMREAD_COLOR) 
+img = cv2.imread('./sample0.png', cv2.IMREAD_COLOR) 
 
 dim = img.shape
 print(dim)
@@ -143,6 +143,11 @@ for row in state_diagram:
         print(" ", end="") # space for the right arrow
     print()
     
+
+# Dijkstras algo
+# visted_nodes = [[]] # create bool false array same size as state_diagram
+# distances = 
+
 
 plt.imshow(img2show)
 plt.show()
