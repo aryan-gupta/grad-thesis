@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import math
+import bisect
 
 CELLS_SIZE = 31 # 32 pixels
 MAX_WEIGHT = 999999999
@@ -143,6 +144,75 @@ for row in state_diagram:
         print(" ", end="") # space for the right arrow
     print()
     
+
+start = ()
+finish = ()
+# find the start node
+for y in range(len(cell_type)):
+    for x in range(len(cell_type[0])):
+        if cell_type[y][x] == 'S':
+            start = (x, y)
+        if cell_type[y][x] == 'F':
+            finish = (x, y)
+
+print(start)
+print(finish)
+
+# Dijkstras algo
+# When I wrote this code, only god and I knew how it works. Now, only god knows
+queue = [] # queue is an array of (weight, (x, y))
+visited_nodes = [ [False] * len(cell_type[0]) for _ in range(len(cell_type))] # create bool false array same size as state_diagram
+distances = [ [MAX_WEIGHT] * len(cell_type[0]) for _ in range(len(cell_type))]
+prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
+
+queue.append((0,start))
+distances[start[1]][start[0]] = 0
+
+while len(queue) != 0:
+    current = queue[0]
+    queue = queue[1:]
+
+    visited_nodes[y][x] = True
+
+    x = current[1][0]
+    y = current[1][1]
+    dist = current[0]
+
+    valid_paths = state_diagram[y][x]
+
+
+    if valid_paths[0] == 1 and not visited_nodes[y-1][x]: # UP
+        old_distance = distances[y - 1][x]
+        new_distance = dist + state_diagram[y][x][0]
+        if new_distance <= old_distance:
+            distances[y - 1][x] = new_distance
+            prev[y - 1][x] = (x,y)
+        bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
+    if valid_paths[1] == 1 and not visited_nodes[y][x-1]: # LEFT
+        old_distance = distances[y][x - 1]
+        new_distance = dist + state_diagram[y][x][1]
+        if new_distance <= old_distance:
+            distances[y][x - 1] = new_distance
+            prev[y - 1][x] = (x,y)
+        bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
+    if valid_paths[2] == 1 and not visited_nodes[y][x+1]: # RIGHT
+        old_distance = distances[y][x + 1]
+        new_distance = dist + state_diagram[y][x][2]
+        if new_distance <= old_distance:
+            distances[y][x + 1] = new_distance
+            prev[y - 1][x] = (x,y)
+        bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
+    if valid_paths[3] == 1 and not visited_nodes[y+1][x]: # DOWN
+        old_distance = distances[y + 1][x]
+        new_distance = dist + state_diagram[y][x][3]
+        if new_distance <= old_distance:
+            distances[y + 1][x] = new_distance
+            prev[y - 1][x] = (x,y)
+        bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
+
+for y in distances:
+    print(y)
+
 
 plt.imshow(img2show)
 plt.show()
