@@ -5,9 +5,9 @@ import math
 import bisect
 
 CELLS_SIZE = 64 # 32 pixels
-MAX_WEIGHT = 999999999
+MAX_WEIGHT = 99
 
-img = cv2.imread('./sample0.png', cv2.IMREAD_COLOR) 
+img = cv2.imread('./sample1.png', cv2.IMREAD_COLOR) 
 
 dim = img.shape
 print(dim)
@@ -210,9 +210,33 @@ while len(queue) != 0:
             prev[y - 1][x] = (x,y)
         bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
 
+    # print(current)
+    # for line in prev:
+    #     print(line)
+    # input("")
+    # if state_diagram[y][x][4] == 'F':
+    #     break
+
+
 for y in distances:
     print(y)
 
+
+# starting at the finish, work backwards
+# path = [finish]
+# while True:
+#     current_node = path[len(path) - 1]
+#     if cell_type[current_node[1]][current_node[0]] == 'S':
+#         break
+#     next_node = prev[current_node[1]][current_node[0]]
+#     path.append(next_node)
+    
+
+#     print(path)
+#     input("Press Enter to continue...")
+
+# print(path)
+    
 
 plt.imshow(img2show)
 plt.show()
