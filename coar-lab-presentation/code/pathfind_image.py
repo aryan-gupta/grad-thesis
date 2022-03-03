@@ -164,7 +164,7 @@ print()
 print()
 
 def is_valid_travel_cell(c):
-    if c in ["A", "B", "C", "S", "F"]:
+    if c in ["A", "B", "C", "S", "F", "R"]:
         return True
     return False
 
