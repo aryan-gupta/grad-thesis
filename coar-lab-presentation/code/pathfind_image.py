@@ -23,10 +23,10 @@ plt.show()
 wpcc_img = cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2HSV)
 hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 
-plt.imshow(hue_channel)
-plt.show()
-plt.imshow(sat_channel)
-plt.show()
+# plt.imshow(hue_channel)
+# plt.show()
+# plt.imshow(sat_channel)
+# plt.show()
 
 red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
 red_high_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 175, 180), cv2.inRange(sat_channel, 100, 255))
@@ -34,11 +34,26 @@ red_channel = cv2.bitwise_or(red_low_channel, red_high_channel)
 green_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 40, 50), cv2.inRange(sat_channel, 100, 255))
 blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
 yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
+
+# plt.imshow(red_channel, cmap='gray')
+# plt.show()
+# plt.imshow(green_channel, cmap='gray')
+# plt.show()
+# plt.imshow(blue_channel, cmap='gray')
+# plt.show()
+# plt.imshow(yellow_channel, cmap='gray')
+# plt.show()
+
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
-plt.imshow(processed_img)
+
+# plt.imshow(red_channel, cmap='gray')
+# plt.show()
+# plt.imshow(green_channel, cmap='gray')
+# plt.show()
+plt.imshow(processed_img, cmap='gray')
 plt.show()
 
 dim = wpcc_img.shape
