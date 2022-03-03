@@ -7,13 +7,21 @@ import bisect
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
 
-img = cv2.imread('./sample1.png')
+img = cv2.imread('./sample.jpg')
 plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 plt.show()
 
+src = np.float32([[1025, 132], [855, 2702], [3337, 2722], [2974, 165]])
+dest = np.float32([[0, 0], [0, 2560], [2304, 2560], [2304, 0]])
 
-img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-hue_channel, sat_channel, _ = cv2.split(img)
+transmtx = cv2.getPerspectiveTransform(src, dest)
+wpcc_img = cv2.warpPerspective(img, transmtx, (2304, 2560)) # processed
+
+plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
+plt.show()
+
+wpcc_img = cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2HSV)
+hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 
 plt.imshow(hue_channel)
 plt.show()
@@ -23,7 +31,7 @@ plt.show()
 red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
 red_high_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 175, 180), cv2.inRange(sat_channel, 100, 255))
 red_channel = cv2.bitwise_or(red_low_channel, red_high_channel)
-green_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 60, 70), cv2.inRange(sat_channel, 100, 255))
+green_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 40, 50), cv2.inRange(sat_channel, 100, 255))
 blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
 yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
@@ -33,7 +41,7 @@ processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
 
-dim = img.shape
+dim = wpcc_img.shape
 print(dim)
 
 cells_height = math.floor(dim[0] / CELLS_SIZE)
