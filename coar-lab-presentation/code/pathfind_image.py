@@ -286,6 +286,9 @@ prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
 queue.append((0,start))
 distances[start[1]][start[0]] = 0
 
+visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
+video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
+
 while len(queue) != 0:
     # get first element
     current = queue[0]
@@ -302,6 +305,14 @@ while len(queue) != 0:
     visited_nodes[y][x] = True
     # get directions we can travel
     valid_paths = state_diagram[y][x]
+
+    half_cell = math.ceil((CELLS_SIZE/2))
+    center = (x*CELLS_SIZE+half_cell, y*CELLS_SIZE+half_cell)
+    visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 5)
+    # plt.imshow(visited_image)
+    # plt.show()
+    video_out.write(visited_image)
+    visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 5)
 
     # check each direction we can travel
     if valid_paths[0] == 1: # UP
@@ -343,10 +354,20 @@ for y in prev:
 shortest_path = []
 current_node = finish
 while current_node != start:
+    half_cell = math.ceil((CELLS_SIZE/2))
+    center = (current_node[0]*CELLS_SIZE+half_cell, current_node[1]*CELLS_SIZE+half_cell)
+    visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 5)
+    for i in range(3):
+        video_out.write(visited_image)
+
     shortest_path.append(current_node)
     current_node = prev[current_node[1]][current_node[0]]
 shortest_path.append(start)
-    
+
+for i in range(60):
+    video_out.write(visited_image)
+video_out and video_out.release()
+
 print(shortest_path)
 
 # draw the shortest path
@@ -435,6 +456,9 @@ prev = {}
 queue.append((0,auto_final_start))
 distances[auto_final_start] = 0
 
+visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
+video_out = cv2.VideoWriter('project_final.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
+
 while len(queue) != 0:
     # get first element
     current = queue[0]
@@ -450,6 +474,16 @@ while len(queue) != 0:
     visited_nodes.append(node)
     # get directions we can travel
     valid_paths = auto_final[node]
+
+    node_x = int(node.split(',')[0].split('-')[0])
+    node_y = int(node.split(',')[0].split('-')[1])
+    half_cell = math.ceil((CELLS_SIZE/2))
+    center = (node_x*CELLS_SIZE+half_cell, node_y*CELLS_SIZE+half_cell)
+    visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 5)
+    # plt.imshow(visited_image)
+    # plt.show()
+    video_out.write(visited_image)
+    visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 5)
 
     for path in valid_paths:
         if path not in distances.keys(): distances[path] = MAX_WEIGHT
@@ -476,7 +510,18 @@ for key in prev.keys():
 # calculate the shortest path
 shortest_path = []
 current_node = auto_final_end
+visited_image_b4_backtrace = visited_image.copy()
 while current_node != auto_final_start:
+    node_x = int(current_node.split(',')[0].split('-')[0])
+    node_y = int(current_node.split(',')[0].split('-')[1])
+    half_cell = math.ceil((CELLS_SIZE/2))
+    center = (node_x*CELLS_SIZE+half_cell, node_y*CELLS_SIZE+half_cell)
+    visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 5)
+    if state_diagram[node_y][node_x][4] == "A" or state_diagram[node_y][node_x][4] == "B":
+        visited_image = visited_image_b4_backtrace.copy()
+    for i in range(3):
+        video_out.write(visited_image)
+
     shortest_path.append(current_node)
     current_node = prev[current_node]
 shortest_path.append(auto_final_start)
@@ -508,6 +553,10 @@ for i in range(len(shortest_path_phys) - 1):
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
     
     img_final_djk = cv2.line(img_final_djk, center, next_center, (255,255,255), 8)
+
+for i in range(60):
+    video_out.write(img_final_djk)
+video_out and video_out.release()
 
 plt.imshow(img_final_djk)
 plt.show()
