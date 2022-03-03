@@ -7,15 +7,18 @@ import bisect
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
 
+map_h = 640
+map_w = 576
+
 img = cv2.imread('./sample.jpg')
 plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 plt.show()
 
 src = np.float32([[1025, 132], [855, 2702], [3337, 2722], [2974, 165]])
-dest = np.float32([[0, 0], [0, 2560], [2304, 2560], [2304, 0]])
+dest = np.float32([[0, 0], [0, map_h], [map_w, map_h], [map_w, 0]])
 
 transmtx = cv2.getPerspectiveTransform(src, dest)
-wpcc_img = cv2.warpPerspective(img, transmtx, (2304, 2560)) # processed
+wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
 plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
 plt.show()
