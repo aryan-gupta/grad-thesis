@@ -189,10 +189,12 @@ def is_valid_travel_cell(c):
     return False
 
 state_diagram = []
+state_dict = {}
 for y in range(len(cell_type)):
     state_diagram.append([])
     for x in range(len(cell_type[0])):
-        state_diagram[y].append([MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, cell_type[y][x]])
+        state_diagram[y].append([MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, cell_type[y][x], f"{x}-{y}"])
+        state_dict[f"{x}-{y}"] = []
         if cell_type[y][x] == 'H':
             continue
         # check up left
@@ -201,21 +203,27 @@ for y in range(len(cell_type)):
         # check up
         if y > 0 and is_valid_travel_cell(cell_type[y - 1][x]):
             state_diagram[y][x][0] = 1
+            state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
         # check up right
         # NOT IMPL
         
         # check left
         if x > 0 and is_valid_travel_cell(cell_type[y][x - 1]):
             state_diagram[y][x][1] = 1
+            state_dict[f"{x}-{y}"].append(('l', f"{x-1}-{y}"))
+
         # check right
         if x < (len(cell_type[0]) - 1) and is_valid_travel_cell(cell_type[y][x + 1]):
             state_diagram[y][x][2] = 1
+            state_dict[f"{x}-{y}"].append(('r', f"{x+1}-{y}"))
+
         # check down left
         # NOT IMPL
 
         # check down
         if y < (len(cell_type) - 1) and is_valid_travel_cell(cell_type[y + 1][x]):
             state_diagram[y][x][3] = 1
+            state_dict[f"{x}-{y}"].append(('d', f"{x}-{y+1}"))
         # check down right
         # NOT IMPL
 
@@ -252,6 +260,7 @@ for row in state_diagram:
         print(" ", end="") # space for the right arrow
     print()
     
+print(state_dict)
 
 start = ()
 finish = ()
@@ -341,6 +350,7 @@ shortest_path.append(start)
 print(shortest_path)
 
 # draw the shortest path
+img_plain_djk = img_cells.copy()
 for i in range(len(shortest_path)):
     half_cell = math.ceil((CELLS_SIZE/2))
     
@@ -352,8 +362,154 @@ for i in range(len(shortest_path)):
     center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
     
-    img_cells = cv2.line(img_cells, center, next_center, (255,0,0), 2)
+    img_plain_djk = cv2.line(img_plain_djk, center, next_center, (255,255,255), 8)
 
 
-plt.imshow(img_cells)
+plt.imshow(img_plain_djk)
 plt.show()
+
+ltl_auto = ["0", "1", "2", "3"]
+def ltl_auto_valid(src, dest, ops):
+    if src == "0": return True
+
+    if src == "1" and dest =="0": return True if "B" in ops else False
+    if src == "1" and dest =="1": return True if "B" not in ops else False
+
+    if src == "2" and dest =="0": return True if "A" in ops and "B" in ops else False
+    if src == "2" and dest =="1": return True if "A" in ops and "B" not in ops else False
+    if src == "2" and dest =="2": return True if "A" not in ops and "B" not in ops and "R" not in ops else False
+    if src == "2" and dest =="3": return True if "A" not in ops and "B" in ops and "R" not in ops else False
+
+    if src == "3" and dest =="3": return True if "A" not in ops and "R" not in ops else False
+    if src == "3" and dest =="0": return True if "A" in ops else False
+
+    return False
+
+def phys_map_fsm_valid(src, dest, ops):
+    valid_paths = state_dict[src]
+    for direction in valid_paths:
+        if dest == direction[1]:
+            return True
+    return False
+
+auto_final = {}
+key_f = []
+
+for key_1 in state_dict.keys():
+    for key_2 in ltl_auto:
+        key_f.append((key_1, key_2))
+
+print(key_f)
+print(len(key_f))
+
+for src_1, src_2 in key_f:
+    for dest_1, dest_2 in key_f:
+        state_diagram_cord = dest_1.split("-")
+        state_diagram_cord_x = int(state_diagram_cord[0])
+        state_diagram_cord_y = int(state_diagram_cord[1])
+        state_at_cord = state_diagram[state_diagram_cord_y][state_diagram_cord_x][4]
+        if phys_map_fsm_valid(src_1, dest_1, []) and ltl_auto_valid(src_2, dest_2, [state_at_cord]):
+            key_f_src_str = src_1 + ',' + src_2
+            key_f_dest_str = dest_1 + ',' + dest_2
+            if key_f_src_str not in auto_final.keys(): auto_final[key_f_src_str] = []
+            auto_final[key_f_src_str].append(key_f_dest_str)
+
+for key in auto_final:
+    print(key, end=" : ") 
+    print(auto_final[key]) 
+
+auto_final_start = f"{start[0]}-{start[1]},2"
+auto_final_end = f"{finish[0]}-{finish[1]},0"
+
+print()
+print(auto_final_start)
+print(auto_final_end)
+
+# Dijkstras algo
+# When I wrote this code, only god and I knew how it works. Now, only god knows
+queue = [] # queue is an array of (weight, (x, y))
+visited_nodes = [] # create bool false array same size as state_diagram
+distances = {}
+prev = {}
+
+queue.append((0,auto_final_start))
+distances[auto_final_start] = 0
+
+while len(queue) != 0:
+    # get first element
+    current = queue[0]
+    queue = queue[1:]
+
+    # unpack element
+    dist = current[0]
+    node = current[1]
+
+    # if weve already been to this node, skip it
+    if (node in visited_nodes): continue
+    # mark node as visited
+    visited_nodes.append(node)
+    # get directions we can travel
+    valid_paths = auto_final[node]
+
+    for path in valid_paths:
+        if path not in distances.keys(): distances[path] = MAX_WEIGHT
+        
+        old_distance = distances[path]
+        new_distance = dist + 1
+        
+        if new_distance <= old_distance:
+            distances[path] = new_distance
+            prev[path] = node
+        
+        bisect.insort(queue, (distances[path], path), key=lambda a: a[0])
+
+for key in distances.keys():
+    print(key, end=" : ") 
+    print(distances[key]) 
+
+print() 
+print() 
+for key in prev.keys():
+    print(key, end=" : ") 
+    print(prev[key]) 
+
+# calculate the shortest path
+shortest_path = []
+current_node = auto_final_end
+while current_node != auto_final_start:
+    shortest_path.append(current_node)
+    current_node = prev[current_node]
+shortest_path.append(auto_final_start)
+
+print(shortest_path)
+
+shortest_path_phys = []
+for path in shortest_path:
+    sp = path.split(",")
+    shortest_path_phys.append(sp[0])
+
+print(shortest_path_phys)
+
+
+# draw the shortest path
+img_final_djk = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
+for i in range(len(shortest_path_phys) - 1):
+    half_cell = math.ceil((CELLS_SIZE/2))
+    
+    if shortest_path_phys[i] == start: break
+    
+    node_str = shortest_path_phys[i]
+    next_node_str = shortest_path_phys[i+1]
+    
+    node = (int(node_str.split("-")[0]), int(node_str.split("-")[1]))
+    next_node = (int(next_node_str.split("-")[0]), int(next_node_str.split("-")[1]))
+
+    center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
+    next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
+    
+    img_final_djk = cv2.line(img_final_djk, center, next_center, (255,255,255), 8)
+
+plt.imshow(img_final_djk)
+plt.show()
+
+print(len(key_f))
