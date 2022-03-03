@@ -3,6 +3,23 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
+# import spot
+# from cairosvg import svg2png
+# from PIL import Image
+# from io import BytesIO
+
+# spot.setup()
+# automata_refuel = "G(XXXr) && Fa && Fb" # XXXXXXXXXXXXXXXXXXX
+# a = spot.translate(automata_refuel)
+
+# # https://stackoverflow.com/a/70007704
+# # https://stackoverflow.com/a/46135174
+# img_png = svg2png(a.show().data, scale=5.0)
+# img = Image.open(BytesIO(img_png))
+# plt.imshow(img)
+# plt.show()
+
+# exit()
 
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
@@ -278,28 +295,28 @@ while len(queue) != 0:
     valid_paths = state_diagram[y][x]
 
     # check each direction we can travel
-    if valid_paths[0] == 1 and not visited_nodes[y-1][x]: # UP
+    if valid_paths[0] == 1: # UP
         old_distance = distances[y - 1][x]
         new_distance = dist + state_diagram[y][x][0]
         if new_distance <= old_distance:
             distances[y - 1][x] = new_distance
             prev[y - 1][x] = (x,y)
         bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
-    if valid_paths[1] == 1 and not visited_nodes[y][x-1]: # LEFT
+    if valid_paths[1] == 1: # LEFT
         old_distance = distances[y][x - 1]
         new_distance = dist + state_diagram[y][x][1]
         if new_distance <= old_distance:
             distances[y][x - 1] = new_distance
             prev[y][x - 1] = (x,y)
         bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
-    if valid_paths[2] == 1 and not visited_nodes[y][x+1]: # RIGHT
+    if valid_paths[2] == 1: # RIGHT
         old_distance = distances[y][x + 1]
         new_distance = dist + state_diagram[y][x][2]
         if new_distance <= old_distance:
             distances[y][x + 1] = new_distance
             prev[y][x + 1] = (x,y)
         bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
-    if valid_paths[3] == 1 and not visited_nodes[y+1][x]: # DOWN
+    if valid_paths[3] == 1: # DOWN
         old_distance = distances[y + 1][x]
         new_distance = dist + state_diagram[y][x][3]
         if new_distance <= old_distance:
