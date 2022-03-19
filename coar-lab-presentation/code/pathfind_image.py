@@ -21,25 +21,34 @@ import bisect
 
 # exit()
 
+# GLOBAL VARS
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
 
 map_h = 640
 map_w = 576
 
+# Read image and show it
 img = cv2.imread('./sample.jpg')
 plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 plt.show()
 
+# These 4 points are used to perspective correct the image
+# they represent the 4 corners of the map
+# used code from here as reference: https://stackoverflow.com/questions/22656698
 src = np.float32([[1025, 132], [855, 2702], [3337, 2722], [2974, 165]])
 dest = np.float32([[0, 0], [0, map_h], [map_w, map_h], [map_w, 0]])
 
+# Use those corners to create the transformation matrix
+# then apply that matrix to the image
 transmtx = cv2.getPerspectiveTransform(src, dest)
 wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
+# Show the perspective corrected image
 plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
 plt.show()
 
+# Split the image into the seperate HSV vhannels
 wpcc_img = cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2HSV)
 hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 
@@ -48,6 +57,20 @@ hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 # plt.imshow(sat_channel)
 # plt.show()
 
+# Extract the bright colors from the image
+# the useful values are in the Hue and Saturation channel
+# hue will allow us to pinpoint the color shade and the saturation channel will allow us
+# to choose the bright colored spots (remove the gray areas and keep the bright colored areas)
+
+# EXAMPLE: for the red channel, the hue values are around zero (the hue channel loops back around to 180)
+# so for the hue channel we get the values in range of 175 and 180 and the values in range of 0 to 5
+# this will create a mask of all values that are 175-180 and 0-5. This mask will also include gray colors
+# that are slightly red, we then use the saturation channel to remove the slightly red gray values and only
+# keep the deep red colors
+# red = (hue_red_low or hue_red_high) and sat_high
+# the and distributes and creates 
+# red = (hue_red_low and sat_high) or (hue_red_high and sat_high)
+# This same can be used for all the colors that we want to extract
 red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
 red_high_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 175, 180), cv2.inRange(sat_channel, 100, 255))
 red_channel = cv2.bitwise_or(red_low_channel, red_high_channel)
@@ -64,28 +87,36 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 # plt.imshow(yellow_channel, cmap='gray')
 # plt.show()
 
+# We want to convert the different color channels into an RGB image and since yellow is Red and Green
+# we want add the yellow channel into the red and green channels 
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
-
-processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 
 # plt.imshow(red_channel, cmap='gray')
 # plt.show()
 # plt.imshow(green_channel, cmap='gray')
 # plt.show()
-plt.imshow(processed_img, cmap='gray')
+
+# Merge the channels into one RGB image
+processed_img = cv2.merge([red_channel,green_channel,blue_channel])
+plt.imshow(processed_img)
 plt.show()
 
+# Get the dimensions of the image
 dim = wpcc_img.shape
 print(dim)
 
+# Calculate the number of cells
 cells_height = math.floor(dim[0] / CELLS_SIZE)
 cells_width  = math.floor(dim[1] / CELLS_SIZE)
 
 print((cells_height, cells_width))
 
+# Variable to store the unique colors in the image
 colors = []
 
+# Go through each cell and each pixel of the cell to decide what type of cell it is
+# use this info to construct a cell type map of the area
 cell_type = []
 cell_num_height = 0
 cell_num_width = 0
@@ -141,18 +172,23 @@ for y in range(0, dim[0], CELLS_SIZE):
         cell_num_height += 1
     cell_num_width += 1
 
+# Print the different colors in the image
 print(colors)
 print()
 print()
 
+# Print the cell type map for debugging
 for y in cell_type:
     print(y)
 print()
 print()
 
+# Show the images with the cell type and cell boundries
 plt.imshow(img_cells)
 plt.show()
 
+# Convert connected cells with the \p orig_value to \p new_value
+# this allows us to mark areas from Goals to Start and Finish Cells
 def convert_cells(cell_type, y, x, orig_value, new_value):
     cell_type[y][x] = new_value
     if y > 0 and cell_type[y - 1][x] == orig_value:
@@ -178,16 +214,22 @@ for y in range(len(cell_type)):
             convert_cells(cell_type, y, x, "G", goals[goals_idx])
             goals_idx += 1
 
+# Print the converted cell types
 for y in cell_type:
     print(y)
 print()
 print()
 
+# Can the vehicle travel into this cell?
 def is_valid_travel_cell(c):
     if c in ["A", "B", "C", "S", "F", "R"]:
         return True
     return False
 
+# Convert the cell type map into a state diagram
+# the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
+# if the block is a travelable block and creates a valid edge with weight of 1.0
+# if it is
 state_diagram = []
 state_dict = {}
 for y in range(len(cell_type)):
@@ -262,9 +304,9 @@ for row in state_diagram:
     
 print(state_dict)
 
+# find the start node
 start = ()
 finish = ()
-# find the start node
 for y in range(len(cell_type)):
     for x in range(len(cell_type[0])):
         if cell_type[y][x] == 'S':
@@ -275,6 +317,9 @@ for y in range(len(cell_type)):
 print(start)
 print(finish)
 
+# Start creating a video of the D's algo in working
+visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
+video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
 
 # Dijkstras algo
 # When I wrote this code, only god and I knew how it works. Now, only god knows
@@ -285,9 +330,6 @@ prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
 
 queue.append((0,start))
 distances[start[1]][start[0]] = 0
-
-visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
-video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
 
 while len(queue) != 0:
     # get first element
@@ -311,6 +353,8 @@ while len(queue) != 0:
     visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 5)
     # plt.imshow(visited_image)
     # plt.show()
+
+    # write the current state as an image into the video
     video_out.write(visited_image)
     visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 5)
 
@@ -344,16 +388,19 @@ while len(queue) != 0:
             prev[y + 1][x] = (x,y)
         bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
 
+# Print the distances map
 for y in distances:
     print(y)
 
+# Print the previous cell map
 for y in prev:
     print(y)
 
-# calculate the shortest path
+# calculate the shortest path and create a video while 
 shortest_path = []
 current_node = finish
 while current_node != start:
+    # write the current back trace state into the video
     half_cell = math.ceil((CELLS_SIZE/2))
     center = (current_node[0]*CELLS_SIZE+half_cell, current_node[1]*CELLS_SIZE+half_cell)
     visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 5)
@@ -364,6 +411,7 @@ while current_node != start:
     current_node = prev[current_node[1]][current_node[0]]
 shortest_path.append(start)
 
+# pause for two seconds on the final frame
 for i in range(60):
     video_out.write(visited_image)
 video_out and video_out.release()
@@ -385,10 +433,11 @@ for i in range(len(shortest_path)):
     
     img_plain_djk = cv2.line(img_plain_djk, center, next_center, (255,255,255), 8)
 
-
+# Show the path found image from D's algo
 plt.imshow(img_plain_djk)
 plt.show()
 
+# This the LTL ormula converted to a buchii automata
 ltl_auto = ["0", "1", "2", "3"]
 def ltl_auto_valid(src, dest, ops):
     if src == "0": return True
@@ -406,6 +455,7 @@ def ltl_auto_valid(src, dest, ops):
 
     return False
 
+# This is the map FSM wrapper func, allows us to write the algoithm easier
 def phys_map_fsm_valid(src, dest, ops):
     valid_paths = state_dict[src]
     for direction in valid_paths:
@@ -413,6 +463,9 @@ def phys_map_fsm_valid(src, dest, ops):
             return True
     return False
 
+# PRODUCT AUTOMATA Code
+# see the other folders on how this works
+# waws copied from there
 auto_final = {}
 key_f = []
 
@@ -445,6 +498,10 @@ auto_final_end = f"{finish[0]}-{finish[1]},0"
 print()
 print(auto_final_start)
 print(auto_final_end)
+
+## MOST OF THE CODE BELOW IS COPIED FROM ABOVE and does the same thing so Im not going to detail
+## comment it. 
+# pretty much its just D's algo, video making, and making the images
 
 # Dijkstras algo
 # When I wrote this code, only god and I knew how it works. Now, only god knows
