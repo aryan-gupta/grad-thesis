@@ -30,8 +30,8 @@ map_w = 576
 
 # Read image and show it
 img = cv2.imread('./sample.jpg')
-plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-plt.show()
+# plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+# plt.show()
 
 # These 4 points are used to perspective correct the image
 # they represent the 4 corners of the map
@@ -45,8 +45,8 @@ transmtx = cv2.getPerspectiveTransform(src, dest)
 wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
 # Show the perspective corrected image
-plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
-plt.show()
+# plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
+# plt.show()
 
 # Split the image into the seperate HSV vhannels
 wpcc_img = cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2HSV)
@@ -184,8 +184,8 @@ print()
 print()
 
 # Show the images with the cell type and cell boundries
-plt.imshow(img_cells)
-plt.show()
+# plt.imshow(img_cells)
+# plt.show()
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
@@ -434,8 +434,8 @@ for i in range(len(shortest_path)):
     img_plain_djk = cv2.line(img_plain_djk, center, next_center, (255,255,255), 8)
 
 # Show the path found image from D's algo
-plt.imshow(img_plain_djk)
-plt.show()
+# plt.imshow(img_plain_djk)
+# plt.show()
 
 # This the LTL ormula converted to a buchii automata
 ltl_auto = ["0", "1", "2", "3"]
@@ -615,7 +615,7 @@ for i in range(60):
     video_out.write(img_final_djk)
 video_out and video_out.release()
 
-plt.imshow(img_final_djk)
-plt.show()
+# plt.imshow(img_final_djk)
+# plt.show()
 
 print(len(key_f))
