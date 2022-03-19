@@ -87,6 +87,25 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 # plt.imshow(yellow_channel, cmap='gray')
 # plt.show()
 
+# To do a guassian distribution around the edges, we first dialate the mask the same amount
+# as much as we want to do the gaussian blur 
+risk_size = CELLS_SIZE
+dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
+gaussian_kernel_size = risk_size + 1
+risk_gaussian_image = cv2.dilate(green_channel, dilate_kernel, 0)
+risk_gaussian_image = cv2.GaussianBlur(risk_gaussian_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
+risk_gaussian_image = cv2.bitwise_or(risk_gaussian_image, green_channel)
+plt.imshow(risk_gaussian_image, cmap='gray')
+plt.show()
+
+green_channel = risk_gaussian_image
+
+# fig = plt.figure()
+# ax = fig.add_subplot(projection='3d')
+# xx, yy = np.mgrid[0:risk_gaussian_image.shape[0], 0:risk_gaussian_image.shape[1]]
+# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, cmap=plt.cm.gray, linewidth=0)
+# plt.show()
+
 # We want to convert the different color channels into an RGB image and since yellow is Red and Green
 # we want add the yellow channel into the red and green channels 
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
@@ -101,6 +120,8 @@ green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
+
+exit()
 
 # Get the dimensions of the image
 dim = wpcc_img.shape
