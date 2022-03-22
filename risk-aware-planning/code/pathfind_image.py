@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
+import plotly.graph_objects as go
 # import spot
 # from cairosvg import svg2png
 # from PIL import Image
@@ -22,7 +23,7 @@ import bisect
 # exit()
 
 # GLOBAL VARS
-CELLS_SIZE = 32 # 32 pixels
+CELLS_SIZE = 8 # 32 pixels
 MAX_WEIGHT = 999
 
 map_h = 640
@@ -89,27 +90,50 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 
 # To do a guassian distribution around the edges, we first dialate the mask the same amount
 # as much as we want to do the gaussian blur 
-risk_size = CELLS_SIZE
+risk_size = 64
 dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
 gaussian_kernel_size = risk_size + 1
 risk_gaussian_image = cv2.dilate(green_channel, dilate_kernel, 0)
 risk_gaussian_image = cv2.GaussianBlur(risk_gaussian_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
-risk_gaussian_image = cv2.bitwise_or(risk_gaussian_image, green_channel)
+# risk_gaussian_image = cv2.blur(risk_gaussian_image, (gaussian_kernel_size, gaussian_kernel_size))
+risk_gaussian_image = cv2.subtract(risk_gaussian_image, green_channel)
 plt.imshow(risk_gaussian_image, cmap='gray')
 plt.show()
 
-green_channel = risk_gaussian_image
+purple_channel = risk_gaussian_image
 
 # fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')
 # xx, yy = np.mgrid[0:risk_gaussian_image.shape[0], 0:risk_gaussian_image.shape[1]]
-# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, cmap=plt.cm.gray, linewidth=0)
+# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, linewidth=0)
 # plt.show()
+xx = []
+yy = []
+zz = []
+for x in range(risk_gaussian_image.shape[0]):
+    for y in range(risk_gaussian_image.shape[1]):
+        xx.append(x)
+        yy.append(y)
+        zz.append(risk_gaussian_image[x, y])
+
+marker_data = go.Scatter3d(
+    x=np.array(xx), 
+    y=np.array(yy), 
+    z=np.array(zz), 
+    marker=go.scatter3d.Marker(size=1), 
+    opacity=0.8, 
+    mode='markers'
+)
+fig=go.Figure(data=marker_data)
+fig.show()
 
 # We want to convert the different color channels into an RGB image and since yellow is Red and Green
 # we want add the yellow channel into the red and green channels 
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
+
+red_channel = cv2.bitwise_or(red_channel, purple_channel)
+blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
 
 # plt.imshow(red_channel, cmap='gray')
 # plt.show()
@@ -120,8 +144,6 @@ green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
-
-exit()
 
 # Get the dimensions of the image
 dim = wpcc_img.shape
@@ -168,19 +190,19 @@ for y in range(0, dim[0], CELLS_SIZE):
                 # mark the cells if its corosponding color exists in the cell
                 if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'H',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'H',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'H'
                 if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'G',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'G',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'G'
                 if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'O',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'O',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'O'              
                 if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'R',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'R',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'R'
                 
             # Exit loop if we know the cell type
@@ -188,8 +210,8 @@ for y in range(0, dim[0], CELLS_SIZE):
                 break
 
         # if we dont know the cell type (its all white), mark it as a clean cell
-        if not cell_known:    
-            img_cells = cv2.putText(img_cells, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+        # if not cell_known:    
+        #     img_cells = cv2.putText(img_cells, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
         cell_num_height += 1
     cell_num_width += 1
 
@@ -205,8 +227,10 @@ print()
 print()
 
 # Show the images with the cell type and cell boundries
-# plt.imshow(img_cells)
-# plt.show()
+plt.imshow(img_cells)
+plt.show()
+
+exit()
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
