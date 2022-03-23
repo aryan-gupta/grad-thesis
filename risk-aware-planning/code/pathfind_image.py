@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
+import plotly.graph_objects as go
 # import spot
 # from cairosvg import svg2png
 # from PIL import Image
@@ -103,8 +104,28 @@ green_channel = risk_gaussian_image
 # fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')
 # xx, yy = np.mgrid[0:risk_gaussian_image.shape[0], 0:risk_gaussian_image.shape[1]]
-# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, cmap=plt.cm.gray, linewidth=0)
+# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, linewidth=0)
 # plt.show()
+
+# xx = []
+# yy = []
+# zz = []
+# for x in range(risk_gaussian_image.shape[0]):
+#     for y in range(risk_gaussian_image.shape[1]):
+#         xx.append(x)
+#         yy.append(y)
+#         zz.append(risk_gaussian_image[x, y])
+
+# marker_data = go.Scatter3d(
+#     x=np.array(xx), 
+#     y=np.array(yy), 
+#     z=np.array(zz), 
+#     marker=go.scatter3d.Marker(size=1), 
+#     opacity=0.8, 
+#     mode='markers'
+# )
+# fig=go.Figure(data=marker_data)
+# fig.show()
 
 # We want to convert the different color channels into an RGB image and since yellow is Red and Green
 # we want add the yellow channel into the red and green channels 
