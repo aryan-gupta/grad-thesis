@@ -22,7 +22,7 @@ import bisect
 # exit()
 
 # GLOBAL VARS
-CELLS_SIZE = 32 # 32 pixels
+CELLS_SIZE = 8 # 32 pixels
 MAX_WEIGHT = 999
 
 map_h = 640
@@ -89,7 +89,7 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 
 # To do a guassian distribution around the edges, we first dialate the mask the same amount
 # as much as we want to do the gaussian blur 
-risk_size = CELLS_SIZE
+risk_size = 64
 dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
 gaussian_kernel_size = risk_size + 1
 risk_gaussian_image = cv2.dilate(green_channel, dilate_kernel, 0)
