@@ -99,7 +99,7 @@ risk_gaussian_image = cv2.bitwise_or(risk_gaussian_image, green_channel)
 plt.imshow(risk_gaussian_image, cmap='gray')
 plt.show()
 
-green_channel = risk_gaussian_image
+purple_channel = risk_gaussian_image
 
 # fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')
@@ -131,6 +131,9 @@ green_channel = risk_gaussian_image
 # we want add the yellow channel into the red and green channels 
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
+
+red_channel = cv2.bitwise_or(red_channel, purple_channel)
+blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
 
 # plt.imshow(red_channel, cmap='gray')
 # plt.show()
