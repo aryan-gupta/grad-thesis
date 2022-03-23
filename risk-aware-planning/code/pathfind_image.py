@@ -192,19 +192,19 @@ for y in range(0, dim[0], CELLS_SIZE):
                 # mark the cells if its corosponding color exists in the cell
                 if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'H',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'H',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'H'
                 if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'G',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'G',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'G'
                 if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'O',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'O',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'O'              
                 if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                     cell_known = True
-                    img_cells = cv2.putText(img_cells, 'R',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+                    # img_cells = cv2.putText(img_cells, 'R',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'R'
                 
             # Exit loop if we know the cell type
@@ -212,8 +212,8 @@ for y in range(0, dim[0], CELLS_SIZE):
                 break
 
         # if we dont know the cell type (its all white), mark it as a clean cell
-        if not cell_known:    
-            img_cells = cv2.putText(img_cells, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
+        # if not cell_known:    
+        #     img_cells = cv2.putText(img_cells, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
         cell_num_height += 1
     cell_num_width += 1
 
