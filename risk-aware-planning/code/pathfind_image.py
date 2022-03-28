@@ -24,7 +24,7 @@ import plotly.graph_objects as go
 
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
-MAX_WEIGHT = 999
+MAX_WEIGHT = 1.0
 
 map_h = 640
 map_w = 576
@@ -299,8 +299,6 @@ print()
 plt.imshow(img_cells)
 plt.show()
 
-exit()
-
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
 def convert_cells(cell_type, y, x, orig_value, new_value):
@@ -334,12 +332,6 @@ for y in cell_type:
 print()
 print()
 
-# Can the vehicle travel into this cell?
-def is_valid_travel_cell(c):
-    if c in ["A", "B", "C", "S", "F", "R"]:
-        return True
-    return False
-
 # Convert the cell type map into a state diagram
 # the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
 # if the block is a travelable block and creates a valid edge with weight of 1.0
@@ -357,28 +349,28 @@ for y in range(len(cell_type)):
         # NOT IMPL
         
         # check up
-        if y > 0 and is_valid_travel_cell(cell_type[y - 1][x]):
-            state_diagram[y][x][0] = 1
+        if y > 0:
+            state_diagram[y][x][0] = cell_cost[y][x]
             state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
         # check up right
         # NOT IMPL
         
         # check left
-        if x > 0 and is_valid_travel_cell(cell_type[y][x - 1]):
-            state_diagram[y][x][1] = 1
+        if x > 0:
+            state_diagram[y][x][1] = cell_cost[y][x]
             state_dict[f"{x}-{y}"].append(('l', f"{x-1}-{y}"))
 
         # check right
-        if x < (len(cell_type[0]) - 1) and is_valid_travel_cell(cell_type[y][x + 1]):
-            state_diagram[y][x][2] = 1
+        if x < (len(cell_type[0]) - 1):
+            state_diagram[y][x][2] = cell_cost[y][x]
             state_dict[f"{x}-{y}"].append(('r', f"{x+1}-{y}"))
 
         # check down left
         # NOT IMPL
 
         # check down
-        if y < (len(cell_type) - 1) and is_valid_travel_cell(cell_type[y + 1][x]):
-            state_diagram[y][x][3] = 1
+        if y < (len(cell_type) - 1):
+            state_diagram[y][x][3] = cell_cost[y][x]
             state_dict[f"{x}-{y}"].append(('d', f"{x}-{y+1}"))
         # check down right
         # NOT IMPL
@@ -388,34 +380,27 @@ for row in state_diagram:
     # Up arrows
     for col in row:
         print(" ", end="") # space for the left arrow
-        if col[0] != MAX_WEIGHT:
-            print("↑", end="")
-        else:
-            print(" ", end="")
+        weight_single = 9 if col[0] == 1.0 else int(col[0] * 10)
+        print(weight_single, end="")
         print(" ", end="") # space for the right arrow
     print()
     # left/right and center char
     for col in row:
-        if col[1] != MAX_WEIGHT:
-            print("←", end="")
-        else:
-            print(" ", end="")
+        weight_single = 9 if col[1] == 1.0 else int(col[1] * 10)
+        print(weight_single, end="")
         print(col[4], end="")
-        if col[2] != MAX_WEIGHT:
-            print("→", end="")
-        else:
-            print(" ", end="")
+        weight_single = 9 if col[2] == 1.0 else int(col[2] * 10)
+        print(weight_single, end="")
     print()
     # Down arrows
     for col in row:
         print(" ", end="") # space for the left arrow
-        if col[3] != MAX_WEIGHT:
-            print("↓", end="")
-        else:
-            print(" ", end="")
+        weight_single = 9 if col[3] == 1.0 else int(col[3] * 10)
+        print(weight_single, end="")
         print(" ", end="") # space for the right arrow
     print()
-    
+
+exit()
 print(state_dict)
 
 # find the start node
