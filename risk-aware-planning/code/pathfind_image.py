@@ -90,31 +90,36 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 
 # To do a guassian distribution around the edges, we first dialate the mask the same amount
 # as much as we want to do the gaussian blur 
+
+# Wall risk image
 risk_size = 64
 dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
 gaussian_kernel_size = risk_size + 1
-risk_gaussian_image = cv2.dilate(green_channel, dilate_kernel, 0)
-risk_gaussian_image = cv2.GaussianBlur(risk_gaussian_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
-risk_gaussian_image = cv2.bitwise_or(risk_gaussian_image, green_channel)
-plt.imshow(risk_gaussian_image, cmap='gray')
+wall_risk_image = cv2.dilate(green_channel, dilate_kernel, 0)
+wall_risk_image = cv2.GaussianBlur(wall_risk_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
+wall_risk_image = cv2.bitwise_or(wall_risk_image, green_channel)
+plt.imshow(wall_risk_image, cmap='gray')
 plt.show()
 
-purple_channel = risk_gaussian_image
+
+
+risk_image = wall_risk_image
+# purple_channel = risk_image
 
 # fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')
-# xx, yy = np.mgrid[0:risk_gaussian_image.shape[0], 0:risk_gaussian_image.shape[1]]
-# ax.plot_surface(xx, yy, risk_gaussian_image, rstride=1, cstride=1, linewidth=0)
+# xx, yy = np.mgrid[0:risk_image.shape[0], 0:risk_image.shape[1]]
+# ax.plot_surface(xx, yy, risk_image, rstride=1, cstride=1, linewidth=0)
 # plt.show()
 
 # xx = []
 # yy = []
 # zz = []
-# for x in range(risk_gaussian_image.shape[0]):
-#     for y in range(risk_gaussian_image.shape[1]):
+# for x in range(risk_image.shape[0]):
+#     for y in range(risk_image.shape[1]):
 #         xx.append(x)
 #         yy.append(y)
-#         zz.append(risk_gaussian_image[x, y])
+#         zz.append(risk_image[x, y])
 
 # marker_data = go.Scatter3d(
 #     x=np.array(xx), 
@@ -132,8 +137,8 @@ purple_channel = risk_gaussian_image
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
-red_channel = cv2.bitwise_or(red_channel, purple_channel)
-blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
+# red_channel = cv2.bitwise_or(red_channel, purple_channel)
+# blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
 
 # plt.imshow(red_channel, cmap='gray')
 # plt.show()
@@ -144,8 +149,6 @@ blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
-
-exit()
 
 # Get the dimensions of the image
 dim = wpcc_img.shape
@@ -161,20 +164,48 @@ print((cells_height, cells_width))
 colors = []
 img_cells = processed_img.copy()
 
+# I honestly thought there was a built in map function, but I guess Im wrong
+# https://stackoverflow.com/questions/1969240
+# This function returns a function that will map the image pixel values (in the
+# range of 0 to 255) to another set of numbers in the range of 0.0 to 1.0
+# it will make calculating Dj's algo alot easier
+def make_interpolater(left_min, left_max, right_min, right_max): 
+    # Figure out how 'wide' each range is  
+    leftSpan = left_max - left_min  
+    rightSpan = right_max - right_min  
+
+    # Compute the scale factor between left and right values 
+    scaleFactor = float(rightSpan) / float(leftSpan) 
+
+    # create interpolation function using pre-calculated scaleFactor
+    def interp_fn(value):
+        return right_min + (value-left_min)*scaleFactor
+
+    return interp_fn
+
+# function to map pixel values to cost values
+image_value_to_cost_value = make_interpolater(0, 255, 0, 1.0)
+
 # Go through each cell and each pixel of the cell to decide what type of cell it is
 # use this info to construct a cell type map of the area
 cell_type = []
+cell_cost = []
 cell_num_height = 0
 cell_num_width = 0
+max_cost = -1
 for y in range(0, dim[0], CELLS_SIZE):
     cell_type.append([])
+    cell_cost.append([])
     cell_num_height = 0
 
     for x in range(0, dim[1], CELLS_SIZE):
         cell_type[cell_num_width].append('C')
+        cell_cost[cell_num_width].append(0.0)
 
         # determine what the cell is
         cell_known = False
+        cell_sum = 0
+        cell_pxl_count = 0
         for u in range(y, y + CELLS_SIZE, 1):
             if u >= dim[0]:
                 break
@@ -182,7 +213,13 @@ for y in range(0, dim[0], CELLS_SIZE):
             for v in range(x, x + CELLS_SIZE, 1):
                 if v >= dim[1]:
                     break
+                
+                # If the cell is a Goal Cell, give it 0.0 weight
+                # If the cell is a Objective Cell, give it a 0.0 weight
+                # if the cell is a Hazard Cell, give it the same weight as the average value of the cell
 
+                cell_sum += risk_image[u,v]
+                    
                 # keep a record of all the different colors
                 if tuple(processed_img[u,v]) not in colors:
                     colors.append(tuple(processed_img[u,v]))
@@ -205,14 +242,32 @@ for y in range(0, dim[0], CELLS_SIZE):
                     img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,0,255), 1)
                     cell_type[cell_num_width][cell_num_height] = 'R'
                 
-            # Exit loop if we know the cell type
+
+            # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
             if cell_known:
+                if cell_type[cell_num_width][cell_num_height] == 'H':
+                    cell_cost[cell_num_width][cell_num_height] = 1.0
+                else:
+                    cell_cost[cell_num_width][cell_num_height] = 0.0
                 break
 
-        # if we dont know the cell type (its all white), mark it as a clean cell
+
+        # if we dont know the cell type, mark it as a clean cell
+        # and add the weights to the cell
         if not cell_known:
             # draw rectangles
-            img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,255,255), 1)
+            cost = cell_sum / (CELLS_SIZE**2)
+            cell_cost[cell_num_width][cell_num_height] = image_value_to_cost_value(cost)
+            # record the max cost for debugging purposes
+            if cost > max_cost:
+                max_cost = cost
+            # print(f"{x}-{y} :: {cost}")
+            if cost == 0:
+                img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,255,255), 1)
+            else:
+                img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (cost,0,cost), 1)
+
+
         cell_num_height += 1
     cell_num_width += 1
 
@@ -221,15 +276,30 @@ print(colors)
 print()
 print()
 
+# Print the max cost
+print(max_cost)
+print()
+print()
+
 # Print the cell type map for debugging
-for y in cell_type:
-    print(y)
+# for y in cell_type:
+#     print(y)
+# print()
+# print()
+
+# Print the cell cost map for debugging
+for y in cell_cost:
+    for cost in y:
+        print("{:.2f}".format(cost), end=", ")
+    print()
 print()
 print()
 
 # Show the images with the cell type and cell boundries
-# plt.imshow(img_cells)
-# plt.show()
+plt.imshow(img_cells)
+plt.show()
+
+exit()
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
