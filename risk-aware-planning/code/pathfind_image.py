@@ -23,7 +23,7 @@ import plotly.graph_objects as go
 # exit()
 
 # GLOBAL VARS
-CELLS_SIZE = 8 # 32 pixels
+CELLS_SIZE = 4 # 32 pixels
 MAX_WEIGHT = 1.0
 
 map_h = 640
@@ -263,7 +263,7 @@ for y in range(0, dim[0], CELLS_SIZE):
                 max_cost = cost
             # print(f"{x}-{y} :: {cost}")
             if cost == 0:
-                img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,255,255), 1)
+                img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (50,50,50), 1)
             else:
                 img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (cost,0,cost), 1)
 
