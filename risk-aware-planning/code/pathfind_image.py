@@ -400,7 +400,6 @@ for row in state_diagram:
         print(" ", end="") # space for the right arrow
     print()
 
-exit()
 print(state_dict)
 
 # find the start node
@@ -424,7 +423,7 @@ video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','
 # When I wrote this code, only god and I knew how it works. Now, only god knows
 queue = [] # queue is an array of (weight, (x, y))
 visited_nodes = [ [False] * len(cell_type[0]) for _ in range(len(cell_type))] # create bool false array same size as state_diagram
-distances = [ [MAX_WEIGHT] * len(cell_type[0]) for _ in range(len(cell_type))]
+distances = [ [float("inf")] * len(cell_type[0]) for _ in range(len(cell_type))]
 prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
 
 queue.append((0,start))
@@ -444,52 +443,52 @@ while len(queue) != 0:
     if (visited_nodes[y][x]): continue
     # mark node as visited
     visited_nodes[y][x] = True
-    # get directions we can travel
-    valid_paths = state_diagram[y][x]
 
     half_cell = math.ceil((CELLS_SIZE/2))
     center = (x*CELLS_SIZE+half_cell, y*CELLS_SIZE+half_cell)
-    visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 5)
+    visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 1)
     # plt.imshow(visited_image)
     # plt.show()
 
     # write the current state as an image into the video
     video_out.write(visited_image)
-    visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 5)
+    visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 1)
 
     # check each direction we can travel
-    if valid_paths[0] == 1: # UP
+    if y > 0: # UP
         old_distance = distances[y - 1][x]
         new_distance = dist + state_diagram[y][x][0]
-        if new_distance <= old_distance:
+        if new_distance < old_distance:
             distances[y - 1][x] = new_distance
             prev[y - 1][x] = (x,y)
-        bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
-    if valid_paths[1] == 1: # LEFT
+            bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
+    if x > 0: # LEFT
         old_distance = distances[y][x - 1]
         new_distance = dist + state_diagram[y][x][1]
-        if new_distance <= old_distance:
+        if new_distance < old_distance:
             distances[y][x - 1] = new_distance
             prev[y][x - 1] = (x,y)
-        bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
-    if valid_paths[2] == 1: # RIGHT
+            bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
+    if x < (len(cell_type[0]) - 1): # RIGHT
         old_distance = distances[y][x + 1]
         new_distance = dist + state_diagram[y][x][2]
-        if new_distance <= old_distance:
+        if new_distance < old_distance:
             distances[y][x + 1] = new_distance
             prev[y][x + 1] = (x,y)
-        bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
-    if valid_paths[3] == 1: # DOWN
+            bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
+    if y < (len(cell_type) - 1): # DOWN
         old_distance = distances[y + 1][x]
         new_distance = dist + state_diagram[y][x][3]
-        if new_distance <= old_distance:
+        if new_distance < old_distance:
             distances[y + 1][x] = new_distance
             prev[y + 1][x] = (x,y)
-        bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
+            bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
 
 # Print the distances map
 for y in distances:
-    print(y)
+    for dist in y:
+        print("{:.2f}".format(dist), end=", ")
+    print()
 
 # Print the previous cell map
 for y in prev:
@@ -502,7 +501,7 @@ while current_node != start:
     # write the current back trace state into the video
     half_cell = math.ceil((CELLS_SIZE/2))
     center = (current_node[0]*CELLS_SIZE+half_cell, current_node[1]*CELLS_SIZE+half_cell)
-    visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 5)
+    visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 1)
     for i in range(3):
         video_out.write(visited_image)
 
@@ -530,11 +529,13 @@ for i in range(len(shortest_path)):
     center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
     
-    img_plain_djk = cv2.line(img_plain_djk, center, next_center, (255,255,255), 8)
+    img_plain_djk = cv2.line(img_plain_djk, center, next_center, (0,255,255), 1)
 
 # Show the path found image from D's algo
-# plt.imshow(img_plain_djk)
-# plt.show()
+plt.imshow(img_plain_djk)
+plt.show()
+
+exit()
 
 # This the LTL ormula converted to a buchii automata
 ltl_auto = ["0", "1", "2", "3"]
