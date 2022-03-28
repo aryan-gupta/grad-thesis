@@ -3,6 +3,23 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
+# import spot
+# from cairosvg import svg2png
+# from PIL import Image
+# from io import BytesIO
+
+# spot.setup()
+# automata_refuel = "G(XXXr) && Fa && Fb" # XXXXXXXXXXXXXXXXXXX
+# a = spot.translate(automata_refuel)
+
+# # https://stackoverflow.com/a/70007704
+# # https://stackoverflow.com/a/46135174
+# img_png = svg2png(a.show().data, scale=5.0)
+# img = Image.open(BytesIO(img_png))
+# plt.imshow(img)
+# plt.show()
+
+# exit()
 
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
@@ -172,10 +189,12 @@ def is_valid_travel_cell(c):
     return False
 
 state_diagram = []
+state_dict = {}
 for y in range(len(cell_type)):
     state_diagram.append([])
     for x in range(len(cell_type[0])):
-        state_diagram[y].append([MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, cell_type[y][x]])
+        state_diagram[y].append([MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, cell_type[y][x], f"{x}-{y}"])
+        state_dict[f"{x}-{y}"] = []
         if cell_type[y][x] == 'H':
             continue
         # check up left
@@ -184,21 +203,27 @@ for y in range(len(cell_type)):
         # check up
         if y > 0 and is_valid_travel_cell(cell_type[y - 1][x]):
             state_diagram[y][x][0] = 1
+            state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
         # check up right
         # NOT IMPL
         
         # check left
         if x > 0 and is_valid_travel_cell(cell_type[y][x - 1]):
             state_diagram[y][x][1] = 1
+            state_dict[f"{x}-{y}"].append(('l', f"{x-1}-{y}"))
+
         # check right
         if x < (len(cell_type[0]) - 1) and is_valid_travel_cell(cell_type[y][x + 1]):
             state_diagram[y][x][2] = 1
+            state_dict[f"{x}-{y}"].append(('r', f"{x+1}-{y}"))
+
         # check down left
         # NOT IMPL
 
         # check down
         if y < (len(cell_type) - 1) and is_valid_travel_cell(cell_type[y + 1][x]):
             state_diagram[y][x][3] = 1
+            state_dict[f"{x}-{y}"].append(('d', f"{x}-{y+1}"))
         # check down right
         # NOT IMPL
 
@@ -235,6 +260,7 @@ for row in state_diagram:
         print(" ", end="") # space for the right arrow
     print()
     
+print(state_dict)
 
 start = ()
 finish = ()
@@ -340,3 +366,32 @@ for i in range(len(shortest_path)):
 
 plt.imshow(img_cells)
 plt.show()
+
+ltl_auto = ["0", "1", "2", "3"]
+def ltl_auto_valid(src, dest, ops):
+    if src == "0": return True
+
+    if src == "1" and dest =="0": return True if "b" in ops else False
+    if src == "1" and dest =="1": return True if "b" not in ops else False
+
+    if src == "2" and dest =="0": return True if "a" in ops and "b" in ops else False
+    if src == "2" and dest =="1": return True if "a" in ops and "b" not in ops else False
+    if src == "2" and dest =="2": return True if "a" not in ops and "b" not in ops and "r" not in ops else False
+    if src == "2" and dest =="3": return True if "a" not in ops and "b" in ops and "r" not in ops else False
+
+    if src == "3" and dest =="3": return True if "a" not in ops and "r" not in ops else False
+    if src == "3" and dest =="0": return True if "a" in ops else False
+
+    return False
+
+auto_final = {}
+key_f = []
+
+for key_1 in state_dict.keys():
+    for key_2 in ltl_auto:
+        key_f.append((key_1, key_2))
+
+print(key_f)
+print(len(key_f))
+
+start = ()
