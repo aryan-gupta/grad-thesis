@@ -92,7 +92,7 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 # as much as we want to do the gaussian blur 
 
 # Wall risk image
-risk_size = 64
+risk_size = 16
 dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
 gaussian_kernel_size = risk_size + 1
 wall_risk_image = cv2.dilate(green_channel, dilate_kernel, 0)
