@@ -79,6 +79,40 @@ green_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 40, 50), cv2.inRange(sa
 blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
 yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
 
+
+
+reward_size = 128
+dilate_kernel = np.ones((reward_size,reward_size), np.uint8)
+gaussian_kernel_size = reward_size + 1
+orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
+
+
+
+contours, hierarchy = cv2.findContours(orig_goal_reward_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+goal_reward_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
+
+num_cnt = len(contours)
+for cnts in contours:
+    mask = np.zeros((map_h, map_w, 1), dtype = "uint8")
+    mask = cv2.drawContours(mask, [cnts], -1, (255), -1)
+    mask = cv2.dilate(mask, dilate_kernel, 0)
+    # plt.imshow(mask, cmap='gray'); plt.show()
+    # mask = cv2.bilateralFilter(mask, reward_size*16, 1000, 1000)
+    mask = cv2.blur(mask, (gaussian_kernel_size, gaussian_kernel_size))
+    # mask = cv2.GaussianBlur(mask, (gaussian_kernel_size, gaussian_kernel_size), reward_size)
+    goal_reward_image = cv2.scaleAdd(mask, (1/num_cnt), goal_reward_image)
+    # plt.imshow(goal_reward_image, cmap='gray'); plt.show()
+    
+# plt.imshow(goal_reward_image, cmap='gray'); plt.show()
+goal_reward_image = cv2.normalize(goal_reward_image, None, 255, 0, norm_type = cv2.NORM_MINMAX)
+plt.imshow(goal_reward_image, cmap='gray'); plt.show()
+
+# goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
+    
+
+
+exit()
+
 # plt.imshow(red_channel, cmap='gray')
 # plt.show()
 # plt.imshow(green_channel, cmap='gray')
@@ -149,6 +183,8 @@ green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
+
+exit()
 
 # Get the dimensions of the image
 dim = wpcc_img.shape
