@@ -3,7 +3,6 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
-import plotly.graph_objects as go
 # import spot
 # from cairosvg import svg2png
 # from PIL import Image
@@ -17,8 +16,7 @@ import plotly.graph_objects as go
 # # https://stackoverflow.com/a/46135174
 # img_png = svg2png(a.show().data, scale=5.0)
 # img = Image.open(BytesIO(img_png))
-# plt.imshow(img)
-# plt.show()
+# plt.imshow(img); plt.show()
 
 # exit()
 
@@ -31,8 +29,9 @@ map_w = 576
 
 # Read image and show it
 img = cv2.imread('./sample.jpg')
-# plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-# plt.show()
+# plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)); plt.show()
+
+##################################### Image Perspective Warp ##############################################
 
 # These 4 points are used to perspective correct the image
 # they represent the 4 corners of the map
@@ -46,17 +45,16 @@ transmtx = cv2.getPerspectiveTransform(src, dest)
 wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
 # Show the perspective corrected image
-# plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB))
-# plt.show()
+# plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB)); plt.show()
+
+##################################### HSV Channel Segmentation ##############################################
 
 # Split the image into the seperate HSV vhannels
 wpcc_img = cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2HSV)
 hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 
-# plt.imshow(hue_channel)
-# plt.show()
-# plt.imshow(sat_channel)
-# plt.show()
+# plt.imshow(hue_channel); plt.show()
+# plt.imshow(sat_channel); plt.show()
 
 # Extract the bright colors from the image
 # the useful values are in the Hue and Saturation channel
@@ -79,13 +77,18 @@ green_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 40, 50), cv2.inRange(sa
 blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
 yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
 
+# plt.imshow(red_channel, cmap='gray'); plt.show()
+# plt.imshow(green_channel, cmap='gray'); plt.show()
+# plt.imshow(blue_channel, cmap='gray'); plt.show()
+# plt.imshow(yellow_channel, cmap='gray'); plt.show()
+
+##################################### Reward Image Construction ##############################################
 
 
 reward_size = 128
 dilate_kernel = np.ones((reward_size,reward_size), np.uint8)
 gaussian_kernel_size = reward_size + 1
 orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
-
 
 
 contours, hierarchy = cv2.findContours(orig_goal_reward_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -113,22 +116,11 @@ goal_reward_image = cv2.normalize(goal_reward_image, None, 255, 0, norm_type = c
 plt.imshow(goal_reward_image, cmap='gray'); plt.show()
 
 # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
-    
-
-
-exit()
-
-# plt.imshow(red_channel, cmap='gray')
-# plt.show()
-# plt.imshow(green_channel, cmap='gray')
-# plt.show()
-# plt.imshow(blue_channel, cmap='gray')
-# plt.show()
-# plt.imshow(yellow_channel, cmap='gray')
-# plt.show()
 
 # To do a guassian distribution around the edges, we first dialate the mask the same amount
 # as much as we want to do the gaussian blur 
+
+##################################### Risk Image Construction ##############################################
 
 # Wall risk image
 risk_size = 16
@@ -151,25 +143,7 @@ risk_image = wall_risk_image
 # ax.plot_surface(xx, yy, risk_image, rstride=1, cstride=1, linewidth=0)
 # plt.show()
 
-# xx = []
-# yy = []
-# zz = []
-# for x in range(risk_image.shape[0]):
-#     for y in range(risk_image.shape[1]):
-#         xx.append(x)
-#         yy.append(y)
-#         zz.append(risk_image[x, y])
-
-# marker_data = go.Scatter3d(
-#     x=np.array(xx), 
-#     y=np.array(yy), 
-#     z=np.array(zz), 
-#     marker=go.scatter3d.Marker(size=1), 
-#     opacity=0.8, 
-#     mode='markers'
-# )
-# fig=go.Figure(data=marker_data)
-# fig.show()
+##################################### Final Image Construction ##############################################
 
 # We want to convert the different color channels into an RGB image and since yellow is Red and Green
 # we want add the yellow channel into the red and green channels 
@@ -179,17 +153,17 @@ green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 # red_channel = cv2.bitwise_or(red_channel, purple_channel)
 # blue_channel = cv2.bitwise_or(blue_channel, purple_channel)
 
-# plt.imshow(red_channel, cmap='gray')
-# plt.show()
-# plt.imshow(green_channel, cmap='gray')
-# plt.show()
+# plt.imshow(red_channel, cmap='gray'); plt.show()
+# plt.imshow(green_channel, cmap='gray'); plt.show()
 
 # Merge the channels into one RGB image
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
 plt.imshow(processed_img)
 plt.show()
 
-exit()
+
+##################################### Basic Image Manip ##############################################
+
 
 # Get the dimensions of the image
 dim = wpcc_img.shape
@@ -226,6 +200,8 @@ def make_interpolater(left_min, left_max, right_min, right_max):
 
 # function to map pixel values to cost values
 image_value_to_cost_value = make_interpolater(0, 255, 0, 1.0)
+
+##################################### Cell Construction ##############################################
 
 # Go through each cell and each pixel of the cell to decide what type of cell it is
 # use this info to construct a cell type map of the area
@@ -323,10 +299,10 @@ print()
 print()
 
 # Print the cell type map for debugging
-# for y in cell_type:
-#     print(y)
-# print()
-# print()
+for y in cell_type:
+    print(y)
+print()
+print()
 
 # Print the cell cost map for debugging
 for y in cell_cost:
@@ -339,6 +315,10 @@ print()
 # Show the images with the cell type and cell boundries
 plt.imshow(img_cells)
 plt.show()
+
+
+##################################### Convert Cells To Seperate Goals ##############################################
+
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
@@ -372,6 +352,9 @@ for y in cell_type:
     print(y)
 print()
 print()
+
+##################################### State Diagram Conversion ##############################################
+
 
 # Convert the cell type map into a state diagram
 # the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
@@ -455,6 +438,8 @@ for y in range(len(cell_type)):
 
 print(start)
 print(finish)
+
+##################################### D's Algo base ##############################################
 
 # Start creating a video of the D's algo in working
 visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
@@ -578,6 +563,9 @@ plt.show()
 
 exit()
 
+##################################### LTL Formula Conversion ##############################################
+
+
 # This the LTL ormula converted to a buchii automata
 ltl_auto = ["0", "1", "2", "3"]
 def ltl_auto_valid(src, dest, ops):
@@ -603,6 +591,10 @@ def phys_map_fsm_valid(src, dest, ops):
         if dest == direction[1]:
             return True
     return False
+
+
+##################################### Product Automata Construction ##############################################
+
 
 # PRODUCT AUTOMATA Code
 # see the other folders on how this works
@@ -639,6 +631,9 @@ auto_final_end = f"{finish[0]}-{finish[1]},0"
 print()
 print(auto_final_start)
 print(auto_final_end)
+
+##################################### D's Algo on Product Automata ##############################################
+
 
 ## MOST OF THE CODE BELOW IS COPIED FROM ABOVE and does the same thing so Im not going to detail
 ## comment it. 
@@ -756,7 +751,6 @@ for i in range(60):
     video_out.write(img_final_djk)
 video_out and video_out.release()
 
-# plt.imshow(img_final_djk)
-# plt.show()
+# plt.imshow(img_final_djk); plt.show()
 
 print(len(key_f))
