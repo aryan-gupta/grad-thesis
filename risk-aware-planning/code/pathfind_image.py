@@ -131,10 +131,7 @@ gaussian_kernel_size = risk_size + 1
 wall_risk_image = cv2.dilate(green_channel, dilate_kernel, 0)
 wall_risk_image = cv2.GaussianBlur(wall_risk_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
 wall_risk_image = cv2.bitwise_or(wall_risk_image, green_channel)
-plt.imshow(wall_risk_image, cmap='gray')
-plt.show()
-
-
+# plt.imshow(wall_risk_image, cmap='gray'); plt.show()
 
 risk_image = wall_risk_image
 # purple_channel = risk_image
@@ -160,8 +157,7 @@ green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
 # Merge the channels into one RGB image
 processed_img = cv2.merge([red_channel,green_channel,blue_channel])
-plt.imshow(processed_img)
-plt.show()
+# plt.imshow(processed_img); plt.show()
 
 
 ##################################### Basic Image Manip ##############################################
@@ -291,32 +287,31 @@ for y in range(0, dim[0], CELLS_SIZE):
     cell_num_width += 1
 
 # Print the different colors in the image
-print(colors)
-print()
-print()
+# print(colors)
+# print()
+# print()
 
 # Print the max cost
-print(max_cost)
-print()
-print()
+# print(max_cost)
+# print()
+# print()
 
 # Print the cell type map for debugging
-for y in cell_type:
-    print(y)
-print()
-print()
+# for y in cell_type:
+#     print(y)
+# print()
+# print()
 
 # Print the cell cost map for debugging
-for y in cell_cost:
-    for cost in y:
-        print("{:.2f}".format(cost), end=", ")
-    print()
-print()
-print()
+# for y in cell_cost:
+#     for cost in y:
+#         print("{:.2f}".format(cost), end=", ")
+#     print()
+# print()
+# print()
 
 # Show the images with the cell type and cell boundries
-plt.imshow(img_cells)
-plt.show()
+plt.imshow(img_cells); plt.show()
 
 
 ##################################### Convert Cells To Seperate Goals ##############################################
@@ -350,10 +345,11 @@ for y in range(len(cell_type)):
             goals_idx += 1
 
 # Print the converted cell types
-for y in cell_type:
-    print(y)
-print()
-print()
+# for y in cell_type:
+#     print(y)
+# print()
+# print()
+
 
 ##################################### State Diagram Conversion ##############################################
 
