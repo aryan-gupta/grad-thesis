@@ -47,14 +47,9 @@ risk_image = img_process.create_risk_img(green_channel, 16)
 
 ##################################### Basic Image Manip ##############################################
 
-
-# Get the dimensions of the image
-dim = wpcc_img.shape
-print(dim)
-
 # Calculate the number of cells
-cells_height = math.floor(dim[0] / CELLS_SIZE)
-cells_width  = math.floor(dim[1] / CELLS_SIZE)
+cells_height = math.floor(map_h / CELLS_SIZE)
+cells_width  = math.floor(map_w / CELLS_SIZE)
 
 print((cells_height, cells_width))
 
@@ -93,12 +88,12 @@ cell_cost = []
 cell_num_height = 0
 cell_num_width = 0
 max_cost = -1
-for y in range(0, dim[0], CELLS_SIZE):
+for y in range(0, map_h, CELLS_SIZE):
     cell_type.append([])
     cell_cost.append([])
     cell_num_height = 0
 
-    for x in range(0, dim[1], CELLS_SIZE):
+    for x in range(0, map_w, CELLS_SIZE):
         cell_type[cell_num_width].append('C')
         cell_cost[cell_num_width].append(0.0)
 
@@ -107,11 +102,11 @@ for y in range(0, dim[0], CELLS_SIZE):
         cell_sum = 0
         cell_pxl_count = 0
         for u in range(y, y + CELLS_SIZE, 1):
-            if u >= dim[0]:
+            if u >= map_h:
                 break
             
             for v in range(x, x + CELLS_SIZE, 1):
-                if v >= dim[1]:
+                if v >= map_w:
                     break
                 
                 # If the cell is a Goal Cell, give it 0.0 weight
