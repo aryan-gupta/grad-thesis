@@ -70,3 +70,19 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
 
     plt.imshow(ltl_reward_graph); plt.show()
     return ltl_reward_graph
+
+
+# LEGACY CODE BELOW THAT I DONT WANT TO DELETE
+#
+# import spot
+# spot.setup()
+# automata_refuel = "G(XXXr) && Fa && Fb" # XXXXXXXXXXXXXXXXXXX
+# a = spot.translate(automata_refuel)
+
+# # https://stackoverflow.com/a/70007704
+# # https://stackoverflow.com/a/46135174
+# img_png = svg2png(a.show().data, scale=5.0)
+# img = Image.open(BytesIO(img_png))
+# plt.imshow(img); plt.show()
+
+# exit()
