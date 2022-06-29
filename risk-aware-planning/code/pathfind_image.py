@@ -48,41 +48,13 @@ risk_image = img_process.create_risk_img(green_channel, 16)
 
 img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, risk_image, CELLS_SIZE)
 
+cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=["S", "F"])
+
+exit()
 ##################################### Convert Cells To Seperate Goals ##############################################
 
 
-# Convert connected cells with the \p orig_value to \p new_value
-# this allows us to mark areas from Goals to Start and Finish Cells
-def convert_cells(cell_type, y, x, orig_value, new_value):
-    cell_type[y][x] = new_value
-    if y > 0 and cell_type[y - 1][x] == orig_value:
-        convert_cells(cell_type, y - 1, x, orig_value, new_value)
-    if x > 0 and cell_type[y][x - 1] == orig_value:
-        convert_cells(cell_type, y, x - 1, orig_value, new_value)
-    if y < (len(cell_type)-1) and cell_type[y + 1][x] == orig_value:
-        convert_cells(cell_type, y + 1, x, orig_value, new_value)
-    if x < (len(cell_type[y])-1) and cell_type[y][x + 1] == orig_value:
-        convert_cells(cell_type, y, x + 1, orig_value, new_value)
 
-objectives = ["A", "B"]
-objectives_idx = 0
-goals = ["S", "F"]
-goals_idx = 0
-# Convert Goal Cells into start and finish cells
-for y in range(len(cell_type)):
-    for x in range(len(cell_type[y])):
-        if cell_type[y][x] == "O":
-            convert_cells(cell_type, y, x, "O", objectives[objectives_idx])
-            objectives_idx += 1
-        if cell_type[y][x] == "G":
-            convert_cells(cell_type, y, x, "G", goals[goals_idx])
-            goals_idx += 1
-
-# Print the converted cell types
-# for y in cell_type:
-#     print(y)
-# print()
-# print()
 
 
 ##################################### LTL Input ##############################################
