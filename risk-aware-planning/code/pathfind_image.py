@@ -60,43 +60,6 @@ reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
 plt.imshow(reward_current, cmap="gray"); plt.show()
 
 exit()
-##################################### Convert Cells To Seperate Goals ##############################################
-
-
-
-
-
-##################################### LTL Input ##############################################
-
-# Go through each cell and see which ones 
-
-# current_state = start_state
-# for key in ltl_state_diag[current_state].keys():
-#     ap = ltl_state_diag[current_state][key]
-#     ap_nomial = ap.split("&")
-#     print(ap_nomial)
-#     for col in cell_type:
-#         for element in col:
-#             value = True
-#             for nomial in ap_nomial:
-#                 state = nomial[-1]
-#                 if state == element:
-                    
-# create individual reward images
-
-
-
-
-
-
-
-##################################### LTL Dj's Algo
-
-
-
-
-
-exit()
 ##################################### State Diagram Conversion ##############################################
 
 
