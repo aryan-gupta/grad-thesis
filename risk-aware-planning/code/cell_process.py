@@ -185,3 +185,14 @@ def convert_cells(cell_type, objectives, goals):
     # print()
 
     return cell_type
+
+
+def get_cell_types(cell_type):
+    # types = []
+    # for col_num in range(len(cell_type)):
+    #     for row_num in range(len(cell_type[col_num])):
+    #         if cell_type[col_num][row_num] not in types:
+    #             # print(cell_type[col_num][row_num])
+    #             types.append(cell_type[col_num][row_num])
+    types = ["A","B","F","S","R"]
+    return types

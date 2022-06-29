@@ -77,14 +77,7 @@ exit()
 #                 if state == element:
                     
 # create individual reward images
-types = []
-for col_num in range(len(cell_type)):
-    for row_num in range(len(cell_type[col_num])):
-        if cell_type[col_num][row_num] not in types:
-            # print(cell_type[col_num][row_num])
-            types.append(cell_type[col_num][row_num])
-
-types = ["A","B","F","S","R"]
+types = cell_process.get_cell_types(cell_type)
 reward_graphs = {}
 plt.imshow(orig_goal_reward_image); plt.show()
 for goal in types:
