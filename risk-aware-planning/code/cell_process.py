@@ -187,6 +187,23 @@ def convert_cells(cell_type, objectives, goals):
     return cell_type
 
 
+def get_start_finish_locations(cell_type):
+    # find the start node
+    start = ()
+    finish = ()
+    for y in range(len(cell_type)):
+        for x in range(len(cell_type[0])):
+            if cell_type[y][x] == 'S':
+                start = (x, y)
+            if cell_type[y][x] == 'F':
+                finish = (x, y)
+
+    print(start)
+    print(finish)
+
+    return start, finish
+
+
 def get_cell_types(cell_type):
     # types = []
     # for col_num in range(len(cell_type)):

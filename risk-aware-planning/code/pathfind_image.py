@@ -50,6 +50,7 @@ risk_image = img_process.create_risk_img(green_channel, 16)
 img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, risk_image, CELLS_SIZE)
 
 cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=["S", "F"])
+start, finish = cell_process.get_start_finish_locations(cell_type)
 
 ltl_state_diag, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
 
@@ -133,18 +134,7 @@ for row in state_diagram:
 
 print(state_dict)
 
-# find the start node
-start = ()
-finish = ()
-for y in range(len(cell_type)):
-    for x in range(len(cell_type[0])):
-        if cell_type[y][x] == 'S':
-            start = (x, y)
-        if cell_type[y][x] == 'F':
-            finish = (x, y)
 
-print(start)
-print(finish)
 
 ##################################### D's Algo base ##############################################
 
