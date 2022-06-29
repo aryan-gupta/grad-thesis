@@ -53,6 +53,12 @@ cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=[
 
 ltl_state_diag, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
 
+reward_graphs = img_process.get_reward_images(cell_type, orig_goal_reward_image, CELLS_SIZE)
+
+current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, start_state, reward_graphs, (map_h, map_w))
+reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
+plt.imshow(reward_current, cmap="gray"); plt.show()
+
 exit()
 ##################################### Convert Cells To Seperate Goals ##############################################
 
@@ -77,47 +83,11 @@ exit()
 #                 if state == element:
                     
 # create individual reward images
-types = cell_process.get_cell_types(cell_type)
-reward_graphs = {}
-plt.imshow(orig_goal_reward_image); plt.show()
-for goal in types:
-    empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
-    for col_num in range(len(cell_type)):
-        for row_num in range(len(cell_type[col_num])):
-            if goal == cell_type[col_num][row_num]:
-                
-                for px_y in range(col_num * CELLS_SIZE, (col_num+1) * CELLS_SIZE):
-                    for px_x in range(row_num * CELLS_SIZE, (row_num+1) * CELLS_SIZE):
-                        # print(len(cell_type), col_num, px_y, (col_num * CELLS_SIZE), (col_num * (CELLS_SIZE+1) - 1))
-                        # print(len(cell_type[col_num]), row_num, px_x, (row_num * CELLS_SIZE), (row_num * (CELLS_SIZE+1) - 1))
-                        if orig_goal_reward_image[px_y][px_x] > 250:
-                            empty_image[px_y][px_x] = 254
-
-    reward_graphs[goal] = empty_image
-    # print(goal)
-    # plt.imshow(empty_image); plt.show()
 
 
-# get the image for each transition from the current state
-ltl_reward_graph = np.zeros((map_h, map_w, 1), dtype = "uint8")
-current_state = start_state
-for next_state in ltl_state_diag[current_state].keys():
-    this_state_reward_graph = np.full((map_h, map_w, 1), 255, dtype = "uint8")
-    axon = ltl_state_diag[current_state][next_state].upper()
-    nomials = axon.split('&')
-    print(nomials)
-    valid = False
-    for nomial in nomials:
-        if nomial[0] != '!':
-            this_state_reward_graph = cv2.bitwise_and(this_state_reward_graph, reward_graphs[nomial[0]])
-            valid = True
-    # plt.imshow(this_state_reward_graph); plt.show()
-    if valid:
-        ltl_reward_graph = cv2.bitwise_or(ltl_reward_graph, this_state_reward_graph)
 
-plt.imshow(ltl_reward_graph); plt.show()
-reward_current = apply_edge_blur(ltl_reward_graph)
-plt.imshow(reward_current, cmap="gray"); plt.show()
+
+
 
 
 ##################################### LTL Dj's Algo

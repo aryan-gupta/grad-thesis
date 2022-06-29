@@ -2,6 +2,10 @@ import numpy as np
 import cv2
 import math
 
+import cell_process
+import matplotlib.pyplot as plt
+
+
 ##################################### Image Perspective Warp ##############################################
 def perspective_warp(img, points, map_w, map_h):
     # These 4 points are used to perspective correct the image
@@ -132,3 +136,26 @@ def create_risk_img(img, risk_size):
 
     return risk_image
 
+def get_reward_images(cell_type, img, cell_size):
+    # plt.imshow(img); plt.show()
+    map_h, map_w = img.shape
+    reward_graphs = {}
+    types = cell_process.get_cell_types(cell_type)
+    for goal in types:
+        empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
+        for col_num in range(len(cell_type)):
+            for row_num in range(len(cell_type[col_num])):
+                if goal == cell_type[col_num][row_num]:
+                    
+                    for px_y in range(col_num * cell_size, (col_num+1) * cell_size):
+                        for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
+                            # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
+                            # print(len(cell_type[col_num]), row_num, px_x, (row_num * cell_size), (row_num * (cell_size+1) - 1))
+                            if img[px_y][px_x] > 250:
+                                empty_image[px_y][px_x] = 254
+
+        reward_graphs[goal] = empty_image
+        print(goal)
+        plt.imshow(empty_image); plt.show()
+
+    return reward_graphs

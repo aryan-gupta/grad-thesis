@@ -1,4 +1,7 @@
-
+import numpy as np
+import cv2
+import math
+import matplotlib.pyplot as plt
 
 def parse_ltl_hoa(filename):
     # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
@@ -45,3 +48,25 @@ def parse_ltl_hoa(filename):
     # print(final_state)
 
     return ltl_state_diag, start_state, final_state
+
+
+def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
+    # get the image for each transition from the current state
+    map_h, map_w = size
+    ltl_reward_graph = np.zeros((map_h, map_w, 1), dtype = "uint8")
+    for next_state in ltl_state_diag[current_state].keys():
+        this_state_reward_graph = np.full((map_h, map_w, 1), 255, dtype = "uint8")
+        axon = ltl_state_diag[current_state][next_state].upper()
+        nomials = axon.split('&')
+        print(nomials)
+        valid = False
+        for nomial in nomials:
+            if nomial[0] != '!':
+                this_state_reward_graph = cv2.bitwise_and(this_state_reward_graph, reward_graphs[nomial[0]])
+                valid = True
+        # plt.imshow(this_state_reward_graph); plt.show()
+        if valid:
+            ltl_reward_graph = cv2.bitwise_or(ltl_reward_graph, this_state_reward_graph)
+
+    plt.imshow(ltl_reward_graph); plt.show()
+    return ltl_reward_graph
