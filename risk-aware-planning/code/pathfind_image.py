@@ -60,79 +60,13 @@ current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, st
 reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
 plt.imshow(reward_current, cmap="gray"); plt.show()
 
+state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
+cell_process.pretty_print_state_dd(state_diagram, state_dict)
+
 exit()
 ##################################### State Diagram Conversion ##############################################
 
 
-# Convert the cell type map into a state diagram
-# the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
-# if the block is a travelable block and creates a valid edge with weight of 1.0
-# if it is
-state_diagram = []
-state_dict = {}
-for y in range(len(cell_type)):
-    state_diagram.append([])
-    for x in range(len(cell_type[0])):
-        state_diagram[y].append([MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, MAX_WEIGHT, cell_type[y][x], f"{x}-{y}"])
-        state_dict[f"{x}-{y}"] = []
-        if cell_type[y][x] == 'H':
-            continue
-        # check up left
-        # NOT IMPL
-        
-        # check up
-        if y > 0:
-            state_diagram[y][x][0] = cell_cost[y][x]
-            state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
-        # check up right
-        # NOT IMPL
-        
-        # check left
-        if x > 0:
-            state_diagram[y][x][1] = cell_cost[y][x]
-            state_dict[f"{x}-{y}"].append(('l', f"{x-1}-{y}"))
-
-        # check right
-        if x < (len(cell_type[0]) - 1):
-            state_diagram[y][x][2] = cell_cost[y][x]
-            state_dict[f"{x}-{y}"].append(('r', f"{x+1}-{y}"))
-
-        # check down left
-        # NOT IMPL
-
-        # check down
-        if y < (len(cell_type) - 1):
-            state_diagram[y][x][3] = cell_cost[y][x]
-            state_dict[f"{x}-{y}"].append(('d', f"{x}-{y+1}"))
-        # check down right
-        # NOT IMPL
-
-# pretty print state diagram
-for row in state_diagram:
-    # Up arrows
-    for col in row:
-        print(" ", end="") # space for the left arrow
-        weight_single = 9 if col[0] == 1.0 else int(col[0] * 10)
-        print(weight_single, end="")
-        print(" ", end="") # space for the right arrow
-    print()
-    # left/right and center char
-    for col in row:
-        weight_single = 9 if col[1] == 1.0 else int(col[1] * 10)
-        print(weight_single, end="")
-        print(col[4], end="")
-        weight_single = 9 if col[2] == 1.0 else int(col[2] * 10)
-        print(weight_single, end="")
-    print()
-    # Down arrows
-    for col in row:
-        print(" ", end="") # space for the left arrow
-        weight_single = 9 if col[3] == 1.0 else int(col[3] * 10)
-        print(weight_single, end="")
-        print(" ", end="") # space for the right arrow
-    print()
-
-print(state_dict)
 
 
 
