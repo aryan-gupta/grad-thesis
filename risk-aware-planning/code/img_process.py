@@ -76,6 +76,8 @@ def merge_colors(red_channel, green_channel, blue_channel, yellow_channel):
     processed_img = cv2.merge([red_channel,green_channel,blue_channel])
     # plt.imshow(processed_img); plt.show()
 
+    return processed_img
+
 
 def apply_edge_blur(img, reward_size):
     map_h, map_w = img.shape
