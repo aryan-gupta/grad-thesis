@@ -155,7 +155,7 @@ def get_reward_images(cell_type, img, cell_size):
                                 empty_image[px_y][px_x] = 254
 
         reward_graphs[goal] = empty_image
-        print(goal)
-        plt.imshow(empty_image); plt.show()
+        # print(goal)
+        # plt.imshow(empty_image); plt.show()
 
     return reward_graphs
