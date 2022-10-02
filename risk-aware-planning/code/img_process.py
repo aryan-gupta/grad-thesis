@@ -136,6 +136,7 @@ def create_risk_img(img, risk_size):
 
     return risk_image
 
+
 def get_reward_images(cell_type, img, cell_size):
     # plt.imshow(img); plt.show()
     map_h, map_w = img.shape
@@ -156,6 +157,6 @@ def get_reward_images(cell_type, img, cell_size):
 
         reward_graphs[goal] = empty_image
         print(goal)
-        plt.imshow(empty_image); plt.show()
+        # plt.imshow(empty_image); plt.show()
 
     return reward_graphs

@@ -92,12 +92,16 @@ def create_cells(processed_img, risk_image, cell_size):
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'R'
+                    if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
+                        cell_type[cell_num_width][cell_num_height] = 'T'
                     
 
                 # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
                 if cell_known:
                     if cell_type[cell_num_width][cell_num_height] == 'H':
-                        cell_cost[cell_num_width][cell_num_height] = 1.0
+                        cell_cost[cell_num_width][cell_num_height] = float("inf")
                     else:
                         cell_cost[cell_num_width][cell_num_height] = 0.0
                     break
@@ -113,6 +117,10 @@ def create_cells(processed_img, risk_image, cell_size):
                 if cost > max_cost:
                     max_cost = cost
                 # print(f"{x}-{y} :: {cost}")
+                
+                if cell_cost[cell_num_width][cell_num_height] < 0.9999999:
+                    cell_cost[cell_num_width][cell_num_height] = 0.9999999
+                
                 if cost == 0:
                     img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (50,50,50), 1)
                 else:
@@ -122,23 +130,23 @@ def create_cells(processed_img, risk_image, cell_size):
             cell_num_height += 1
         cell_num_width += 1
 
-    # Print the different colors in the image
+    # # Print the different colors in the image
     # print(colors)
     # print()
     # print()
 
-    # Print the max cost
+    # # Print the max cost
     # print(max_cost)
     # print()
     # print()
 
-    # Print the cell type map for debugging
+    # # Print the cell type map for debugging
     # for y in cell_type:
     #     print(y)
     # print()
     # print()
 
-    # Print the cell cost map for debugging
+    # # Print the cell cost map for debugging
     # for y in cell_cost:
     #     for cost in y:
     #         print("{:.2f}".format(cost), end=", ")
@@ -197,9 +205,11 @@ def get_start_finish_locations(cell_type):
                 start = (x, y)
             if cell_type[y][x] == 'F':
                 finish = (x, y)
+            if cell_type[y][x] == 'T':
+                finish = (x, y)
 
-    print(start)
-    print(finish)
+    # print(start)
+    # print(finish)
 
     return start, finish
 
@@ -268,22 +278,22 @@ def pretty_print_state_dd(state_diagram, state_dict):
         # Up arrows
         for col in row:
             print(" ", end="") # space for the left arrow
-            weight_single = 9 if col[0] == 1.0 else int(col[0] * 10)
+            weight_single = 9 if col[0] >= 1.0 else int(col[0] * 10)
             print(weight_single, end="")
             print(" ", end="") # space for the right arrow
         print()
         # left/right and center char
         for col in row:
-            weight_single = 9 if col[1] == 1.0 else int(col[1] * 10)
+            weight_single = 9 if col[1] >= 1.0 else int(col[1] * 10)
             print(weight_single, end="")
             print(col[4], end="")
-            weight_single = 9 if col[2] == 1.0 else int(col[2] * 10)
+            weight_single = 9 if col[2] >= 1.0 else int(col[2] * 10)
             print(weight_single, end="")
         print()
         # Down arrows
         for col in row:
             print(" ", end="") # space for the left arrow
-            weight_single = 9 if col[3] == 1.0 else int(col[3] * 10)
+            weight_single = 9 if col[3] >= 1.0 else int(col[3] * 10)
             print(weight_single, end="")
             print(" ", end="") # space for the right arrow
         print()

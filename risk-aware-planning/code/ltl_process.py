@@ -47,7 +47,7 @@ def parse_ltl_hoa(filename):
     # print(start_state)
     # print(final_state)
 
-    return ltl_state_diag, start_state, final_state
+    return ltl_state_diag, aps, start_state, final_state
 
 
 def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
@@ -68,9 +68,30 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
         if valid:
             ltl_reward_graph = cv2.bitwise_or(ltl_reward_graph, this_state_reward_graph)
 
-    plt.imshow(ltl_reward_graph); plt.show()
+    # plt.imshow(ltl_reward_graph); plt.show()
     return ltl_reward_graph
 
+
+def get_next_state(ltl_state_diag, cell_type, current_ltl_state, current_phys_state):
+    next_state = None
+    for next_state in ltl_state_diag[current_ltl_state]:
+        current_cell_type = cell_type[current_phys_state[1]][current_phys_state[0]]
+        axon = ltl_state_diag[current_ltl_state][next_state].upper()
+        nomials = axon.split('&')
+
+        valid = True
+        for nomial in nomials:
+            if nomial[0] == '!':
+                if nomial[1] in current_cell_type:
+                    valid = False
+            else:
+                if nomial[0] not in current_cell_type:
+                    valid = False
+        # plt.imshow(this_state_reward_graph); plt.show()
+        if valid:
+            break
+
+    return next_state
 
 # LEGACY CODE BELOW THAT I DONT WANT TO DELETE
 #
