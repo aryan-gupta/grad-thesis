@@ -92,6 +92,10 @@ def create_cells(processed_img, risk_image, cell_size):
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'R'
+                    if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
+                        cell_type[cell_num_width][cell_num_height] = 'T'
                     
 
                 # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
@@ -196,6 +200,8 @@ def get_start_finish_locations(cell_type):
             if cell_type[y][x] == 'S':
                 start = (x, y)
             if cell_type[y][x] == 'F':
+                finish = (x, y)
+            if cell_type[y][x] == 'T':
                 finish = (x, y)
 
     print(start)

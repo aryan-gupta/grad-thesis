@@ -27,11 +27,12 @@ wpcc_img = img_process.perspective_warp(img, points, map_w, map_h)
 (red_channel, green_channel, blue_channel, yellow_channel) = img_process.color_segment_image(wpcc_img)
 
 processed_img = img_process.merge_colors(red_channel, green_channel, blue_channel, yellow_channel)
+plt.imshow(processed_img); plt.show()
 
 orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
 goal_reward_image = img_process.apply_edge_blur(orig_goal_reward_image, 128)
 
-risk_image = img_process.create_risk_img(green_channel, 16)
+risk_image = img_process.create_risk_img(green_channel, 64)
 
 img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, risk_image, CELLS_SIZE)
 
@@ -46,10 +47,37 @@ current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, st
 reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
 plt.imshow(reward_current, cmap="gray"); plt.show()
 
-state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
-cell_process.pretty_print_state_dd(state_diagram, state_dict)
+risk_reward_image = cv2.merge([current_state_reward_graph, risk_image, current_state_reward_graph])
+plt.imshow(current_state_reward_graph, cmap="gray"); plt.show()
+plt.imshow(risk_image, cmap="gray"); plt.show()
+plt.imshow(risk_reward_image); plt.show()
 
-exit()
+
+# Convert risk_reward_image into cells
+risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE)
+plt.imshow(risk_reward_img_cells); plt.show()
+# Print the cell type map for debugging
+for y in risk_reward_cell_type:
+    print(y)
+print()
+print()
+
+# Print the cell cost map for debugging
+for y in cell_cost:
+    for cost in y:
+        print("{:.2f}".format(cost), end=", ")
+    print()
+print()
+print()
+
+state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, MAX_WEIGHT)
+cell_process.pretty_print_state_dd(state_diagram, state_dict)
+_, finish = cell_process.get_start_finish_locations(risk_reward_cell_type)
+
+# state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
+# cell_process.pretty_print_state_dd(state_diagram, state_dict)
+
+# exit()
 ##################################### State Diagram Conversion ##############################################
 
 
@@ -160,7 +188,9 @@ video_out and video_out.release()
 print(shortest_path)
 
 # draw the shortest path
-img_plain_djk = img_cells.copy()
+empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
+img_plain_djk = risk_reward_img_cells.copy()
+img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs['S']]))
 for i in range(len(shortest_path)):
     half_cell = math.ceil((CELLS_SIZE/2))
     
