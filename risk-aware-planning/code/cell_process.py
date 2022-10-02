@@ -24,7 +24,7 @@ def make_interpolater(left_min, left_max, right_min, right_max):
     return interp_fn
 
 
-def create_cells(processed_img, risk_image, cell_size):
+def create_cells(processed_img, risk_image, cell_size, show=False):
     # get image size
     map_h, map_w, _ = processed_img.shape
 
@@ -130,32 +130,33 @@ def create_cells(processed_img, risk_image, cell_size):
             cell_num_height += 1
         cell_num_width += 1
 
-    # # Print the different colors in the image
-    # print(colors)
-    # print()
-    # print()
+    if show:
+        # Print the different colors in the image
+        print(colors)
+        print()
+        print()
 
-    # # Print the max cost
-    # print(max_cost)
-    # print()
-    # print()
+        # Print the max cost
+        print(max_cost)
+        print()
+        print()
 
-    # # Print the cell type map for debugging
-    # for y in cell_type:
-    #     print(y)
-    # print()
-    # print()
+        # Print the cell type map for debugging
+        for y in cell_type:
+            print(y)
+        print()
+        print()
 
-    # # Print the cell cost map for debugging
-    # for y in cell_cost:
-    #     for cost in y:
-    #         print("{:.2f}".format(cost), end=", ")
-    #     print()
-    # print()
-    # print()
+        # Print the cell cost map for debugging
+        for y in cell_cost:
+            for cost in y:
+                print("{:.2f}".format(cost), end=", ")
+            print()
+        print()
+        print()
 
-    # Show the images with the cell type and cell boundries
-    # plt.imshow(img_cells); plt.show()
+        # Show the images with the cell type and cell boundries
+        plt.imshow(img_cells); plt.show()
 
     return img_cells, cell_type, cell_cost 
 
@@ -229,7 +230,7 @@ def get_cell_types(cell_type):
 # the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
 # if the block is a travelable block and creates a valid edge with weight of 1.0
 # if it is
-def cells_to_state_diagram(cell_type, cell_cost, max_weight):
+def cells_to_state_diagram(cell_type, cell_cost, max_weight, show=False):
     state_diagram = []
     state_dict = {}
     for y in range(len(cell_type)):
@@ -269,6 +270,8 @@ def cells_to_state_diagram(cell_type, cell_cost, max_weight):
             # check down right
             # NOT IMPL
 
+    if show: cell_process.pretty_print_state_dd(state_diagram, state_dict)
+    
     return state_diagram, state_dict
 
 
