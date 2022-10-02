@@ -230,13 +230,13 @@ def get_cell_types(cell_type):
 # the algo pretty much checks the 4 sides (North, South, Eeast, West) to see
 # if the block is a travelable block and creates a valid edge with weight of 1.0
 # if it is
-def cells_to_state_diagram(cell_type, cell_cost, max_weight, show=False):
+def cells_to_state_diagram(cell_type, cell_cost, show=False):
     state_diagram = []
     state_dict = {}
     for y in range(len(cell_type)):
         state_diagram.append([])
         for x in range(len(cell_type[0])):
-            state_diagram[y].append([max_weight, max_weight, max_weight, max_weight, cell_type[y][x], f"{x}-{y}"])
+            state_diagram[y].append([float("inf"), float("inf"), float("inf"), float("inf"), cell_type[y][x], f"{x}-{y}"])
             state_dict[f"{x}-{y}"] = []
             if cell_type[y][x] == 'H':
                 continue

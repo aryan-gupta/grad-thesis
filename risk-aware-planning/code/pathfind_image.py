@@ -12,7 +12,6 @@ import dijkstra
 
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
-MAX_WEIGHT = float("inf")
 
 # final image dimensions (must be divisiable by CELL_SIZE)
 map_h = 640
@@ -74,12 +73,12 @@ while current_ltl_state != final_state:
     risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE, show=False)
 
     # convert cells to state diagram so we can apply dj's algo to it
-    state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, MAX_WEIGHT, show=False)
+    state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
     
     # get start and finish locations for this ltl node
     _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type)
 
-    # state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
+    # state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost)
     # cell_process.pretty_print_state_dd(state_diagram, state_dict)
 
     # apply dj's algo
