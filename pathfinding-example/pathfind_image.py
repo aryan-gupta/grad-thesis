@@ -5,7 +5,7 @@ import math
 import bisect
 
 CELLS_SIZE = 31 # 32 pixels
-MAX_WEIGHT = 999999999
+MAX_WEIGHT = 99
 
 img = cv2.imread('./sample.png', cv2.IMREAD_COLOR) 
 
@@ -16,6 +16,8 @@ cells_height = math.floor(dim[0] / CELLS_SIZE)
 cells_width  = math.floor(dim[1] / CELLS_SIZE)
 
 print((cells_height, cells_width))
+
+# convert image into pixel map
 
 colors = []
 
@@ -169,18 +171,23 @@ queue.append((0,start))
 distances[start[1]][start[0]] = 0
 
 while len(queue) != 0:
+    # get first element
     current = queue[0]
     queue = queue[1:]
 
-    visited_nodes[y][x] = True
-
+    # unpack element
     x = current[1][0]
     y = current[1][1]
     dist = current[0]
 
+    # if weve already been to this node, skip it
+    if (visited_nodes[y][x]): continue
+    # mark node as visited
+    visited_nodes[y][x] = True
+    # get directions we can travel
     valid_paths = state_diagram[y][x]
 
-
+    # check each direction we can travel
     if valid_paths[0] == 1 and not visited_nodes[y-1][x]: # UP
         old_distance = distances[y - 1][x]
         new_distance = dist + state_diagram[y][x][0]
@@ -193,26 +200,53 @@ while len(queue) != 0:
         new_distance = dist + state_diagram[y][x][1]
         if new_distance <= old_distance:
             distances[y][x - 1] = new_distance
-            prev[y - 1][x] = (x,y)
+            prev[y][x - 1] = (x,y)
         bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
     if valid_paths[2] == 1 and not visited_nodes[y][x+1]: # RIGHT
         old_distance = distances[y][x + 1]
         new_distance = dist + state_diagram[y][x][2]
         if new_distance <= old_distance:
             distances[y][x + 1] = new_distance
-            prev[y - 1][x] = (x,y)
+            prev[y][x + 1] = (x,y)
         bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
     if valid_paths[3] == 1 and not visited_nodes[y+1][x]: # DOWN
         old_distance = distances[y + 1][x]
         new_distance = dist + state_diagram[y][x][3]
         if new_distance <= old_distance:
             distances[y + 1][x] = new_distance
-            prev[y - 1][x] = (x,y)
+            prev[y + 1][x] = (x,y)
         bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
 
 for y in distances:
     print(y)
 
+for y in prev:
+    print(y)
 
-plt.imshow(img2show)
+# calculate the shortest path
+shortest_path = []
+current_node = finish
+while current_node != start:
+    shortest_path.append(current_node)
+    current_node = prev[current_node[1]][current_node[0]]
+shortest_path.append(start)
+    
+print(shortest_path)
+
+# draw the shortest path
+for i in range(len(shortest_path)):
+    half_cell = math.ceil((CELLS_SIZE/2))
+    
+    if shortest_path[i] == start: break
+    
+    node = shortest_path[i]
+    next_node = shortest_path[i+1]
+    
+    center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
+    next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
+    
+    path_image = cv2.line(img2show, center, next_center, (255,0,0), 2)
+
+
+plt.imshow(path_image)
 plt.show()
