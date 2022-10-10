@@ -155,7 +155,7 @@ def create_cells(processed_img, risk_image, cell_size):
     # print()
 
     # Show the images with the cell type and cell boundries
-    # plt.imshow(img_cells); plt.show()
+    plt.imshow(img_cells); plt.show()
 
     return img_cells, cell_type, cell_cost 
 

@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import math
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def parse_ltl_hoa(filename):
     # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
@@ -43,9 +43,9 @@ def parse_ltl_hoa(filename):
         ltl_state_diag[state] = next_state_dict
         next_state_dict = {}
 
-    # print(ltl_state_diag)
-    # print(start_state)
-    # print(final_state)
+    print(ltl_state_diag)
+    print(start_state)
+    print(final_state)
 
     return ltl_state_diag, aps, start_state, final_state
 

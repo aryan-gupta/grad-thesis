@@ -21,6 +21,19 @@ import bisect
 
 # exit()
 
+# spot.setup()
+# automata_refuel = "G(XXXr) && Fa && Fb" # XXXXXXXXXXXXXXXXXXX
+# a = spot.translate(automata_refuel)
+
+# # https://stackoverflow.com/a/70007704
+# # https://stackoverflow.com/a/46135174
+# img_png = svg2png(a.show().data, scale=5.0)
+# img = Image.open(BytesIO(img_png))
+# plt.imshow(img)
+# plt.show()
+
+# exit()
+
 # GLOBAL VARS
 CELLS_SIZE = 32 # 32 pixels
 MAX_WEIGHT = 999
