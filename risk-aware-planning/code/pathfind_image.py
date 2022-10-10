@@ -138,6 +138,8 @@ while current_ltl_state != final_state:
 plt.imshow(dj_path_image); plt.show()
 
 
+shortest_path = dijkstra.dj_algo(img_cells, cell_type, (start, finish), state_diagram, CELLS_SIZE)
+_ = dijkstra.draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, (start, finish), CELLS_SIZE)
 exit()
 
 ##################################### LTL Formula Conversion ##############################################
