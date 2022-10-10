@@ -27,7 +27,7 @@ wpcc_img = img_process.perspective_warp(img, points, map_w, map_h)
 (red_channel, green_channel, blue_channel, yellow_channel) = img_process.color_segment_image(wpcc_img)
 
 processed_img = img_process.merge_colors(red_channel, green_channel, blue_channel, yellow_channel)
-plt.imshow(processed_img); plt.show()
+# plt.imshow(processed_img); plt.show()
 
 orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
 goal_reward_image = img_process.apply_edge_blur(orig_goal_reward_image, 128)
@@ -44,7 +44,7 @@ reward_graphs = img_process.get_reward_images(cell_type, orig_goal_reward_image,
 ltl_state_diag, aps, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
 current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, start_state, reward_graphs, (map_h, map_w))
 reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
-plt.imshow(reward_current, cmap="gray"); plt.show()
+# plt.imshow(reward_current, cmap="gray"); plt.show()
 
 risk_reward_image = cv2.merge([current_state_reward_graph, risk_image, current_state_reward_graph])
 plt.imshow(current_state_reward_graph, cmap="gray"); plt.show()
