@@ -8,10 +8,10 @@ import bisect
 import img_process
 import cell_process
 import ltl_process
-
+import dijkstra
 
 # GLOBAL VARS
-CELLS_SIZE = 4 # 32 pixels
+CELLS_SIZE = 16 # 32 pixels
 MAX_WEIGHT = 1.0
 
 map_h = 640
@@ -27,156 +27,65 @@ wpcc_img = img_process.perspective_warp(img, points, map_w, map_h)
 (red_channel, green_channel, blue_channel, yellow_channel) = img_process.color_segment_image(wpcc_img)
 
 processed_img = img_process.merge_colors(red_channel, green_channel, blue_channel, yellow_channel)
+# plt.imshow(processed_img); plt.show()
 
 orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
 goal_reward_image = img_process.apply_edge_blur(orig_goal_reward_image, 128)
 
-risk_image = img_process.create_risk_img(green_channel, 16)
+risk_image = img_process.create_risk_img(green_channel, 64)
 
 img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, risk_image, CELLS_SIZE)
 
 cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=["S", "F"])
 start, finish = cell_process.get_start_finish_locations(cell_type)
 
-ltl_state_diag, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
-
 reward_graphs = img_process.get_reward_images(cell_type, orig_goal_reward_image, CELLS_SIZE)
+
+ltl_state_diag, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
 
 current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, start_state, reward_graphs, (map_h, map_w))
 reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
-plt.imshow(reward_current, cmap="gray"); plt.show()
+# plt.imshow(reward_current, cmap="gray"); plt.show()
 
-state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
-cell_process.pretty_print_state_dd(state_diagram, state_dict)
-
-exit()
-##################################### State Diagram Conversion ##############################################
-
+risk_reward_image = cv2.merge([current_state_reward_graph, risk_image, current_state_reward_graph])
+# plt.imshow(current_state_reward_graph, cmap="gray"); plt.show()
+# plt.imshow(risk_image, cmap="gray"); plt.show()
+# plt.imshow(risk_reward_image); plt.show()
 
 
-
-
-##################################### D's Algo base ##############################################
-
-# Start creating a video of the D's algo in working
-visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
-video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
-
-# Dijkstras algo
-# When I wrote this code, only god and I knew how it works. Now, only god knows
-queue = [] # queue is an array of (weight, (x, y))
-visited_nodes = [ [False] * len(cell_type[0]) for _ in range(len(cell_type))] # create bool false array same size as state_diagram
-distances = [ [float("inf")] * len(cell_type[0]) for _ in range(len(cell_type))]
-prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
-
-queue.append((0,start))
-distances[start[1]][start[0]] = 0
-
-while len(queue) != 0:
-    # get first element
-    current = queue[0]
-    queue = queue[1:]
-
-    # unpack element
-    x = current[1][0]
-    y = current[1][1]
-    dist = current[0]
-
-    # if weve already been to this node, skip it
-    if (visited_nodes[y][x]): continue
-    # mark node as visited
-    visited_nodes[y][x] = True
-
-    half_cell = math.ceil((CELLS_SIZE/2))
-    center = (x*CELLS_SIZE+half_cell, y*CELLS_SIZE+half_cell)
-    visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 1)
-    # plt.imshow(visited_image)
-    # plt.show()
-
-    # write the current state as an image into the video
-    video_out.write(visited_image)
-    visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 1)
-
-    # check each direction we can travel
-    if y > 0: # UP
-        old_distance = distances[y - 1][x]
-        new_distance = dist + state_diagram[y][x][0]
-        if new_distance < old_distance:
-            distances[y - 1][x] = new_distance
-            prev[y - 1][x] = (x,y)
-            bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
-    if x > 0: # LEFT
-        old_distance = distances[y][x - 1]
-        new_distance = dist + state_diagram[y][x][1]
-        if new_distance < old_distance:
-            distances[y][x - 1] = new_distance
-            prev[y][x - 1] = (x,y)
-            bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
-    if x < (len(cell_type[0]) - 1): # RIGHT
-        old_distance = distances[y][x + 1]
-        new_distance = dist + state_diagram[y][x][2]
-        if new_distance < old_distance:
-            distances[y][x + 1] = new_distance
-            prev[y][x + 1] = (x,y)
-            bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
-    if y < (len(cell_type) - 1): # DOWN
-        old_distance = distances[y + 1][x]
-        new_distance = dist + state_diagram[y][x][3]
-        if new_distance < old_distance:
-            distances[y + 1][x] = new_distance
-            prev[y + 1][x] = (x,y)
-            bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
-
-# Print the distances map
-for y in distances:
-    for dist in y:
-        print("{:.2f}".format(dist), end=", ")
-    print()
-
-# Print the previous cell map
-for y in prev:
+# Convert risk_reward_image into cells
+risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE)
+# plt.imshow(risk_reward_img_cells); plt.show()
+# Print the cell type map for debugging
+for y in risk_reward_cell_type:
     print(y)
+print()
+print()
 
-# calculate the shortest path and create a video while 
-shortest_path = []
-current_node = finish
-while current_node != start:
-    # write the current back trace state into the video
-    half_cell = math.ceil((CELLS_SIZE/2))
-    center = (current_node[0]*CELLS_SIZE+half_cell, current_node[1]*CELLS_SIZE+half_cell)
-    visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 1)
-    for i in range(3):
-        video_out.write(visited_image)
+# Print the cell cost map for debugging
+for y in cell_cost:
+    for cost in y:
+        print("{:.2f}".format(cost), end=", ")
+    print()
+print()
+print()
 
-    shortest_path.append(current_node)
-    current_node = prev[current_node[1]][current_node[0]]
-shortest_path.append(start)
+state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, MAX_WEIGHT)
+cell_process.pretty_print_state_dd(state_diagram, state_dict)
+_, finish = cell_process.get_start_finish_locations(risk_reward_cell_type)
 
-# pause for two seconds on the final frame
-for i in range(60):
-    video_out.write(visited_image)
-video_out and video_out.release()
+# state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
+# cell_process.pretty_print_state_dd(state_diagram, state_dict)
 
-print(shortest_path)
+shortest_path = dijkstra.dj_algo(img_cells, cell_type, (start, finish), state_diagram, CELLS_SIZE)
+_ = dijkstra.draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, (start, finish), CELLS_SIZE)
 
-# draw the shortest path
-img_plain_djk = img_cells.copy()
-for i in range(len(shortest_path)):
-    half_cell = math.ceil((CELLS_SIZE/2))
-    
-    if shortest_path[i] == start: break
-    
-    node = shortest_path[i]
-    next_node = shortest_path[i+1]
-    
-    center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
-    next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-    
-    img_plain_djk = cv2.line(img_plain_djk, center, next_center, (0,255,255), 1)
+print(finish)
+print(start_state)
+print(cell_type[finish[1]][finish[0]])
 
-# Show the path found image from D's algo
-plt.imshow(img_plain_djk)
-plt.show()
+start = finish
+finish = get_next_state
 
 exit()
 

@@ -68,7 +68,7 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
         if valid:
             ltl_reward_graph = cv2.bitwise_or(ltl_reward_graph, this_state_reward_graph)
 
-    plt.imshow(ltl_reward_graph); plt.show()
+    # plt.imshow(ltl_reward_graph); plt.show()
     return ltl_reward_graph
 
 
