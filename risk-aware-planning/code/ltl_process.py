@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import math
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def parse_ltl_hoa(filename):
     # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
@@ -43,9 +43,9 @@ def parse_ltl_hoa(filename):
         ltl_state_diag[state] = next_state_dict
         next_state_dict = {}
 
-    # print(ltl_state_diag)
-    # print(start_state)
-    # print(final_state)
+    print(ltl_state_diag)
+    print(start_state)
+    print(final_state)
 
     return ltl_state_diag, start_state, final_state
 
@@ -68,7 +68,7 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
         if valid:
             ltl_reward_graph = cv2.bitwise_or(ltl_reward_graph, this_state_reward_graph)
 
-    plt.imshow(ltl_reward_graph); plt.show()
+    # plt.imshow(ltl_reward_graph); plt.show()
     return ltl_reward_graph
 
 
