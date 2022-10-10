@@ -42,6 +42,42 @@ start, finish = cell_process.get_start_finish_locations(cell_type)
 reward_graphs = img_process.get_reward_images(cell_type, orig_goal_reward_image, CELLS_SIZE)
 
 ltl_state_diag, aps, start_state, final_state = ltl_process.parse_ltl_hoa("ltl.hoa.txt")
+current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, start_state, reward_graphs, (map_h, map_w))
+reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128)
+plt.imshow(reward_current, cmap="gray"); plt.show()
+
+risk_reward_image = cv2.merge([current_state_reward_graph, risk_image, current_state_reward_graph])
+plt.imshow(current_state_reward_graph, cmap="gray"); plt.show()
+plt.imshow(risk_image, cmap="gray"); plt.show()
+plt.imshow(risk_reward_image); plt.show()
+
+
+# Convert risk_reward_image into cells
+risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE)
+plt.imshow(risk_reward_img_cells); plt.show()
+# Print the cell type map for debugging
+for y in risk_reward_cell_type:
+    print(y)
+print()
+print()
+
+# Print the cell cost map for debugging
+for y in cell_cost:
+    for cost in y:
+        print("{:.2f}".format(cost), end=", ")
+    print()
+print()
+print()
+
+state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, MAX_WEIGHT)
+cell_process.pretty_print_state_dd(state_diagram, state_dict)
+_, finish = cell_process.get_start_finish_locations(risk_reward_cell_type)
+
+# state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
+# cell_process.pretty_print_state_dd(state_diagram, state_dict)
+
+# exit()
+##################################### State Diagram Conversion ##############################################
 
 
 current_ltl_state = start_state
