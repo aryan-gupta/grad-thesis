@@ -153,3 +153,9 @@ def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
         next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
         
         img_cells = cv2.line(img_cells, center, next_center, (0,255,255), 1)
+
+
+def get_next_cell_shortest_path(shortest_path, dj_path_idx, current_phys_loc):
+    if current_phys_loc == shortest_path[0]:
+        return (dj_path_idx, shortest_path[dj_path_idx])
+    return (dj_path_idx+1, shortest_path[dj_path_idx+1])

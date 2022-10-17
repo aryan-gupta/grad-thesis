@@ -37,6 +37,7 @@ orig_goal_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_chan
 goal_reward_image = img_process.apply_edge_blur(orig_goal_reward_image, 128, show=False)
 
 # create image of risk gradient
+raw_risk_image = green_channel
 risk_image = img_process.create_risk_img(green_channel, 64, show=False)
 
 # create cells based off of map and risk and assign costs to cells
@@ -61,6 +62,7 @@ next_phys_loc = finish
 dj_path_image = img_cells.copy()
 
 while current_ltl_state != final_state:
+    # == do a preliminary dj's algo
     # get reward map of current LTL state
     current_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
     reward_current = img_process.apply_edge_blur(current_state_reward_graph, 128, show=False)
@@ -85,6 +87,26 @@ while current_ltl_state != final_state:
     shortest_path = dijkstra.dj_algo(img_cells, cell_type, (start_phys_loc, next_phys_loc), state_diagram, CELLS_SIZE)
     _ = dijkstra.draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, (start_phys_loc, next_phys_loc), CELLS_SIZE)
     dijkstra.draw_path_global(shortest_path, dj_path_image, (start_phys_loc, next_phys_loc), CELLS_SIZE)
+
+
+    # == do our mini dj's algo 
+    # create copy of the current risk map
+    risk_image_local = risk_image.copy()
+    current_phys_loc = start_phys_loc
+    dj_path_idx = 0
+
+    while current_phys_loc != next_phys_loc:
+        # update risk map everytime we move
+        risk_image_local = img_process.update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE)
+        half_cell = math.ceil((CELLS_SIZE/2))
+        center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
+        risk_image_local = cv2.circle(risk_image_local, center, 4, (255, 255, 255), 1)
+        dj_path_idx, current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, dj_path_idx, current_phys_loc)
+        plt.imshow(risk_image_local); plt.show()
+
+        # reapply DJ's algo using new start key
+
+
 
     # find next state that we should go to
     next_ltl_state = ltl_process.get_next_state(ltl_state_diag, cell_type, current_ltl_state, next_phys_loc)

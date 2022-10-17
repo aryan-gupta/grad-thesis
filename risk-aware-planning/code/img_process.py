@@ -168,3 +168,63 @@ def get_reward_images(cell_type, img, cell_size, show=False):
         if show: plt.imshow(empty_image); plt.show()
 
     return reward_graphs
+
+
+def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELL_SIZE, op):
+    pass
+
+def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE):
+    map_h, map_w = risk_image_local.shape
+    
+    # +x+y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] + dy) * CELLS_SIZE
+            x = (current_phys_loc[0] + dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+
+    # -x+y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] + dy) * CELLS_SIZE
+            x = (current_phys_loc[0] - dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+    # +x-y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] - dy) * CELLS_SIZE
+            x = (current_phys_loc[0] + dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+    # -x-y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] - dy) * CELLS_SIZE
+            x = (current_phys_loc[0] - dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+
+    return risk_image_local
+    
