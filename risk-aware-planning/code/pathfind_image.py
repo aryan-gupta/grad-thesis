@@ -113,7 +113,7 @@ while current_ltl_state != final_state:
 
     # convert cells to state diagram so we can apply dj's algo to it
     state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
-    
+
     # get start and finish locations for this ltl node
     _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type)
 
@@ -126,7 +126,7 @@ while current_ltl_state != final_state:
     dijkstra.draw_path_global(shortest_path, dj_path_image, (start_phys_loc, next_phys_loc), CELLS_SIZE)
 
 
-    # == do our mini dj's algo 
+    # == do our mini dj's algo
     # create copy of the current risk map
     risk_image_local = risk_image.copy()
     current_phys_loc = start_phys_loc

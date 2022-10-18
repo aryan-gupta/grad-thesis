@@ -30,7 +30,7 @@ def parse_ltl_hoa(filename):
                 next_state_dict = {}
                 if len(line.split(" ")) >= 3 and line.split(" ")[2] == "{0}":
                     final_state = state
-            
+
             if line.startswith("["):
                 splits = line.split(" ", maxsplit=1)
                 next_state = int(splits[1])

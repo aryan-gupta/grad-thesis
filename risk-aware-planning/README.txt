@@ -15,7 +15,7 @@ Overview:
  - parse LTL file
 
  - Convert LTL automata into reward automata
- - show current 
+ - show current
 
 
 

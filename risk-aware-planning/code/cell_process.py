@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 # This function returns a function that will map the image pixel values (in the
 # range of 0 to 255) to another set of numbers in the range of 0.0 to 1.0
 # it will make calculating Dj's algo alot easier
-def make_interpolater(left_min, left_max, right_min, right_max): 
-    # Figure out how 'wide' each range is  
-    leftSpan = left_max - left_min  
-    rightSpan = right_max - right_min  
+def make_interpolater(left_min, left_max, right_min, right_max):
+    # Figure out how 'wide' each range is
+    leftSpan = left_max - left_min
+    rightSpan = right_max - right_min
 
-    # Compute the scale factor between left and right values 
-    scaleFactor = float(rightSpan) / float(leftSpan) 
+    # Compute the scale factor between left and right values
+    scaleFactor = float(rightSpan) / float(leftSpan)
 
     # create interpolation function using pre-calculated scaleFactor
     def interp_fn(value):
@@ -36,7 +36,7 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
 
     # Variable to store the unique colors in the image
     colors = []
-    
+
     # Go through each cell and each pixel of the cell to decide what type of cell it is
     # use this info to construct a cell type map of the area
     cell_type = []
@@ -60,21 +60,21 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
             for u in range(y, y + cell_size, 1):
                 if u >= map_h:
                     break
-                
+
                 for v in range(x, x + cell_size, 1):
                     if v >= map_w:
                         break
-                    
+
                     # If the cell is a Goal Cell, give it 0.0 weight
                     # If the cell is a Objective Cell, give it a 0.0 weight
                     # if the cell is a Hazard Cell, give it the same weight as the average value of the cell
 
                     cell_sum += risk_image[u,v]
-                        
+
                     # keep a record of all the different colors
                     if tuple(processed_img[u,v]) not in colors:
                         colors.append(tuple(processed_img[u,v]))
-                    
+
                     # mark the cells if its corosponding color exists in the cell
                     if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                         cell_known = True
@@ -87,7 +87,7 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                     if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,255,0), 1)
-                        cell_type[cell_num_width][cell_num_height] = 'O'        
+                        cell_type[cell_num_width][cell_num_height] = 'O'
                     if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
@@ -96,7 +96,7 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'T'
-                    
+
 
                 # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
                 if cell_known:
@@ -158,7 +158,7 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
         # Show the images with the cell type and cell boundries
         plt.imshow(img_cells); plt.show()
 
-    return img_cells, cell_type, cell_cost 
+    return img_cells, cell_type, cell_cost
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
@@ -242,14 +242,14 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
                 continue
             # check up left
             # NOT IMPL
-            
+
             # check up
             if y > 0:
                 state_diagram[y][x][0] = cell_cost[y][x]
                 state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
             # check up right
             # NOT IMPL
-            
+
             # check left
             if x > 0:
                 state_diagram[y][x][1] = cell_cost[y][x]
@@ -271,7 +271,7 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
             # NOT IMPL
 
     if show: cell_process.pretty_print_state_dd(state_diagram, state_dict)
-    
+
     return state_diagram, state_dict
 
 
@@ -302,5 +302,3 @@ def pretty_print_state_dd(state_diagram, state_dict):
         print()
 
     print(state_dict)
-
-

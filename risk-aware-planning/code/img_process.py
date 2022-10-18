@@ -51,7 +51,7 @@ def color_segment_image(img, show=False):
     # that are slightly red, we then use the saturation channel to remove the slightly red gray values and only
     # keep the deep red colors
     # red = (hue_red_low or hue_red_high) and sat_high
-    # the and distributes and creates 
+    # the and distributes and creates
     # red = (hue_red_low and sat_high) or (hue_red_high and sat_high)
     # This same can be used for all the colors that we want to extract
     red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
@@ -72,7 +72,7 @@ def color_segment_image(img, show=False):
 def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False):
 
     # We want to convert the different color channels into an RGB image and since yellow is Red and Green
-    # we want add the yellow channel into the red and green channels 
+    # we want add the yellow channel into the red and green channels
     red_channel = cv2.bitwise_or(red_channel, yellow_channel)
     green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
@@ -94,7 +94,7 @@ def apply_edge_blur(img, reward_size, show=False):
     # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
 
     # To do a guassian distribution around the edges, we first dialate the mask the same amount
-    # as much as we want to do the gaussian blur 
+    # as much as we want to do the gaussian blur
     reward_size = 128
     dilate_kernel = np.ones((reward_size,reward_size), np.uint8)
     gaussian_kernel_size = reward_size + 1
@@ -118,7 +118,7 @@ def apply_edge_blur(img, reward_size, show=False):
         mask = cv2.GaussianBlur(mask, (gaussian_kernel_size, gaussian_kernel_size), reward_size)
         new_img = cv2.scaleAdd(mask, (1/num_cnt), new_img)
         # plt.imshow(new_img, cmap='gray'); plt.show()
-    
+
     img = cv2.normalize(new_img, None, 255, 0, norm_type = cv2.NORM_MINMAX)
     if show: plt.imshow(img, cmap='gray'); plt.show()
     return img
@@ -155,7 +155,7 @@ def get_reward_images(cell_type, img, cell_size, show=False):
         for col_num in range(len(cell_type)):
             for row_num in range(len(cell_type[col_num])):
                 if goal == cell_type[col_num][row_num]:
-                    
+
                     for px_y in range(col_num * cell_size, (col_num+1) * cell_size):
                         for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
                             # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
@@ -175,7 +175,7 @@ def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc
 
 def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE):
     map_h, map_w = risk_image_local.shape
-    
+
     # +x+y
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
@@ -227,4 +227,3 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                     risk_image_local[u,v] = raw_risk_image[u,v]
 
     return risk_image_local
-    

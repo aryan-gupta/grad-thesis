@@ -87,7 +87,7 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
     # for y in prev:
     #     print(y)
 
-    # calculate the shortest path and create a video while 
+    # calculate the shortest path and create a video while
     shortest_path = []
     current_node = finish
     while current_node != start:
@@ -122,15 +122,15 @@ def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, poin
     img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs['S']]))
     for i in range(len(shortest_path)):
         half_cell = math.ceil((CELLS_SIZE/2))
-        
+
         if shortest_path[i] == start: break
-        
+
         node = shortest_path[i]
         next_node = shortest_path[i+1]
-        
+
         center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
         next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-        
+
         img_plain_djk = cv2.line(img_plain_djk, center, next_center, (0,255,255), 1)
 
     # Show the path found image from D's algo
