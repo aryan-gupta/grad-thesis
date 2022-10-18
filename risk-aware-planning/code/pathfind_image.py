@@ -64,32 +64,16 @@ plt.imshow(current_state_reward_graph, cmap="gray"); plt.show()
 plt.imshow(risk_image, cmap="gray"); plt.show()
 plt.imshow(risk_reward_image); plt.show()
 
-
 # Convert risk_reward_image into cells
-risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE)
-plt.imshow(risk_reward_img_cells); plt.show()
-# Print the cell type map for debugging
-for y in risk_reward_cell_type:
-    print(y)
-print()
-print()
+risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE, show=False)
 
-# Print the cell cost map for debugging
-for y in cell_cost:
-    for cost in y:
-        print("{:.2f}".format(cost), end=", ")
-    print()
-print()
-print()
-
+# convert the risk_reward_image cells into a state diagram
 state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, MAX_WEIGHT)
 cell_process.pretty_print_state_dd(state_diagram, state_dict)
+
+# get start and finish locations
 _, finish = cell_process.get_start_finish_locations(risk_reward_cell_type)
 
-# state_diagram, state_dict = cell_process.cells_to_state_diagram(cell_type, cell_cost, MAX_WEIGHT)
-# cell_process.pretty_print_state_dd(state_diagram, state_dict)
-
-# exit()
 ##################################### State Diagram Conversion ##############################################
 
 # start pathfinding
@@ -98,6 +82,7 @@ start_phys_loc = start
 next_phys_loc = finish
 dj_path_image = img_cells.copy()
 
+# the loop to traverse the LTL formula
 while current_ltl_state != final_state:
     # == do a preliminary dj's algo
     # get reward map of current LTL state
@@ -106,7 +91,6 @@ while current_ltl_state != final_state:
 
     # merge risk, reward into a single image map
     risk_reward_image = cv2.merge([current_state_reward_graph, risk_image, current_state_reward_graph])
-
 
     # Convert risk_reward_image into cells
     risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image, CELLS_SIZE, show=False)
@@ -125,8 +109,6 @@ while current_ltl_state != final_state:
     _ = dijkstra.draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, (start_phys_loc, next_phys_loc), CELLS_SIZE)
     dijkstra.draw_path_global(shortest_path, dj_path_image, (start_phys_loc, next_phys_loc), CELLS_SIZE)
 
-
-    # == do our mini dj's algo
     # create copy of the current risk map
     risk_image_local = risk_image.copy()
     current_phys_loc = start_phys_loc
@@ -134,7 +116,7 @@ while current_ltl_state != final_state:
     plt.imshow(dj_path_image); plt.savefig(f"/tmp/thesis/pic000orig.png")
     dj_path_image_adhoc = img_cells.copy()
 
-
+    # The loop to physicaly traverse the path
     img_tmp_idx=0
     while current_phys_loc != next_phys_loc:
         # update risk map everytime we move
@@ -146,28 +128,30 @@ while current_ltl_state != final_state:
         state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
         shortest_path = dijkstra.dj_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
+        # draw our current future path on an image
         dj_path_image_local = risk_reward_img_cells_local.copy()
         dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
 
+        # draw the agent as a circle
         half_cell = math.ceil((CELLS_SIZE/2))
         center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
         dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
+        # save the image
         plt.imshow(dj_path_image_local); plt.savefig(f"/tmp/thesis/pic{ img_tmp_idx }.png")
         img_tmp_idx+=1
 
+        # get the next location in the shortest path
         current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, current_phys_loc)
         print(current_phys_loc)
 
+        # draw the current path we have aready taken
         center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
         dj_path_image_adhoc = cv2.circle(dj_path_image_adhoc, center, 4, (255, 255, 255), 1)
 
-
+    # save the path we took
     plt.imshow(dj_path_image_adhoc); plt.savefig(f"/tmp/thesis/pic000adhoc.png")
     exit()
-
-
-
 
     # find next state that we should go to
     next_ltl_state = ltl_process.get_next_state(ltl_state_diag, cell_type, current_ltl_state, next_phys_loc)

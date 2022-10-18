@@ -3,6 +3,8 @@ import cv2
 import math
 # import matplotlib.pyplot as plt
 
+
+# parse an ltl HOA formatted file
 def parse_ltl_hoa(filename):
     # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
     ltl_state_diag = {}
@@ -50,6 +52,7 @@ def parse_ltl_hoa(filename):
     return ltl_state_diag, aps, start_state, final_state
 
 
+# get the reward image based off the possible transitions from the current state
 def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
     # get the image for each transition from the current state
     map_h, map_w = size
@@ -72,6 +75,7 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
     return ltl_reward_graph
 
 
+# get the next state of the ltl buchii automata
 def get_next_state(ltl_state_diag, cell_type, current_ltl_state, current_phys_state):
     next_state = None
     for next_state in ltl_state_diag[current_ltl_state]:
@@ -92,18 +96,3 @@ def get_next_state(ltl_state_diag, cell_type, current_ltl_state, current_phys_st
             break
 
     return next_state
-
-# LEGACY CODE BELOW THAT I DONT WANT TO DELETE
-#
-# import spot
-# spot.setup()
-# automata_refuel = "G(XXXr) && Fa && Fb" # XXXXXXXXXXXXXXXXXXX
-# a = spot.translate(automata_refuel)
-
-# # https://stackoverflow.com/a/70007704
-# # https://stackoverflow.com/a/46135174
-# img_png = svg2png(a.show().data, scale=5.0)
-# img = Image.open(BytesIO(img_png))
-# plt.imshow(img); plt.show()
-
-# exit()
