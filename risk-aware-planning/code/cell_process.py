@@ -117,10 +117,10 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                 if cost > max_cost:
                     max_cost = cost
                 # print(f"{x}-{y} :: {cost}")
-                
-                if cell_cost[cell_num_width][cell_num_height] < 0.9999999:
-                    cell_cost[cell_num_width][cell_num_height] = 0.9999999
-                
+
+                # if cell_cost[cell_num_width][cell_num_height] < 0.9999999:
+                #     cell_cost[cell_num_width][cell_num_height] = 0.9999999
+
                 if cost == 0:
                     img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (50,50,50), 1)
                 else:
