@@ -143,13 +143,21 @@ def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
 
     for i in range(len(shortest_path)):
         half_cell = math.ceil((CELLS_SIZE/2))
-        
+
         if shortest_path[i] == start: break
-        
+
         node = shortest_path[i]
         next_node = shortest_path[i+1]
-        
+
         center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
         next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-        
+
         img_cells = cv2.line(img_cells, center, next_center, (0,255,255), 1)
+
+
+def get_next_cell_shortest_path(shortest_path, current_phys_loc):
+    if current_phys_loc == shortest_path[0]:
+        return current_phys_loc
+    for i in range(len(shortest_path)):
+        if current_phys_loc == shortest_path[i]:
+            return shortest_path[i - 1]

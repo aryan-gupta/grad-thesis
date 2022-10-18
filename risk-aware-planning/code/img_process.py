@@ -5,9 +5,15 @@ import math
 import cell_process
 import matplotlib.pyplot as plt
 
+##################################### Read Image ##############################################
+def read_image(filename, show=False):
+    img = cv2.imread(filename)
+    if show: plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)); plt.show()
+    return img
+
 
 ##################################### Image Perspective Warp ##############################################
-def perspective_warp(img, points, map_w, map_h):
+def perspective_warp(img, points, map_w, map_h, show=False):
     # These 4 points are used to perspective correct the image
     # they represent the 4 corners of the map
     # used code from here as reference: https://stackoverflow.com/questions/22656698
@@ -20,19 +26,19 @@ def perspective_warp(img, points, map_w, map_h):
     wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
     # Show the perspective corrected image
-    # plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB)); plt.show()
+    if show: plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB)); plt.show()
 
     return wpcc_img
 
 
 ##################################### HSV Channel Segmentation ##############################################
-def color_segment_image(img):
+def color_segment_image(img, show=False):
     # Split the image into the seperate HSV vhannels
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     hue_channel, sat_channel, _ = cv2.split(img)
 
-    # plt.imshow(hue_channel); plt.show()
-    # plt.imshow(sat_channel); plt.show()
+    if show: plt.imshow(hue_channel); plt.show()
+    if show: plt.imshow(sat_channel); plt.show()
 
     # Extract the bright colors from the image
     # the useful values are in the Hue and Saturation channel
@@ -55,15 +61,15 @@ def color_segment_image(img):
     blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
     yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
 
-    # plt.imshow(red_channel, cmap='gray'); plt.show()
-    # plt.imshow(green_channel, cmap='gray'); plt.show()
-    # plt.imshow(blue_channel, cmap='gray'); plt.show()
-    # plt.imshow(yellow_channel, cmap='gray'); plt.show()
+    if show: plt.imshow(red_channel, cmap='gray'); plt.show()
+    if show: plt.imshow(green_channel, cmap='gray'); plt.show()
+    if show: plt.imshow(blue_channel, cmap='gray'); plt.show()
+    if show: plt.imshow(yellow_channel, cmap='gray'); plt.show()
 
     return (red_channel, green_channel, blue_channel, yellow_channel)
 
 ##################################### Final Image Construction ##############################################
-def merge_colors(red_channel, green_channel, blue_channel, yellow_channel):
+def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False):
 
     # We want to convert the different color channels into an RGB image and since yellow is Red and Green
     # we want add the yellow channel into the red and green channels 
@@ -78,12 +84,12 @@ def merge_colors(red_channel, green_channel, blue_channel, yellow_channel):
 
     # Merge the channels into one RGB image
     processed_img = cv2.merge([red_channel,green_channel,blue_channel])
-    # plt.imshow(processed_img); plt.show()
+    if show: plt.imshow(processed_img); plt.show()
 
     return processed_img
 
 
-def apply_edge_blur(img, reward_size):
+def apply_edge_blur(img, reward_size, show=False):
     map_h, map_w = img.shape
     # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
 
@@ -113,17 +119,19 @@ def apply_edge_blur(img, reward_size):
         new_img = cv2.scaleAdd(mask, (1/num_cnt), new_img)
         # plt.imshow(new_img, cmap='gray'); plt.show()
     
-    return cv2.normalize(new_img, None, 255, 0, norm_type = cv2.NORM_MINMAX)
+    img = cv2.normalize(new_img, None, 255, 0, norm_type = cv2.NORM_MINMAX)
+    if show: plt.imshow(img, cmap='gray'); plt.show()
+    return img
 
 
-def create_risk_img(img, risk_size):
+def create_risk_img(img, risk_size, show=False):
     # Wall risk image
     dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
     gaussian_kernel_size = risk_size + 1
     wall_risk_image = cv2.dilate(img, dilate_kernel, 0)
     wall_risk_image = cv2.GaussianBlur(wall_risk_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
     wall_risk_image = cv2.bitwise_or(wall_risk_image, img)
-    # plt.imshow(wall_risk_image, cmap='gray'); plt.show()
+    if show: plt.imshow(wall_risk_image, cmap='gray'); plt.show()
 
     risk_image = wall_risk_image
     # purple_channel = risk_image
@@ -137,7 +145,7 @@ def create_risk_img(img, risk_size):
     return risk_image
 
 
-def get_reward_images(cell_type, img, cell_size):
+def get_reward_images(cell_type, img, cell_size, show=False):
     # plt.imshow(img); plt.show()
     map_h, map_w = img.shape
     reward_graphs = {}
@@ -156,7 +164,67 @@ def get_reward_images(cell_type, img, cell_size):
                                 empty_image[px_y][px_x] = 254
 
         reward_graphs[goal] = empty_image
-        # print(goal)
-        # plt.imshow(empty_image); plt.show()
+        if show: print(goal)
+        if show: plt.imshow(empty_image); plt.show()
 
     return reward_graphs
+
+
+def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELL_SIZE, op):
+    pass
+
+def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE):
+    map_h, map_w = risk_image_local.shape
+    
+    # +x+y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] + dy) * CELLS_SIZE
+            x = (current_phys_loc[0] + dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+
+    # -x+y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] + dy) * CELLS_SIZE
+            x = (current_phys_loc[0] - dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+    # +x-y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] - dy) * CELLS_SIZE
+            x = (current_phys_loc[0] + dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+    # -x-y
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = (current_phys_loc[1] - dy) * CELLS_SIZE
+            x = (current_phys_loc[0] - dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    risk_image_local[u,v] = raw_risk_image[u,v]
+
+    return risk_image_local
+    
