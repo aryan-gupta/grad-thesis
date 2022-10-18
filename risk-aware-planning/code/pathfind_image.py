@@ -12,6 +12,7 @@ import dijkstra
 
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
+VIEW_CELLS_SIZE = 8
 
 # final image dimensions (must be divisiable by CELL_SIZE)
 map_h = 640
@@ -94,17 +95,41 @@ while current_ltl_state != final_state:
     risk_image_local = risk_image.copy()
     current_phys_loc = start_phys_loc
     dj_path_idx = 0
+    plt.imshow(dj_path_image); plt.savefig(f"/tmp/thesis/pic000orig.png")
+    dj_path_image_adhoc = img_cells.copy()
 
+
+    img_tmp_idx=0
     while current_phys_loc != next_phys_loc:
         # update risk map everytime we move
         risk_image_local = img_process.update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE)
-        half_cell = math.ceil((CELLS_SIZE/2))
-        center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
-        risk_image_local = cv2.circle(risk_image_local, center, 4, (255, 255, 255), 1)
-        dj_path_idx, current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, dj_path_idx, current_phys_loc)
-        plt.imshow(risk_image_local); plt.show()
 
         # reapply DJ's algo using new start key
+        risk_reward_image_local = cv2.merge([current_state_reward_graph, risk_image_local, current_state_reward_graph])
+        risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, risk_image_local, CELLS_SIZE, show=False)
+        state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
+        shortest_path = dijkstra.dj_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
+
+        dj_path_image_local = risk_reward_img_cells_local.copy()
+        dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
+
+        half_cell = math.ceil((CELLS_SIZE/2))
+        center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
+        dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
+
+        plt.imshow(dj_path_image_local); plt.savefig(f"/tmp/thesis/pic{ img_tmp_idx }.png")
+        img_tmp_idx+=1
+
+        current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, current_phys_loc)
+        print(current_phys_loc)
+
+        center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
+        dj_path_image_adhoc = cv2.circle(dj_path_image_adhoc, center, 4, (255, 255, 255), 1)
+
+
+    plt.imshow(dj_path_image_adhoc); plt.savefig(f"/tmp/thesis/pic000adhoc.png")
+    exit()
+
 
 
 
