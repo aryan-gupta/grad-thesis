@@ -137,6 +137,8 @@ def create_risk_img(img, risk_size, show=False):
     if show: plt.imshow(wall_risk_image, cmap='gray'); plt.show()
 
     risk_image = wall_risk_image
+
+    risk_image = cv2.normalize(risk_image, None, 254, 0, norm_type=cv2.NORM_MINMAX)
     # purple_channel = risk_image
 
     # fig = plt.figure()
