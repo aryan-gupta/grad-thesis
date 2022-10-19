@@ -80,22 +80,27 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'H'
+                        break
                     if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'G'
+                        break
                     if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'O'        
+                        break
                     if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'R'
+                        break
                     if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'T'
+                        break
                     
 
                 # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
