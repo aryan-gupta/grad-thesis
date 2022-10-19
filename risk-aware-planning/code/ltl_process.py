@@ -75,21 +75,36 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
     return ltl_reward_graph
 
 
+# get the axiom the current physical state is activating
+def get_current_phys_state_type(reward_graphs, current_phys_loc, CELLS_SIZE):
+    for axiom in reward_graphs.keys():
+        y = current_phys_loc[1] * CELLS_SIZE
+        x = current_phys_loc[0] * CELLS_SIZE
+
+        for u in range(y, y + CELLS_SIZE, 1):
+            for v in range(x, x + CELLS_SIZE, 1):
+                if reward_graphs[axiom][u,v]:
+                    return axiom
+
+    print("Illegal, didnt want to throw")
+    return 'T'
+
+
 # get the next state of the ltl buchii automata
-def get_next_state(ltl_state_diag, cell_type, current_ltl_state, current_phys_state):
+def get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, current_phys_loc, CELLS_SIZE):
     next_state = None
     for next_state in ltl_state_diag[current_ltl_state]:
-        current_cell_type = cell_type[current_phys_state[1]][current_phys_state[0]]
-        axon = ltl_state_diag[current_ltl_state][next_state].upper()
-        nomials = axon.split('&')
+        current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc, CELLS_SIZE)
+        axioms = ltl_state_diag[current_ltl_state][next_state].upper()
+        axioms = axioms.split('&')
 
         valid = True
-        for nomial in nomials:
-            if nomial[0] == '!':
-                if nomial[1] in current_cell_type:
+        for axiom in axioms:
+            if axiom[0] == '!':
+                if axiom[1] in current_cell_type:
                     valid = False
             else:
-                if nomial[0] not in current_cell_type:
+                if axiom[0] not in current_cell_type:
                     valid = False
         # plt.imshow(this_state_reward_graph); plt.show()
         if valid:
