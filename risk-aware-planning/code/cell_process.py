@@ -77,11 +77,16 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                         colors.append(tuple(processed_img[u,v]))
 
                     # mark the cells if its corosponding color exists in the cell
+                    # these values are dont care values
+                    r = tuple(processed_img[u,v])[0]
+                    g = tuple(processed_img[u,v])[1]
+                    b = tuple(processed_img[u,v])[2]
+
                     if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'H'
-                    if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
+                    if tuple(processed_img[u,v]) == (255, g, 0): # Goal Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'G'
@@ -89,11 +94,11 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'O'
-                    if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
+                    if tuple(processed_img[u,v]) == (0, g, 255): # Refuel Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'R'
-                    if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
+                    if tuple(processed_img[u,v]) == (254, g, 254): # LTL Current Target
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'T'
