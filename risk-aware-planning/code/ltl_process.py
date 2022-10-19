@@ -5,7 +5,7 @@ import math
 
 
 # parse an ltl HOA formatted file
-def parse_ltl_hoa(filename):
+def parse_ltl_hoa(filename, show=False):
     # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
     ltl_state_diag = {}
     aps = []
@@ -45,9 +45,10 @@ def parse_ltl_hoa(filename):
         ltl_state_diag[state] = next_state_dict
         next_state_dict = {}
 
-    print(ltl_state_diag)
-    print(start_state)
-    print(final_state)
+    if show:
+        print(ltl_state_diag)
+        print(start_state)
+        print(final_state)
 
     return ltl_state_diag, aps, start_state, final_state
 
@@ -61,7 +62,6 @@ def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):
         this_state_reward_graph = np.full((map_h, map_w, 1), 255, dtype = "uint8")
         axon = ltl_state_diag[current_state][next_state].upper()
         nomials = axon.split('&')
-        print(nomials)
         valid = False
         for nomial in nomials:
             if nomial[0] != '!':
