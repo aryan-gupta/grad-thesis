@@ -107,7 +107,8 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
     return total_shortest_path, assumed_risk_image
 
 
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
+def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=True):
+    # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
 
@@ -148,23 +149,23 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             # apply dj's algo
             shortest_path = dijkstra.dj_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
-            # draw our current future path on an image
-            dj_path_image_local = risk_reward_img_cells_local.copy()
-            dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
+            if show:
+                # draw our current future path on an image
+                dj_path_image_local = risk_reward_img_cells_local.copy()
+                dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
 
-            # draw the agent as a circle
-            half_cell = math.ceil((CELLS_SIZE/2))
-            center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
-            dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
+                # draw the agent as a circle
+                half_cell = math.ceil((CELLS_SIZE/2))
+                center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
+                dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
-            # save the image
-            plt.imshow(dj_path_image_local); plt.savefig(f"/tmp/thesis/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.png")
-            img_tmp_idx_phys += 1
+                # save the image
+                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc)
+                plt.imshow(dj_path_image_local); plt.savefig(f"/tmp/thesis/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.png")
+                img_tmp_idx_phys += 1
 
             # get the next location in the shortest path
             current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, current_phys_loc)
-            print(img_tmp_idx_phys, " :: ", current_phys_loc)
-
 
         # find next state that we should go to
         next_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, next_phys_loc, CELLS_SIZE)
