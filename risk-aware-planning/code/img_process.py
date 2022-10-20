@@ -5,14 +5,14 @@ import math
 import cell_process
 import matplotlib.pyplot as plt
 
-##################################### Read Image ##############################################
+# read in a image
 def read_image(filename, show=False):
     img = cv2.imread(filename)
     if show: plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)); plt.show()
     return img
 
 
-##################################### Image Perspective Warp ##############################################
+# perspective warp an image
 def perspective_warp(img, points, map_w, map_h, show=False):
     # These 4 points are used to perspective correct the image
     # they represent the 4 corners of the map
@@ -31,7 +31,7 @@ def perspective_warp(img, points, map_w, map_h, show=False):
     return wpcc_img
 
 
-##################################### HSV Channel Segmentation ##############################################
+# split the image into the color segments
 def color_segment_image(img, show=False):
     # Split the image into the seperate HSV vhannels
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -51,7 +51,7 @@ def color_segment_image(img, show=False):
     # that are slightly red, we then use the saturation channel to remove the slightly red gray values and only
     # keep the deep red colors
     # red = (hue_red_low or hue_red_high) and sat_high
-    # the and distributes and creates 
+    # the and distributes and creates
     # red = (hue_red_low and sat_high) or (hue_red_high and sat_high)
     # This same can be used for all the colors that we want to extract
     red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
@@ -68,11 +68,12 @@ def color_segment_image(img, show=False):
 
     return (red_channel, green_channel, blue_channel, yellow_channel)
 
-##################################### Final Image Construction ##############################################
+
+# merge back the colors
 def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False):
 
     # We want to convert the different color channels into an RGB image and since yellow is Red and Green
-    # we want add the yellow channel into the red and green channels 
+    # we want add the yellow channel into the red and green channels
     red_channel = cv2.bitwise_or(red_channel, yellow_channel)
     green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
@@ -89,12 +90,13 @@ def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=
     return processed_img
 
 
+# applys the edge gaussian blur to a risk image
 def apply_edge_blur(img, reward_size, show=False):
     map_h, map_w = img.shape
     # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
 
     # To do a guassian distribution around the edges, we first dialate the mask the same amount
-    # as much as we want to do the gaussian blur 
+    # as much as we want to do the gaussian blur
     reward_size = 128
     dilate_kernel = np.ones((reward_size,reward_size), np.uint8)
     gaussian_kernel_size = reward_size + 1
@@ -118,12 +120,13 @@ def apply_edge_blur(img, reward_size, show=False):
         mask = cv2.GaussianBlur(mask, (gaussian_kernel_size, gaussian_kernel_size), reward_size)
         new_img = cv2.scaleAdd(mask, (1/num_cnt), new_img)
         # plt.imshow(new_img, cmap='gray'); plt.show()
-    
+
     img = cv2.normalize(new_img, None, 255, 0, norm_type = cv2.NORM_MINMAX)
     if show: plt.imshow(img, cmap='gray'); plt.show()
     return img
 
 
+# applys the edge gaussian blur to a risk image
 def create_risk_img(img, risk_size, show=False):
     # Wall risk image
     dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
@@ -134,6 +137,8 @@ def create_risk_img(img, risk_size, show=False):
     if show: plt.imshow(wall_risk_image, cmap='gray'); plt.show()
 
     risk_image = wall_risk_image
+
+    risk_image = cv2.normalize(risk_image, None, 254, 0, norm_type=cv2.NORM_MINMAX)
     # purple_channel = risk_image
 
     # fig = plt.figure()
@@ -145,6 +150,7 @@ def create_risk_img(img, risk_size, show=False):
     return risk_image
 
 
+# creates all the reward images for each axiom
 def get_reward_images(cell_type, img, cell_size, show=False):
     # plt.imshow(img); plt.show()
     map_h, map_w = img.shape
@@ -155,7 +161,7 @@ def get_reward_images(cell_type, img, cell_size, show=False):
         for col_num in range(len(cell_type)):
             for row_num in range(len(cell_type[col_num])):
                 if goal == cell_type[col_num][row_num]:
-                    
+
                     for px_y in range(col_num * cell_size, (col_num+1) * cell_size):
                         for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
                             # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
@@ -170,12 +176,15 @@ def get_reward_images(cell_type, img, cell_size, show=False):
     return reward_graphs
 
 
+# intenal helper function for update_local_risk_image
 def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELL_SIZE, op):
     pass
 
+
+# update a local risk image using the global risk image
 def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE):
     map_h, map_w = risk_image_local.shape
-    
+
     # +x+y
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
@@ -227,4 +236,3 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                     risk_image_local[u,v] = raw_risk_image[u,v]
 
     return risk_image_local
-    

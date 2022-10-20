@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 # This function returns a function that will map the image pixel values (in the
 # range of 0 to 255) to another set of numbers in the range of 0.0 to 1.0
 # it will make calculating Dj's algo alot easier
-def make_interpolater(left_min, left_max, right_min, right_max): 
-    # Figure out how 'wide' each range is  
-    leftSpan = left_max - left_min  
-    rightSpan = right_max - right_min  
+def make_interpolater(left_min, left_max, right_min, right_max):
+    # Figure out how 'wide' each range is
+    leftSpan = left_max - left_min
+    rightSpan = right_max - right_min
 
-    # Compute the scale factor between left and right values 
-    scaleFactor = float(rightSpan) / float(leftSpan) 
+    # Compute the scale factor between left and right values
+    scaleFactor = float(rightSpan) / float(leftSpan)
 
     # create interpolation function using pre-calculated scaleFactor
     def interp_fn(value):
@@ -24,6 +24,7 @@ def make_interpolater(left_min, left_max, right_min, right_max):
     return interp_fn
 
 
+# Creates the cells based off an risk/reward image based off of the cell_size
 def create_cells(processed_img, risk_image, cell_size, show=False):
     # get image size
     map_h, map_w, _ = processed_img.shape
@@ -36,7 +37,7 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
 
     # Variable to store the unique colors in the image
     colors = []
-    
+
     # Go through each cell and each pixel of the cell to decide what type of cell it is
     # use this info to construct a cell type map of the area
     cell_type = []
@@ -60,22 +61,27 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
             for u in range(y, y + cell_size, 1):
                 if u >= map_h:
                     break
-                
+
                 for v in range(x, x + cell_size, 1):
                     if v >= map_w:
                         break
-                    
+
                     # If the cell is a Goal Cell, give it 0.0 weight
                     # If the cell is a Objective Cell, give it a 0.0 weight
                     # if the cell is a Hazard Cell, give it the same weight as the average value of the cell
 
                     cell_sum += risk_image[u,v]
-                        
+
                     # keep a record of all the different colors
                     if tuple(processed_img[u,v]) not in colors:
                         colors.append(tuple(processed_img[u,v]))
-                    
+
                     # mark the cells if its corosponding color exists in the cell
+                    # these values are dont care values
+                    r = tuple(processed_img[u,v])[0]
+                    g = tuple(processed_img[u,v])[1]
+                    b = tuple(processed_img[u,v])[2]
+
                     if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                         cell_known = True
                         img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,255,0), 1)
@@ -163,7 +169,8 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
         # Show the images with the cell type and cell boundries
         plt.imshow(img_cells); plt.show()
 
-    return img_cells, cell_type, cell_cost 
+    return img_cells, cell_type, cell_cost
+
 
 # Convert connected cells with the \p orig_value to \p new_value
 # this allows us to mark areas from Goals to Start and Finish Cells
@@ -179,6 +186,7 @@ def convert_cells_recurse(cell_type, y, x, orig_value, new_value):
         convert_cells_recurse(cell_type, y, x + 1, orig_value, new_value)
 
 
+# Converts objective and goal cells into the specific objective and goals
 def convert_cells(cell_type, objectives, goals):
     objectives_idx = 0
     goals_idx = 0
@@ -201,6 +209,7 @@ def convert_cells(cell_type, objectives, goals):
     return cell_type
 
 
+# Get the start and finish locations of the enviroment using the cell types
 def get_start_finish_locations(cell_type):
     # find the start node
     start = ()
@@ -220,6 +229,8 @@ def get_start_finish_locations(cell_type):
     return start, finish
 
 
+# Return all the possible cell types that are present in the enviroment
+# Needs to be improved
 def get_cell_types(cell_type):
     # types = []
     # for col_num in range(len(cell_type)):
@@ -247,14 +258,14 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
                 continue
             # check up left
             # NOT IMPL
-            
+
             # check up
             if y > 0:
                 state_diagram[y][x][0] = cell_cost[y][x]
                 state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
             # check up right
             # NOT IMPL
-            
+
             # check left
             if x > 0:
                 state_diagram[y][x][1] = cell_cost[y][x]
@@ -276,10 +287,11 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
             # NOT IMPL
 
     if show: cell_process.pretty_print_state_dd(state_diagram, state_dict)
-    
+
     return state_diagram, state_dict
 
 
+# Pretty prints the state diagram and the state dictionary
 def pretty_print_state_dd(state_diagram, state_dict):
     # pretty print state diagram
     for row in state_diagram:
@@ -307,5 +319,3 @@ def pretty_print_state_dd(state_diagram, state_dict):
         print()
 
     print(state_dict)
-
-
