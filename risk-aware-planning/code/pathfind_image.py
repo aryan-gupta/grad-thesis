@@ -39,6 +39,7 @@ def read_process_image():
 
     return processed_img, raw_reward_image, green_channel
 
+
 def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
     # create cells based off of map and risk and assign costs to cells
     img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, raw_risk_image, CELLS_SIZE, show=False)
@@ -54,14 +55,15 @@ def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
 
     return img_cells, reward_graphs, (global_start, global_finish)
 
+
 def parse_ltl_hoa_file():
     # parse through LTL automata
     return ltl_process.parse_ltl_hoa("ltl.hoa.txt")
 
+
 def get_assumed_risk(raw_risk_image):
     # create blurred risk image
     return img_process.create_risk_img(raw_risk_image, 64, show=False)
-
 
 
 def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
@@ -75,7 +77,6 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
     while current_ltl_state != ltl_state_bounds[1]:
         # get reward map of current LTL state
         current_ltl_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
-        # reward_current = img_process.apply_edge_blur(current_ltl_state_reward_graph, 128, show=False)
 
         # merge risk, reward into a single image map
         risk_reward_image = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image, current_ltl_state_reward_graph])
@@ -108,13 +109,13 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
 
 def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
     current_ltl_state = ltl_state_bounds[0]
-    start_phys_loc = mission_phys_bounds[0]
-    next_phys_loc = mission_phys_bounds[1]
-    dj_path_image = None
+    current_phys_loc = mission_phys_bounds[0]
 
+    # the shortest path of the entire mission
     total_shortest_path = []
 
-    risk_image_local = assumed_risk_image.copy()
+    # our local copy of risk from using our viewing range
+    assumed_risk_image_filled = assumed_risk_image.copy()
 
     # the loop to traverse the LTL formula
     img_tmp_idx_ltl = 0
@@ -122,35 +123,28 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
         # get reward map of current LTL state
         current_ltl_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
 
-        # # merge risk, reward into a single image map
-        # risk_reward_image = cv2.merge([current_ltl_state_reward_graph, risk_image_local, current_ltl_state_reward_graph]) 
-
-        # # Convert risk_reward_image into cells
-        # risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, risk_image_local, CELLS_SIZE, show=False)
-        # risk_reward_cell_type = cell_process.convert_cells(risk_reward_cell_type, objectives=["A", "B"], goals=["S", "F"]) 
-
-        # get start and finish locations for this ltl node
-
-        current_phys_loc = start_phys_loc
+        # we wont know the next_phys_loc or the dj's target location until we run our algo
         next_phys_loc = (-1,-1)
-
-        
+    
+        # the loop to traverse the phys enviroment
         img_tmp_idx_phys=0
         while current_phys_loc != next_phys_loc:
             # add current node to path
             total_shortest_path.insert(0, current_phys_loc)
 
             # update risk map everytime we move
-            risk_image_local = img_process.update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE)
+            assumed_risk_image_filled = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE)
 
             # reapply DJ's algo using new risk map
             # create required data structures
-            risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, risk_image_local, current_ltl_state_reward_graph])
-            risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, risk_image_local, CELLS_SIZE, show=False)
+            risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
+            risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
+            # since this img_cells image was created by using reward images and not the raw_processed_img, we dont need to run cell_process.cells_to_state_diagram
             state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
             
             # get target
             _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
+
             # apply dj's algo
             shortest_path = dijkstra.dj_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
@@ -171,13 +165,6 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, current_phys_loc)
             print(img_tmp_idx_phys, " :: ", current_phys_loc)
 
-            # # draw the current path we have aready taken
-            # center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
-            # dj_path_image_adhoc = cv2.circle(dj_path_image_adhoc, center, 4, (255, 255, 255), 1)
-
-        # # save the path we took
-        # plt.imshow(dj_path_image_adhoc); plt.savefig(f"/tmp/thesis/pic000adhoc.png")
-        # exit()
 
         # find next state that we should go to
         next_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, next_phys_loc, CELLS_SIZE)
@@ -185,40 +172,55 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
         # setup next interation
         current_ltl_state = next_ltl_state
-        start_phys_loc = next_phys_loc
+        current_phys_loc = next_phys_loc
     
-    return total_shortest_path, risk_image_local
+    return total_shortest_path, assumed_risk_image_filled
+
 
 def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, mission_phys_bounds):
+    # seperate the image into RGB channels
     red_channel, green_channel, blue_channel = cv2.split(processed_img)
 
+    # add our filled out assumed risk
     green_channel = cv2.add(green_channel, assumed_risk_image_filled)
 
+    # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
     red_channel = cv2.add(red_channel, raw_risk_image)
     green_channel = cv2.add(green_channel, raw_risk_image)
     blue_channel = cv2.add(blue_channel, raw_risk_image)
 
+    # merge back our image into a single image
     dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])
 
+    # create our img_cell
     dj_path_image, _, _ = cell_process.create_cells(dj_path_image, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
+    # draw the path on img_cell
     dijkstra.draw_path_global(path, dj_path_image, mission_phys_bounds, CELLS_SIZE)
 
     return dj_path_image
     
 
 def main():
+    # read in and process image
     processed_img, raw_reward_image, raw_risk_image = read_process_image()
 
+    # create our axiom reward graphs
     processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
     
+    # get the ltl formula
     ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
+
+    # create our assumed risk image
     assumed_risk_image = get_assumed_risk(raw_risk_image)
+
+    # pathfind the image
     # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
     path, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
+    # draw the path on img_cell to show the end user
     dj_path_image = create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, (mission_phys_start, mission_phys_finish)) 
-    print("5"); plt.imshow(dj_path_image); plt.show()
+    print("final"); plt.imshow(dj_path_image); plt.show()
 
 
 if __name__ == "__main__":
