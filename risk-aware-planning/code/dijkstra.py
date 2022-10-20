@@ -54,7 +54,6 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
         if y > 0: # UP
             old_distance = distances[y - 1][x]
             new_distance = dist + state_diagram[y][x][0]
-            new_distance = abs(new_distance - 0.5)
             if new_distance < old_distance:
                 distances[y - 1][x] = new_distance
                 prev[y - 1][x] = (x,y)
@@ -62,7 +61,6 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
         if x > 0: # LEFT
             old_distance = distances[y][x - 1]
             new_distance = dist + state_diagram[y][x][1]
-            new_distance = abs(new_distance - 0.5)
             if new_distance < old_distance:
                 distances[y][x - 1] = new_distance
                 prev[y][x - 1] = (x,y)
@@ -70,7 +68,6 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
         if x < (len(cell_type[0]) - 1): # RIGHT
             old_distance = distances[y][x + 1]
             new_distance = dist + state_diagram[y][x][2]
-            new_distance = abs(new_distance - 0.5)
             if new_distance < old_distance:
                 distances[y][x + 1] = new_distance
                 prev[y][x + 1] = (x,y)
@@ -78,7 +75,6 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
         if y < (len(cell_type) - 1): # DOWN
             old_distance = distances[y + 1][x]
             new_distance = dist + state_diagram[y][x][3]
-            new_distance = abs(new_distance - 0.5)
             if new_distance < old_distance:
                 distances[y + 1][x] = new_distance
                 prev[y + 1][x] = (x,y)

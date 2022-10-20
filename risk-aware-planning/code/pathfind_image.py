@@ -13,7 +13,7 @@ import dijkstra
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
 VIEW_CELLS_SIZE = 8
-UPDATE_WEIGHT = 0.02
+UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELL_SIZE)
 map_h = 640
@@ -118,6 +118,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
     # our local copy of risk from using our viewing range
     assumed_risk_image_filled = assumed_risk_image.copy()
+    
+    # any risk of 0 has min risk 5
+    # assumed_risk_image_filled = cv2.normalize(assumed_risk_image_filled, None, 254, 10, norm_type = cv2.NORM_MINMAX)
 
     # the loop to traverse the LTL formula
     img_tmp_idx_ltl = 0
@@ -136,7 +139,8 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
             # update risk map everytime we move
             assumed_risk_image_filled = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
-
+            # print("risk"); plt.imshow(assumed_risk_image_filled); plt.show()
+            
             # reapply DJ's algo using new risk map
             # create required data structures
             risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
