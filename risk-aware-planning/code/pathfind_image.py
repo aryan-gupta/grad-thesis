@@ -13,6 +13,7 @@ import dijkstra
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
 VIEW_CELLS_SIZE = 8
+UPDATE_WEIGHT = 0.02
 
 # final image dimensions (must be divisiable by CELL_SIZE)
 map_h = 640
@@ -134,7 +135,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             total_shortest_path.insert(0, current_phys_loc)
 
             # update risk map everytime we move
-            assumed_risk_image_filled = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE)
+            assumed_risk_image_filled = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
 
             # reapply DJ's algo using new risk map
             # create required data structures

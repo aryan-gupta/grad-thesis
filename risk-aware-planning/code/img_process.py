@@ -182,7 +182,7 @@ def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc
 
 
 # update a local risk image using the global risk image
-def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE):
+def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT):
     map_h, map_w = risk_image_local.shape
 
     # +x+y
@@ -196,7 +196,7 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                 for v in range(x, x + CELLS_SIZE, 1):
                     if v >= map_w:
                         break
-                    risk_image_local[u,v] = raw_risk_image[u,v]
+                    risk_image_local[u,v] = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT)
 
     # -x+y
     for dy in range(VIEW_CELLS_SIZE):
@@ -209,7 +209,7 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                 for v in range(x, x + CELLS_SIZE, 1):
                     if v >= map_w:
                         break
-                    risk_image_local[u,v] = raw_risk_image[u,v]
+                    risk_image_local[u,v] = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT)
     # +x-y
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
@@ -221,7 +221,7 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                 for v in range(x, x + CELLS_SIZE, 1):
                     if v >= map_w:
                         break
-                    risk_image_local[u,v] = raw_risk_image[u,v]
+                    risk_image_local[u,v] = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT)
     # -x-y
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
@@ -233,6 +233,6 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
                 for v in range(x, x + CELLS_SIZE, 1):
                     if v >= map_w:
                         break
-                    risk_image_local[u,v] = raw_risk_image[u,v]
+                    risk_image_local[u,v] = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT)
 
     return risk_image_local
