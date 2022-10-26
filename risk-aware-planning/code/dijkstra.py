@@ -5,9 +5,39 @@ import matplotlib.pyplot as plt
 import bisect
 
 
+
+# for the a* algo, the heuristic function is the euclidean distance
+# from the current pos to the final pos
+def astar_algo_default_hfunc(current_phys_loc, target_phy_loc):
+    dx = current_phys_loc[0] - target_phy_loc[0]
+    dy = current_phys_loc[1] - target_phy_loc[1]
+    euclidean_distance = math.sqrt((dx**2) + (dy**2))
+    return 0.0005 * euclidean_distance
+
+
+# this is only here for legacy reasons, will be removed later
+# img_cells used to be a parameter as it was used to create a video
+# now this feature is done by calling function
+def astar_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
+    return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, astar_algo_default_hfunc)
+
+
+# for djk's algo, the heuristic function always return 0 since we dont use
+# a heuristic
+def dj_algo_default_hfunc(*args, **kwargs):
+    return 0
+
+
+# to prevent breaking changes, this helper function will fix legacy
+# functions that call djk algo without an hfunc
+def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
+    return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, dj_algo_default_hfunc)
+
+
 # Runs a dijkstra's algorithm on cell_type from the start and end locations
 # from points. The img_cells are used to make the video
-def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
+# @TODO remove img_cells parameter
+def dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, hfunc):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
     # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
@@ -53,28 +83,28 @@ def dj_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
         # check each direction we can travel
         if y > 0: # UP
             old_distance = distances[y - 1][x]
-            new_distance = dist + state_diagram[y][x][0]
+            new_distance = dist + state_diagram[y][x][0] + hfunc(current[1], finish)
             if new_distance < old_distance:
                 distances[y - 1][x] = new_distance
                 prev[y - 1][x] = (x,y)
                 bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
         if x > 0: # LEFT
             old_distance = distances[y][x - 1]
-            new_distance = dist + state_diagram[y][x][1]
+            new_distance = dist + state_diagram[y][x][1] + hfunc(current[1], finish)
             if new_distance < old_distance:
                 distances[y][x - 1] = new_distance
                 prev[y][x - 1] = (x,y)
                 bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
         if x < (len(cell_type[0]) - 1): # RIGHT
             old_distance = distances[y][x + 1]
-            new_distance = dist + state_diagram[y][x][2]
+            new_distance = dist + state_diagram[y][x][2] + hfunc(current[1], finish)
             if new_distance < old_distance:
                 distances[y][x + 1] = new_distance
                 prev[y][x + 1] = (x,y)
                 bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
         if y < (len(cell_type) - 1): # DOWN
             old_distance = distances[y + 1][x]
-            new_distance = dist + state_diagram[y][x][3]
+            new_distance = dist + state_diagram[y][x][3] + hfunc(current[1], finish)
             if new_distance < old_distance:
                 distances[y + 1][x] = new_distance
                 prev[y + 1][x] = (x,y)
