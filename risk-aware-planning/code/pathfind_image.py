@@ -112,7 +112,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
     return total_shortest_path, assumed_risk_image
 
 
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=True):
+def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=False):
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
@@ -145,7 +145,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
         risk_reward_image_local = None
         risk_reward_img_cells_local = None
         risk_reward_cell_type_local = None
-        risk_reward_cell_cost_local = None 
+        risk_reward_cell_cost_local = None
         state_diagram_local = None
 
         planned = False
@@ -183,12 +183,12 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
                 state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
                 shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
-                
+
                 if partial_replan_needed > 100_000:
                     if show: print("part replanning")
                     shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
                     partial_replan_needed = 0
-                
+
 
 
             if show:
