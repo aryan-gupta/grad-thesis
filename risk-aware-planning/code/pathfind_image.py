@@ -92,7 +92,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
         risk_reward_cell_type = cell_process.convert_cells(risk_reward_cell_type, objectives=["A", "B"], goals=["S", "F"])
 
         # convert cells to state diagram so we can apply dj's algo to it
-        state_diagram, state_dict = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
+        state_diagram, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
 
         # get start and finish locations for this ltl node
         _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type)
@@ -137,7 +137,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
         # the loop to traverse the phys enviroment
         img_tmp_idx_phys=0
-        total_risk_updated = 0
+        full_replan_needed = 0
         partial_replan_needed = 0
 
         # This is needed so we can do partial replans
@@ -155,20 +155,19 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
             # update risk map everytime we move
             assumed_risk_image_filled, amount_risk_updated, cells_updated = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
-            total_risk_updated += amount_risk_updated
+            full_replan_needed += amount_risk_updated
             partial_replan_needed += amount_risk_updated
-            # print("risk"); plt.imshow(assumed_risk_image_filled); plt.show()
 
             # only do a full replan if we've accumulated enough risk updates or its our first run
             # if we havent, then update the local data structures
-            if total_risk_updated > 1_000_000 or not planned:
+            if full_replan_needed > 1_000_000 or not planned:
                 if show: print("full replanning")
                 # reapply DJ's algo using new risk map
                 # create required data structures
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
                 # since this img_cells image was created by using reward images and not the raw_processed_img, we dont need to run cell_process.cells_to_state_diagram
-                state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
+                state_diagram_local, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
 
                 # get target
                 _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
@@ -176,14 +175,18 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 # apply dj's algo
                 shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
-                total_risk_updated = 0
+                full_replan_needed = 0
+                partial_replan_needed = 0
                 planned = True
             else:
+                # instead of recreating out required data structures, just update the ones we "saw"
+                # these are the same calls as full_replan except update_cells instead of create_cells
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
-                state_diagram_local, state_dict_local = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
+                state_diagram_local, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
                 shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
+                # @todo always replan if there is any change to risk
                 if partial_replan_needed > 100_000:
                     if show: print("part replanning")
                     shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
@@ -202,7 +205,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
                 # save the image
-                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, "::", total_risk_updated, ")")
+                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, "::", full_replan_needed, ")")
 
                 cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", dj_path_image_local)
 

@@ -176,15 +176,20 @@ def get_reward_images(cell_type, img, cell_size, show=False):
     return reward_graphs
 
 
+# copy pixels from src to dest pixel by pixel
+# this implies the robot "seeing" the enviroment
 def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, xop, yop):
     map_h = dest.shape[0]
     map_w = dest.shape[1]
     total_diff = 0
 
+    # iterate over one quadrant of the range
+    # xop and yop decide which quadrant
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
             cell_diff = 0
 
+            # calculate out x and y values
             ycell = yop(current_phys_loc[1], dy)
             y = ycell * CELLS_SIZE
             if ycell >= (map_w / CELLS_SIZE) or ycell < 0:
@@ -195,6 +200,7 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
             if xcell >= (map_w / CELLS_SIZE) or xcell < 0:
                 continue
 
+            # iterate into the cell
             for u in range(y, y + CELLS_SIZE + 1, 1):
                 if u >= map_h:
                     break
@@ -202,6 +208,7 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
                     if v >= map_w:
                         break
 
+                    # update risk and calculate the difference
                     cell_diff += abs(int(dest[u,v]) - int(src[u,v]))
                     dest[u,v] = src[u,v]
 
@@ -210,28 +217,12 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
 
             total_diff += cell_diff
 
+    # return the total changes made to the risk in this cell
     return total_diff
 
-# def copy_pixel_risk_cell_img(cell_loc, dest, src, current_phys_loc, cells_updated, CELLS_SIZE):
-#     xcell, ycell = cell_loc
-#     y = ycell * CELLS_SIZE
-#     x = xcell * CELLS_SIZE
-#     map_h = dest.shape[0]
-#     map_w = dest.shape[1]
-#     total_diff = 0
 
-#     for u in range(y, y + CELLS_SIZE + 1, 1):
-#         if u >= map_h:
-#             break
-#         for v in range(x, x + CELLS_SIZE + 1, 1):
-#             if v >= map_w:
-#                 break
-
-#             total_diff += abs(int(dest[u,v]) - int(src[u,v]))
-#             dest[u,v] = src[u,v]
-
-#     return total_diff
-
+# copy pixels from src to dest cell by cell
+# dest and src are rgb pixels
 def copy_pixels_cells_img(cell_loc, dest, src, current_phys_loc, CELLS_SIZE):
     xcell, ycell = cell_loc
     y = ycell * CELLS_SIZE
@@ -267,7 +258,5 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
 
     # -x-y
     total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, sub_lambda)
-
-    # print(cells_updated)
 
     return risk_image_local, total_diff, cells_updated

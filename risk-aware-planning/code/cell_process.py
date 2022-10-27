@@ -322,6 +322,9 @@ def pretty_print_state_dd(state_diagram, state_dict):
     print(state_dict)
 
 
+# creates or updates a cell
+# if the variables input is being created, its creating a cell (IE full replan needed)
+# if the variables input are already created, its overwriting the values/updating the cell
 def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, current_phys_loc, risk_image, CELLS_SIZE):
     xcell, ycell = cell_loc
     y = ycell * CELLS_SIZE
