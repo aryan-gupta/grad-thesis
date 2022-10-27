@@ -187,6 +187,10 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
     # xop and yop decide which quadrant
     for dy in range(VIEW_CELLS_SIZE):
         for dx in range(VIEW_CELLS_SIZE):
+            # constrain the view cells size to a circle
+            if math.sqrt(dx**2 + dy**2) > VIEW_CELLS_SIZE:
+                continue
+
             cell_diff = 0
 
             # calculate out x and y values
