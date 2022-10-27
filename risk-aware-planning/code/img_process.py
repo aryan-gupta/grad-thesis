@@ -239,10 +239,10 @@ def copy_pixels_cells_img(cell_loc, dest, src, current_phys_loc, CELLS_SIZE):
     map_h = dest.shape[0]
     map_w = dest.shape[1]
 
-    for u in range(y - 1, y + CELLS_SIZE + 1, 1):
+    for u in range(y, y + CELLS_SIZE, 1):
         if u >= map_h:
             break
-        for v in range(x - 1, x + CELLS_SIZE + 1, 1):
+        for v in range(x, x + CELLS_SIZE, 1):
             if v >= map_w:
                 break
 

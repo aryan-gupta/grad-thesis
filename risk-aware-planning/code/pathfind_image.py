@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import bisect
+import PIL as pil
 
 
 import img_process
@@ -202,7 +203,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
                 # save the image
                 print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, "::", total_risk_updated, ")")
-                plt.imshow(dj_path_image_local); plt.savefig(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.png")
+
+                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", dj_path_image_local)
+
                 img_tmp_idx_phys += 1
 
             # get the next location in the shortest path
