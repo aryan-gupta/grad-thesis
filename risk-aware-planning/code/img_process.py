@@ -176,97 +176,51 @@ def get_reward_images(cell_type, img, cell_size, show=False):
     return reward_graphs
 
 
-# intenal helper function for update_local_risk_image
-def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELL_SIZE, op):
-    pass
-
-
-# update a local risk image using the global risk image
-def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT):
+# internal helper function for update_local_risk_image
+def update_local_risk_image_op(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT, xop, yop):
     map_h, map_w = risk_image_local.shape
     originy = current_phys_loc[1] * CELLS_SIZE
     originx = current_phys_loc[0] * CELLS_SIZE
     min_radial_distance = 3
     total_diff = 0
 
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            y = yop(current_phys_loc[1], dy) * CELLS_SIZE
+            x = xop(current_phys_loc[0], dx) * CELLS_SIZE
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
+                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
+                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
+                    old_risk_value = risk_image_local[u,v]
+                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
+
+                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
+
+    return total_diff
+
+
+# update a local risk image using the global risk image
+def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT):
+    total_diff = 0
+    add_lambda = lambda a,b: a+b
+    sub_lambda = lambda a,b: a-b
+
     # +x+y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] + dy) * CELLS_SIZE
-            x = (current_phys_loc[0] + dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
-
+    total_diff += update_local_risk_image_op(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT, add_lambda, add_lambda)
+    
     # -x+y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] + dy) * CELLS_SIZE
-            x = (current_phys_loc[0] - dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
+    total_diff += update_local_risk_image_op(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT, sub_lambda, add_lambda)
+    
     # +x-y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] - dy) * CELLS_SIZE
-            x = (current_phys_loc[0] + dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
+    total_diff += update_local_risk_image_op(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT, add_lambda, sub_lambda)
+    
     # -x-y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] - dy) * CELLS_SIZE
-            x = (current_phys_loc[0] - dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
+    total_diff += update_local_risk_image_op(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT, sub_lambda, sub_lambda)
 
     return risk_image_local, total_diff
