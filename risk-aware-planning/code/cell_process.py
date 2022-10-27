@@ -3,6 +3,7 @@ import cv2
 import math
 import matplotlib.pyplot as plt
 
+import img_process
 
 # I honestly thought there was a built in map function, but I guess Im wrong
 # https://stackoverflow.com/questions/1969240
@@ -84,27 +85,27 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
 
                     if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                         cell_known = True
-                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,255,0), 1)
+                        img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (0,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'H'
                         break
                     if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
                         cell_known = True
-                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,0), 1)
+                        img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (255,0,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'G'
                         break
                     if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                         cell_known = True
-                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,255,0), 1)
+                        img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (255,255,0), 1)
                         cell_type[cell_num_width][cell_num_height] = 'O'        
                         break
                     if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                         cell_known = True
-                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (0,0,255), 1)
+                        img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (0,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'R'
                         break
                     if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
                         cell_known = True
-                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (255,0,255), 1)
+                        img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (255,0,255), 1)
                         cell_type[cell_num_width][cell_num_height] = 'T'
                         break
                     
@@ -133,9 +134,9 @@ def create_cells(processed_img, risk_image, cell_size, show=False):
                 #     cell_cost[cell_num_width][cell_num_height] = 0.9999999
 
                 if cost == 0:
-                    img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (50,50,50), 1)
+                    img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (50,50,50), 1)
                 else:
-                    img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + cell_size,y + cell_size), (cost,0,cost), 1)
+                    img_cells = cv2.rectangle(img_cells, (x,y), (x + cell_size - 1,y + cell_size - 1), (cost,0,cost), 1)
 
 
             cell_num_height += 1
@@ -319,3 +320,118 @@ def pretty_print_state_dd(state_diagram, state_dict):
         print()
 
     print(state_dict)
+
+
+def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, current_phys_loc, risk_image, CELLS_SIZE):
+    xcell, ycell = cell_loc
+    y = ycell * CELLS_SIZE
+    x = xcell * CELLS_SIZE
+
+    # get image size
+    map_h, map_w, _ = processed_img.shape
+    
+    # determine what the cell is
+    cell_known = False
+    cell_sum = 0
+    cell_pxl_count = 0
+    for u in range(y, y + CELLS_SIZE, 1):
+        if u >= map_h:
+            break
+        for v in range(x, x + CELLS_SIZE, 1):
+            if v >= map_w:
+                break
+
+            # If the cell is a Goal Cell, give it 0.0 weight
+            # If the cell is a Objective Cell, give it a 0.0 weight
+            # if the cell is a Hazard Cell, give it the same weight as the average value of the cell
+
+            cell_sum += risk_image[u,v]
+
+            # mark the cells if its corosponding color exists in the cell
+            # these values are dont care values
+            r = tuple(processed_img[u,v])[0]
+            g = tuple(processed_img[u,v])[1]
+            b = tuple(processed_img[u,v])[2]
+
+            if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,255,0), 1)
+                cell_type[ycell][xcell] = 'H'
+                break
+            if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,0,0), 1)
+                cell_type[ycell][xcell] = 'G'
+                break
+            if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,255,0), 1)
+                cell_type[ycell][xcell] = 'O'        
+                break
+            if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,0,255), 1)
+                cell_type[ycell][xcell] = 'R'
+                break
+            if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,0,255), 1)
+                cell_type[ycell][xcell] = 'T'
+                break
+        
+        # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
+        if cell_known:
+            if cell_type[ycell][xcell] == 'H':
+                cell_cost[ycell][xcell] = float("inf")
+            else:
+                cell_cost[ycell][xcell] = 0.0
+            break
+
+    return cell_known, cell_sum
+
+
+# Updates the cells surrounding the current location, speeds up calc
+# so we dont have to call create_cells everytime
+def update_cells(cells_updated, risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, risk_reward_img_cells, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE):
+    # get image size
+    map_h, map_w, _ = risk_reward_image.shape
+
+    # create copy of the processed image so we cn draw the cells on it
+    img_cells = risk_reward_image.copy()
+
+    # function to map pixel values to cost values
+    image_value_to_cost_value = make_interpolater(0, 255, 0, 1.0)
+
+    # go through each updated cell and each pixel of the cell to decide what type of cell it is
+    # use this info to update the cell type map of the area
+    max_cost = -1
+    for (xcell, ycell) in cells_updated:
+        x = xcell * CELLS_SIZE
+        y = ycell * CELLS_SIZE
+
+        cell_known, cell_sum = update_a_cell((xcell, ycell), risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, img_cells, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE)
+
+        # if we dont know the cell type, mark it as a clean cell
+        # and add the weights to the cell
+        if not cell_known:
+            # draw rectangles
+            cost = cell_sum / (CELLS_SIZE**2)
+            print(xcell, "--", ycell)
+            risk_reward_cell_cost[ycell][xcell] = image_value_to_cost_value(cost)
+            # record the max cost for debugging purposes
+            if cost > max_cost:
+                max_cost = cost
+            # print(f"{x}-{y} :: {cost}")
+
+            # if risk_reward_cell_cost[ycell][xcell] < 0.9999999:
+            #     risk_reward_cell_cost[ycell][xcell] = 0.9999999
+
+            if cost == 0:
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (50,50,50), 1)
+            else:
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (cost,0,cost), 1)
+
+        # only copy the cells that have changed
+        img_process.copy_pixels_cells_img((xcell, ycell), risk_reward_img_cells, img_cells, current_phys_loc, CELLS_SIZE)
+
+    return risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost

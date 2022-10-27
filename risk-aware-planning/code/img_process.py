@@ -176,97 +176,98 @@ def get_reward_images(cell_type, img, cell_size, show=False):
     return reward_graphs
 
 
-# intenal helper function for update_local_risk_image
-def __update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELL_SIZE, op):
-    pass
+def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, xop, yop):
+    map_h = dest.shape[0]
+    map_w = dest.shape[1]
+    total_diff = 0
+
+    for dy in range(VIEW_CELLS_SIZE):
+        for dx in range(VIEW_CELLS_SIZE):
+            cell_diff = 0
+
+            ycell = yop(current_phys_loc[1], dy)
+            y = ycell * CELLS_SIZE
+            if ycell >= (map_w / CELLS_SIZE) or ycell < 0:
+                continue
+
+            xcell = xop(current_phys_loc[0], dx)
+            x = xcell * CELLS_SIZE
+            if xcell >= (map_w / CELLS_SIZE) or xcell < 0:
+                continue
+            
+            for u in range(y, y + CELLS_SIZE + 1, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE + 1, 1):
+                    if v >= map_w:
+                        break
+
+                    cell_diff += abs(int(dest[u,v]) - int(src[u,v]))
+                    dest[u,v] = src[u,v]
+
+            if cell_diff != 0:
+                cells_updated.append((xcell, ycell))
+            
+            total_diff += cell_diff
+
+    return total_diff
+
+# def copy_pixel_risk_cell_img(cell_loc, dest, src, current_phys_loc, cells_updated, CELLS_SIZE):
+#     xcell, ycell = cell_loc
+#     y = ycell * CELLS_SIZE
+#     x = xcell * CELLS_SIZE
+#     map_h = dest.shape[0]
+#     map_w = dest.shape[1]
+#     total_diff = 0
+
+#     for u in range(y, y + CELLS_SIZE + 1, 1):
+#         if u >= map_h:
+#             break
+#         for v in range(x, x + CELLS_SIZE + 1, 1):
+#             if v >= map_w:
+#                 break
+
+#             total_diff += abs(int(dest[u,v]) - int(src[u,v]))
+#             dest[u,v] = src[u,v]    
+
+#     return total_diff
+
+def copy_pixels_cells_img(cell_loc, dest, src, current_phys_loc, CELLS_SIZE):
+    xcell, ycell = cell_loc
+    y = ycell * CELLS_SIZE
+    x = xcell * CELLS_SIZE
+    map_h = dest.shape[0]
+    map_w = dest.shape[1]
+
+    for u in range(y, y + CELLS_SIZE, 1):
+        if u >= map_h:
+            break
+        for v in range(x, x + CELLS_SIZE, 1):
+            if v >= map_w:
+                break
+
+            dest[u,v] = src[u,v]
 
 
 # update a local risk image using the global risk image
 def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT):
-    map_h, map_w = risk_image_local.shape
-    originy = current_phys_loc[1] * CELLS_SIZE
-    originx = current_phys_loc[0] * CELLS_SIZE
-    min_radial_distance = 3
     total_diff = 0
+    cells_updated = []
+    add_lambda = lambda a,b: a+b
+    sub_lambda = lambda a,b: a-b
 
     # +x+y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] + dy) * CELLS_SIZE
-            x = (current_phys_loc[0] + dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
-
+    total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, add_lambda)
+    
     # -x+y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] + dy) * CELLS_SIZE
-            x = (current_phys_loc[0] - dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
+    total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, add_lambda)
+    
     # +x-y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] - dy) * CELLS_SIZE
-            x = (current_phys_loc[0] + dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
-
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
-
-
+    total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, sub_lambda)
+    
     # -x-y
-    for dy in range(VIEW_CELLS_SIZE):
-        for dx in range(VIEW_CELLS_SIZE):
-            y = (current_phys_loc[1] - dy) * CELLS_SIZE
-            x = (current_phys_loc[0] - dx) * CELLS_SIZE
-            for u in range(y, y + CELLS_SIZE, 1):
-                if u >= map_h:
-                    break
-                for v in range(x, x + CELLS_SIZE, 1):
-                    if v >= map_w:
-                        break
-                    radial_distance = math.sqrt((u-originy)**2 + (v-originx)**2)
-                    if radial_distance <= min_radial_distance: radial_distance = min_radial_distance
-                    new_risk_value = raw_risk_image[u,v] + (255 * UPDATE_WEIGHT / radial_distance)
-                    old_risk_value = risk_image_local[u,v]
-                    risk_image_local[u,v] = 255 if new_risk_value >= 255 else new_risk_value
+    total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, sub_lambda)
 
-                    total_diff += abs(old_risk_value - int(risk_image_local[u,v]))
+    print(cells_updated)
 
-    return risk_image_local, total_diff
+    return risk_image_local, total_diff, cells_updated
