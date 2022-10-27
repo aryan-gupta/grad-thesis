@@ -19,11 +19,14 @@ UPDATE_WEIGHT = 0 #5
 map_h = 640
 map_w = 576
 
+input_image_file = './sample.jpg'
+output_images_dir = '../../../tmp'
+ltl_hoa_file = 'ltl.hoa.txt'
 
 
 def read_process_image():
     # read image and show it
-    img = img_process.read_image('./sample.jpg', show=False)
+    img = img_process.read_image(input_image_file, show=False)
 
     # perspective warp the image so its a top down view
     points = [[1025, 132], [855, 2702], [3337, 2722], [2974, 165]]
@@ -59,7 +62,7 @@ def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
 
 def parse_ltl_hoa_file():
     # parse through LTL automata
-    return ltl_process.parse_ltl_hoa("ltl.hoa.txt")
+    return ltl_process.parse_ltl_hoa(ltl_hoa_file)
 
 
 def get_assumed_risk(raw_risk_image):
@@ -108,7 +111,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
     return total_shortest_path, assumed_risk_image
 
 
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=True):
+def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=False):
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
@@ -177,7 +180,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
                 # save the image
                 print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, "::", total_risk_updated, ")")
-                plt.imshow(dj_path_image_local); plt.savefig(f"/tmp/thesis/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.png")
+                plt.imshow(dj_path_image_local); plt.savefig(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.png")
                 img_tmp_idx_phys += 1
 
             # get the next location in the shortest path
