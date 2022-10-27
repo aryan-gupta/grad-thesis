@@ -137,7 +137,6 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
         # the loop to traverse the phys enviroment
         img_tmp_idx_phys=0
-        full_replan_needed = 0
 
         # This is needed so we can do partial replans
         shortest_path = []
@@ -154,11 +153,10 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
             # update risk map everytime we move
             assumed_risk_image_filled, amount_risk_updated, cells_updated = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
-            full_replan_needed += amount_risk_updated
 
-            # only do a full replan if we've accumulated enough risk updates or its our first run
-            # if we havent, then update the local data structures
-            if full_replan_needed > 1_000_000 or not planned:
+            # only do a full replan if its our first run
+            # if we havent, then update the local data structures and do a partial replan if the risk values have changed
+            if not planned:
                 if show: print("full replanning")
                 # reapply DJ's algo using new risk map
                 # create required data structures
@@ -173,7 +171,6 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 # apply dj's algo
                 shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
-                full_replan_needed = 0
                 planned = True
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
@@ -198,7 +195,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
                 # save the image
-                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, "::", full_replan_needed, ")")
+                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
 
                 cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", dj_path_image_local)
 

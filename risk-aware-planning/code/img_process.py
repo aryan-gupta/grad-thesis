@@ -201,10 +201,10 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
                 continue
 
             # iterate into the cell
-            for u in range(y, y + CELLS_SIZE + 1, 1):
+            for u in range(y, y + CELLS_SIZE, 1):
                 if u >= map_h:
                     break
-                for v in range(x, x + CELLS_SIZE + 1, 1):
+                for v in range(x, x + CELLS_SIZE, 1):
                     if v >= map_w:
                         break
 
