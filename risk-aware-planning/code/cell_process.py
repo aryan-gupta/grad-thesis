@@ -3,6 +3,7 @@ import cv2
 import math
 import matplotlib.pyplot as plt
 
+import img_process
 
 # I honestly thought there was a built in map function, but I guess Im wrong
 # https://stackoverflow.com/questions/1969240
@@ -319,3 +320,124 @@ def pretty_print_state_dd(state_diagram, state_dict):
         print()
 
     print(state_dict)
+
+
+def update_cells_op(processed_img, cell_type, cell_cost, current_phys_loc, risk_image, CELLS_SIZE, VIEW_CELLS_SIZE, xop, yop):
+    # get image size
+    map_h, map_w, _ = processed_img.shape
+
+    # create copy of the processed image so we cn draw the cells on it
+    img_cells = processed_img.copy()
+
+    # function to map pixel values to cost values
+    image_value_to_cost_value = make_interpolater(0, 255, 0, 1.0)
+
+    # go through each updated cell and each pixel of the cell to decide what type of cell it is
+    # use this info to update the cell type map of the area
+    max_cost = -1
+    for dy in range(VIEW_CELLS_SIZE+1):
+        for dx in range(VIEW_CELLS_SIZE+1):
+            ycell = yop(current_phys_loc[1], dy)
+            y = ycell * CELLS_SIZE
+            if ycell >= (map_w / CELLS_SIZE) or ycell < 0:
+                continue
+
+            xcell = xop(current_phys_loc[0], dx)
+            x = xcell * CELLS_SIZE
+            if xcell >= (map_w / CELLS_SIZE) or xcell < 0:
+                continue
+            
+            # determine what the cell is
+            cell_known = False
+            cell_sum = 0
+            cell_pxl_count = 0
+            for u in range(y, y + CELLS_SIZE, 1):
+                if u >= map_h:
+                    break
+                for v in range(x, x + CELLS_SIZE, 1):
+                    if v >= map_w:
+                        break
+
+                    # If the cell is a Goal Cell, give it 0.0 weight
+                    # If the cell is a Objective Cell, give it a 0.0 weight
+                    # if the cell is a Hazard Cell, give it the same weight as the average value of the cell
+
+                    cell_sum += risk_image[u,v]
+
+                    # mark the cells if its corosponding color exists in the cell
+                    # these values are dont care values
+                    r = tuple(processed_img[u,v])[0]
+                    g = tuple(processed_img[u,v])[1]
+                    b = tuple(processed_img[u,v])[2]
+
+                    if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,255,0), 1)
+                        cell_type[ycell][xcell] = 'H'
+                        break
+                    if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,0,0), 1)
+                        cell_type[ycell][xcell] = 'G'
+                        break
+                    if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,255,0), 1)
+                        cell_type[ycell][xcell] = 'O'        
+                        break
+                    if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,0,255), 1)
+                        cell_type[ycell][xcell] = 'R'
+                        break
+                    if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
+                        cell_known = True
+                        img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,0,255), 1)
+                        cell_type[ycell][xcell] = 'T'
+                        break
+                
+                # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
+                if cell_known:
+                    if cell_type[ycell][xcell] == 'H':
+                        cell_cost[ycell][xcell] = float("inf")
+                    else:
+                        cell_cost[ycell][xcell] = 0.0
+                    break
+
+            # if we dont know the cell type, mark it as a clean cell
+            # and add the weights to the cell
+            if not cell_known:
+                # draw rectangles
+                cost = cell_sum / (CELLS_SIZE**2)
+                cell_cost[ycell][xcell] = image_value_to_cost_value(cost)
+                # record the max cost for debugging purposes
+                if cost > max_cost:
+                    max_cost = cost
+                # print(f"{x}-{y} :: {cost}")
+
+                # if cell_cost[ycell][xcell] < 0.9999999:
+                #     cell_cost[ycell][xcell] = 0.9999999
+
+                if cost == 0:
+                    img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (50,50,50), 1)
+                else:
+                    img_cells = cv2.rectangle(img_cells, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (cost,0,cost), 1)
+    return img_cells
+
+
+# Updates the cells surrounding the current location, speeds up calc
+# so we dont have to call create_cells everytime
+def update_cells(risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, risk_reward_img_cells, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE):
+    add_lambda = lambda a,b: a+b
+    sub_lambda = lambda a,b: a-b
+    
+    img_cells = update_cells_op(risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, add_lambda)
+    img_process.copy_pixels_img(risk_reward_img_cells, img_cells, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, add_lambda)
+    img_cells = update_cells_op(risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, add_lambda)
+    img_process.copy_pixels_img(risk_reward_img_cells, img_cells, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, add_lambda)
+    img_cells = update_cells_op(risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, sub_lambda)
+    img_process.copy_pixels_img(risk_reward_img_cells, img_cells, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, add_lambda, sub_lambda)
+    img_cells = update_cells_op(risk_reward_image, risk_reward_cell_type, risk_reward_cell_cost, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, sub_lambda)
+    img_process.copy_pixels_img(risk_reward_img_cells, img_cells, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, sub_lambda)
+
+    return risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost
