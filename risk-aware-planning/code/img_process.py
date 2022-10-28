@@ -196,12 +196,12 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
             # calculate out x and y values
             ycell = yop(current_phys_loc[1], dy)
             y = ycell * CELLS_SIZE
-            if ycell >= (map_w / CELLS_SIZE) or ycell < 0:
+            if ycell > (map_h / CELLS_SIZE) or ycell < 0:
                 continue
 
             xcell = xop(current_phys_loc[0], dx)
             x = xcell * CELLS_SIZE
-            if xcell >= (map_w / CELLS_SIZE) or xcell < 0:
+            if xcell > (map_w / CELLS_SIZE) or xcell < 0:
                 continue
 
             # iterate into the cell
