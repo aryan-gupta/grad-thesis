@@ -5,22 +5,26 @@ import matplotlib.pyplot as plt
 import bisect
 
 
-# creates a
-def create_astar_partial_hfunc(target_phy_loc):
+# creates a function that uses the euclidean distance to the next_phys_loc
+# is used when doing a partial a* algo
+def create_astar_partial_hfunc(next_phys_loc):
     # for the a* algo, the heuristic function is the euclidean distance
     # from the current pos to the final pos
-    def astar_algo_default_hfunc(current_phys_loc, next_phy_loc):
-        dx = current_phys_loc[0] - target_phy_loc[0]
-        dy = current_phys_loc[1] - target_phy_loc[1]
+    def astar_algo_default_hfunc(current_phys_loc, target_phy_loc):
+        dx = current_phys_loc[0] - next_phys_loc[0]
+        dy = current_phys_loc[1] - next_phys_loc[1]
         euclidean_distance = math.sqrt((dx**2) + (dy**2))
         return 0.0005 * euclidean_distance
 
     return astar_algo_default_hfunc
 
 
-def astar_algo_partial_target(img_cells, cell_type, points, partial_target, state_diagram, CELLS_SIZE):
-    astar_algo_hfunc = create_astar_partial_hfunc(partial_target)
+# runs the a* algo with the points[1] being a partial target and the hfunc uses next_phys_loc as
+# the euclidean distance heuristic
+def astar_algo_partial_target(img_cells, cell_type, points, next_phys_loc, state_diagram, CELLS_SIZE):
+    astar_algo_hfunc = create_astar_partial_hfunc(next_phys_loc)
     return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, astar_algo_hfunc)
+
 
 # this is only here for legacy reasons, will be removed later
 # img_cells used to be a parameter as it was used to create a video
