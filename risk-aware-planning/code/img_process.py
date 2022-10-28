@@ -5,6 +5,8 @@ import math
 import cell_process
 import matplotlib.pyplot as plt
 
+REVISIT_RISK = 10
+
 # read in a image
 def read_image(filename, show=False):
     img = cv2.imread(filename)
@@ -214,8 +216,12 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
                         break
 
                     # update risk and calculate the difference
+                    # @TODO Convert this to revist cost in djk/astar algo
                     cell_diff += abs(int(dest[u,v]) - int(src[u,v]))
-                    dest[u,v] = src[u,v]
+                    new_risk_val = REVISIT_RISK if src[u,v] == REVISIT_RISK else src[u,v] + REVISIT_RISK
+                    if new_risk_val > 255: new_risk_val = 255
+                    dest[u,v] = new_risk_val
+                    src[u,v] = src[u,v] if src[u,v] == 255 else REVISIT_RISK
 
             if cell_diff != 0:
                 cells_updated.append((xcell, ycell))
