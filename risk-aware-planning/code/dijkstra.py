@@ -129,6 +129,8 @@ def dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, hfunc
                 prev[y + 1][x] = (x,y)
                 bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
 
+        if current[1] == finish:
+            break
     # # Print the distances map
     # for y in distances:
     #     for dist in y:
