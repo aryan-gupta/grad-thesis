@@ -5,21 +5,36 @@ import matplotlib.pyplot as plt
 import bisect
 
 
+# creates a
+def create_astar_partial_hfunc(target_phy_loc):
+    # for the a* algo, the heuristic function is the euclidean distance
+    # from the current pos to the final pos
+    def astar_algo_default_hfunc(current_phys_loc, next_phy_loc):
+        dx = current_phys_loc[0] - target_phy_loc[0]
+        dy = current_phys_loc[1] - target_phy_loc[1]
+        euclidean_distance = math.sqrt((dx**2) + (dy**2))
+        return 0.0005 * euclidean_distance
 
-# for the a* algo, the heuristic function is the euclidean distance
-# from the current pos to the final pos
-def astar_algo_default_hfunc(current_phys_loc, target_phy_loc):
-    dx = current_phys_loc[0] - target_phy_loc[0]
-    dy = current_phys_loc[1] - target_phy_loc[1]
-    euclidean_distance = math.sqrt((dx**2) + (dy**2))
-    return 0.0005 * euclidean_distance
+    return astar_algo_default_hfunc
 
+
+def astar_algo_partial_target(img_cells, cell_type, points, partial_target, state_diagram, CELLS_SIZE):
+    astar_algo_hfunc = create_astar_partial_hfunc(partial_target)
+    return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, astar_algo_hfunc)
 
 # this is only here for legacy reasons, will be removed later
 # img_cells used to be a parameter as it was used to create a video
 # now this feature is done by calling function
 def astar_algo(img_cells, cell_type, points, state_diagram, CELLS_SIZE):
-    return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, astar_algo_default_hfunc)
+    # for the a* algo, the heuristic function is the euclidean distance
+    # from the current pos to the final pos
+    def astar_algo_hfunc(current_phys_loc, next_phy_loc):
+        dx = current_phys_loc[0] - next_phy_loc[0]
+        dy = current_phys_loc[1] - next_phy_loc[1]
+        euclidean_distance = math.sqrt((dx**2) + (dy**2))
+        return 0.0005 * euclidean_distance
+
+    return dj_algo_hfunc(img_cells, cell_type, points, state_diagram, CELLS_SIZE, astar_algo_hfunc)
 
 
 # for djk's algo, the heuristic function always return 0 since we dont use

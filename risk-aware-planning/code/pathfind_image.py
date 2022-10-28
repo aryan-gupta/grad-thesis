@@ -71,6 +71,17 @@ def get_assumed_risk(raw_risk_image):
     return img_process.create_risk_img(raw_risk_image, 64, show=False)
 
 
+# this function gets the target of the DJK/astar algo
+# based off the previous path and the
+def get_astar_target(current_phys_loc, shortest_path, distance):
+    for idx in range(len(shortest_path)):
+        dx = shortest_path[idx][0] - current_phys_loc[0]
+        dy = shortest_path[idx][1] - current_phys_loc[1]
+
+        if math.sqrt(dx**2 + dy**2) < distance:
+            return shortest_path[idx], idx
+
+
 def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
     current_ltl_state = ltl_state_bounds[0]
     start_phys_loc = mission_phys_bounds[0]
@@ -154,6 +165,8 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             # update risk map everytime we move
             assumed_risk_image_filled, amount_risk_updated, cells_updated = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
 
+            astar_target = None
+
             # only do a full replan if its our first run
             # if we havent, then update the local data structures and do a partial replan if the risk values have changed
             if not planned:
@@ -172,6 +185,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
 
                 planned = True
+                astar_target = None
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
@@ -181,8 +195,23 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 # @todo always replan if there is any change to risk
                 if amount_risk_updated > 0:
                     if show: print("part replanning")
+                    # prepare data structures
                     state_diagram_local, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
-                    shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), state_diagram_local, CELLS_SIZE)
+
+                    # get astar's target cell
+                    # this target cell will be somewhere on the shortest_path line
+                    # idx is the index of the astar_target cell
+                    astar_target, idx = get_astar_target(current_phys_loc, shortest_path, VIEW_CELLS_SIZE * 2)
+
+                    # get new path from current loc to astar_target
+                    # shortest_path_astar_target[-1] = astar_target
+                    shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, astar_target), next_phys_loc, state_diagram_local, CELLS_SIZE)
+
+                    # splice our two shortest_paths together
+                    # @TODO check for redundant cells at the ends of the path
+                    shortest_path = shortest_path[0:idx]
+                    shortest_path = shortest_path + shortest_path_astar_target
+
 
             if show:
                 # draw our current future path on an image
@@ -193,6 +222,10 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 half_cell = math.ceil((CELLS_SIZE/2))
                 center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
                 dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
+
+                if astar_target != None:
+                    center = (astar_target[0]*CELLS_SIZE+half_cell, astar_target[1]*CELLS_SIZE+half_cell)
+                    dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
                 # save the image
                 print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
