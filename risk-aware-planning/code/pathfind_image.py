@@ -214,8 +214,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
 
             if show:
-                # draw our current future path on an image
+                # draw our taken path and future path on an image
                 dj_path_image_local = risk_reward_img_cells_local.copy()
+                dijkstra.draw_path_global(total_shortest_path, dj_path_image_local, (total_shortest_path[-1], total_shortest_path[0]), CELLS_SIZE)
                 dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
 
                 # draw the agent as a circle
