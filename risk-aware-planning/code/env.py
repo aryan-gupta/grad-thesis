@@ -8,7 +8,7 @@ map_w = 576
 
 def add_circular_risk(img):
     # large circles
-    for i in range(3):
+    for i in range(int(random.randrange(0, 5))):
         # determine size of circle
         circle_size = int(random.gauss(64, 16))
         # determine location
@@ -19,7 +19,7 @@ def add_circular_risk(img):
 
 
     # medium circles
-    for i in range(25):
+    for i in range(int(random.randrange(20, 30))):
         # determine size of circle
         circle_size = int(random.gauss(18, 5))
         # determine location
@@ -29,7 +29,7 @@ def add_circular_risk(img):
         img = cv2.circle(img, (x, y), circle_size, (0, 255, 0), -1)
 
     # # small circles
-    for i in range(200):
+    for i in range(int(random.randrange(100, 200))):
         # determine size of circle
         circle_size = 4
         # determine location
@@ -40,6 +40,7 @@ def add_circular_risk(img):
 
 
     return img
+
 
 def try_draw_cell(img, points, color, size):
     x, y = points
