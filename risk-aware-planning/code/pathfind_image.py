@@ -245,7 +245,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
                 # save the image
                 print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
-                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", dj_path_image_local)
+                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
 
                 # increment our image file counter
                 img_tmp_idx_phys += 1
