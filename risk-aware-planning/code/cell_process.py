@@ -96,43 +96,6 @@ def create_cells(processed_img, risk_image, CELLS_SIZE, show=False):
     return img_cells, cell_type, cell_cost
 
 
-# Convert connected cells with the \p orig_value to \p new_value
-# this allows us to mark areas from Goals to Start and Finish Cells
-def convert_cells_recurse(cell_type, y, x, orig_value, new_value):
-    cell_type[y][x] = new_value
-    if y > 0 and cell_type[y - 1][x] == orig_value:
-        convert_cells_recurse(cell_type, y - 1, x, orig_value, new_value)
-    if x > 0 and cell_type[y][x - 1] == orig_value:
-        convert_cells_recurse(cell_type, y, x - 1, orig_value, new_value)
-    if y < (len(cell_type)-1) and cell_type[y + 1][x] == orig_value:
-        convert_cells_recurse(cell_type, y + 1, x, orig_value, new_value)
-    if x < (len(cell_type[y])-1) and cell_type[y][x + 1] == orig_value:
-        convert_cells_recurse(cell_type, y, x + 1, orig_value, new_value)
-
-
-# Converts objective and goal cells into the specific objective and goals
-def convert_cells(cell_type, objectives, goals):
-    objectives_idx = 0
-    goals_idx = 0
-    # Convert Goal Cells into start and finish cells
-    for y in range(len(cell_type)):
-        for x in range(len(cell_type[y])):
-            if cell_type[y][x] == "O":
-                convert_cells_recurse(cell_type, y, x, "O", objectives[objectives_idx])
-                objectives_idx += 1
-            if cell_type[y][x] == "G":
-                convert_cells_recurse(cell_type, y, x, "G", goals[goals_idx])
-                goals_idx += 1
-
-    # Print the converted cell types
-    # for y in cell_type:
-    #     print(y)
-    # print()
-    # print()
-
-    return cell_type
-
-
 # Get the start and finish locations of the enviroment using the cell types
 def get_start_finish_locations(cell_type):
     # find the start node
@@ -309,26 +272,32 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,255,0), 1)
                 cell_type[ycell][xcell] = 'H'
                 break
-            if tuple(processed_img[u,v]) == (255, 0, 0): # Goal Cells
+            if tuple(processed_img[u,v]) == (250, g, 0): # LTL Current Target
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,0,0), 1)
-                cell_type[ycell][xcell] = 'G'
-                break
-            if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,255,0), 1)
-                cell_type[ycell][xcell] = 'O'
-                break
-            if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,0,255), 1)
-                cell_type[ycell][xcell] = 'R'
-                break
-            if tuple(processed_img[u,v]) == (254, 0, 254): # LTL Current Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (255,0,255), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (250,0,0), 1)
                 cell_type[ycell][xcell] = 'T'
                 break
+            if tuple(processed_img[u,v]) == (225, g, 0): # Mission Start Cell
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (225,0,0), 1)
+                cell_type[ycell][xcell] = 'S'
+                break
+            if tuple(processed_img[u,v]) == (200, g, 0): # Mission Finish Cell
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (200,0,0), 1)
+                cell_type[ycell][xcell] = 'F'
+                break
+            if tuple(processed_img[u,v]) == (175, g, 0): # A Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (175,0,0), 1)
+                cell_type[ycell][xcell] = 'A'
+                break
+            if tuple(processed_img[u,v]) == (150, g, 0): # B Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'B'
+                break
+
 
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:

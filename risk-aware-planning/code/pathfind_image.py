@@ -20,9 +20,20 @@ UPDATE_WEIGHT = 0 #5
 map_h = 640
 map_w = 576
 
-input_image_file = './sample.jpg'
+input_image_file = '../../../maps/002.bmp'
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
+
+
+# reads in an image but doesnt pre process it
+def read_image(show=False):
+    # read image and show it
+    img = img_process.read_image(input_image_file, show=False)
+    blue_channel, green_channel, red_channel = cv2.split(img)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if show: plt.imshow(green_channel); plt.show()
+    if show: plt.imshow(red_channel); plt.show()
+    return img, red_channel, green_channel
 
 
 # reads in an image and pre-process the image
@@ -50,9 +61,6 @@ def read_process_image():
 def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
     # create cells based off of map and risk and assign costs to cells
     img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, raw_risk_image, CELLS_SIZE, show=False)
-
-    # convert cells to seperate objectives and goals (@TODO find a better way to do this)
-    cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=["S", "F"])
 
     # get start and finish locations from cell graph
     global_start, global_finish = cell_process.get_start_finish_locations(cell_type)
@@ -183,7 +191,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             if risk_reward_image_local is None:
                 if show: print("full replanning")
                 # create required data structures
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
+                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
                 # since this img_cells image was created by using reward images and not the raw_processed_img, we dont need to run cell_process.convert_cells
                 state_diagram_local, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
@@ -196,7 +204,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
+                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
 
                 if amount_risk_updated > 0:
@@ -283,7 +291,7 @@ def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled,
 
 def main():
     # read in and process image
-    processed_img, raw_reward_image, raw_risk_image = read_process_image()
+    processed_img, raw_reward_image, raw_risk_image = read_image()
 
     # create our axiom reward graphs
     processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)

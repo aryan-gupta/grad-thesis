@@ -166,8 +166,8 @@ def get_reward_images(cell_type, img, cell_size, show=False):
                         for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
                             # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
                             # print(len(cell_type[col_num]), row_num, px_x, (row_num * cell_size), (row_num * (cell_size+1) - 1))
-                            if img[px_y][px_x] > 250:
-                                empty_image[px_y][px_x] = 254
+                            if img[px_y][px_x] > 0:
+                                empty_image[px_y][px_x] = 250
 
         reward_graphs[goal] = empty_image
         if show: print(goal)
