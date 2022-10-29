@@ -101,6 +101,8 @@ def main():
     num_ltl_target = 2
     env = create_env(num_ltl_target, (map_w, map_h))
     plt.imshow(env); plt.show()
+    env = cv2.cvtColor(env, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(f"../../../maps/001.bmp", env)
 
 
 if __name__ == "__main__":
