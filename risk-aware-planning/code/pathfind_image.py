@@ -28,9 +28,8 @@ ltl_hoa_file = 'ltl.hoa.txt'
 # reads in an image but doesnt pre process it
 def read_image(show=False):
     # read image and show it
-    img = img_process.read_image(input_image_file, show=False)
-    blue_channel, green_channel, red_channel = cv2.split(img)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = env.create_env(2, (map_w, map_h))
+    red_channel, green_channel, blue_channel = cv2.split(img)
     if show: plt.imshow(green_channel); plt.show()
     if show: plt.imshow(red_channel); plt.show()
     return img, red_channel, green_channel
