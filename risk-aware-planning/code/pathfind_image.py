@@ -76,54 +76,15 @@ def get_assumed_risk(raw_risk_image):
     return img_process.create_risk_img(raw_risk_image, 64, show=False)
 
 
-def get_astar_target_recurse(current_phys_loc, shortest_path, distance, start, finish):
-    if finish - start <= 1:
-        return shortest_path[start], start
-
-    # calculate distance from half to current location
-    half = start + ((finish - start) // 2)
-    dx = float(shortest_path[half][0]) - current_phys_loc[0]
-    dy = float(shortest_path[half][1]) - current_phys_loc[1]
-    current_distance = int(math.sqrt(dx**2 + dy**2))
-
-    if len(shortest_path) == 27: print("new", math.sqrt(dx**2 + dy**2))
-    # if len(shortest_path) == 5:
-    #     print(shortest_path[half])
-
-    # if the current distance is greater, go ealier in the path
-    if current_distance < distance:
-        return get_astar_target_recurse(current_phys_loc, shortest_path, distance, start, half)
-    else:
-        return get_astar_target_recurse(current_phys_loc, shortest_path, distance, half, finish)
-
-
 # this function gets the target of the DJK/astar algo
 # based off the previous path and the
 def get_astar_target(current_phys_loc, shortest_path, distance):
-    target_new, idx_new = get_astar_target_recurse(current_phys_loc, shortest_path, distance, 0, len(shortest_path))
-
-    target_old = None
-    idx_old = None
     for idx in range(len(shortest_path)):
-        dx = float(shortest_path[idx][0]) - current_phys_loc[0]
-        dy = float(shortest_path[idx][1]) - current_phys_loc[1]
+        dx = shortest_path[idx][0] - current_phys_loc[0]
+        dy = shortest_path[idx][1] - current_phys_loc[1]
 
-        if len(shortest_path) == 27: print("old", math.sqrt(dx**2 + dy**2))
-
-        if int(math.sqrt(dx**2 + dy**2)) < distance:
-            target_old = shortest_path[idx]
-            idx_old = idx
-            break
-
-
-    if len(shortest_path) == 27:
-        print(shortest_path)
-        print(target_new, "  ", idx_new)
-        print(target_old, "  ", idx_old)
-        if target_new != target_old:
-            print('Error')
-
-    return target_old, idx_old
+        if math.sqrt(dx**2 + dy**2) < distance:
+            return shortest_path[idx], idx
 
 
 # pathfinds without a sensing region
@@ -238,7 +199,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
 
-                if amount_risk_updated >= 0:
+                if amount_risk_updated > 0:
                     if show: print("part replanning")
                     # prepare data structures
                     state_diagram_local, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type_local, risk_reward_cell_cost_local, show=False)
