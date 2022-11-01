@@ -10,6 +10,8 @@ import img_process
 import cell_process
 import ltl_process
 import dijkstra
+import env
+import random
 
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
@@ -289,6 +291,8 @@ def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled,
 
 
 def main():
+    random.seed(0)
+
     # read in and process image
     processed_img, raw_reward_image, raw_risk_image = read_image()
 
