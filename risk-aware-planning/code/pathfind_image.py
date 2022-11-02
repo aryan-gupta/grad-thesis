@@ -108,15 +108,11 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
 
         risk_reward_cell_type = cell_process.convert_cells(risk_reward_cell_type, objectives=["A", "B"], goals=["S", "F"])
 
-        # convert cells to state diagram so we can apply dj's algo to it
-        # @TODO remove dependency to state_diagram just like updating_risk function
-        state_diagram, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
-
         # get start and finish locations for this ltl node
         _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type)
 
         # apply dj's algo
-        shortest_path = dijkstra.dj_algo(risk_reward_img_cells, risk_reward_cell_type, (start_phys_loc, next_phys_loc), state_diagram, CELLS_SIZE)
+        shortest_path = dijkstra.dj_algo(risk_reward_img_cells, risk_reward_cell_type, (start_phys_loc, next_phys_loc), risk_reward_cell_cost, CELLS_SIZE)
 
         # find next state that we should go to
         next_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, next_phys_loc, CELLS_SIZE)
