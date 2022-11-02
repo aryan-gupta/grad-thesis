@@ -6,7 +6,7 @@ import bisect
 
 
 def get_cfunc(ds):
-    if hasattr(ds, "__len__"):
+    if hasattr(ds[0][0], "__len__"):
         # is array use state_diagram
         return state_diagram_cfunc
     else:
@@ -17,7 +17,7 @@ def state_diagram_cfunc(points, state_diagram, direction):
     x, y = points
     return state_diagram[y][x][direction]
 
-def cell_cost_cfunc(points, state_diagram, direction):
+def cell_cost_cfunc(points, cell_cost, direction):
     x, y = points
 
     if direction == 0:
