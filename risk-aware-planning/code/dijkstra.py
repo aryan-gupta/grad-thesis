@@ -250,3 +250,14 @@ def get_next_cell_shortest_path(shortest_path, current_phys_loc):
     for i in range(len(shortest_path)):
         if current_phys_loc == shortest_path[i]:
             return shortest_path[i - 1]
+
+
+# this function gets the target of the DJK/astar algo
+# based off the previous path and the
+def get_astar_target(current_phys_loc, shortest_path, distance):
+    for idx in range(len(shortest_path)):
+        dx = shortest_path[idx][0] - current_phys_loc[0]
+        dy = shortest_path[idx][1] - current_phys_loc[1]
+
+        if math.sqrt(dx**2 + dy**2) < distance:
+            return shortest_path[idx], idx

@@ -76,17 +76,6 @@ def get_assumed_risk(raw_risk_image):
     return img_process.create_risk_img(raw_risk_image, 16, show=False)
 
 
-# this function gets the target of the DJK/astar algo
-# based off the previous path and the
-def get_astar_target(current_phys_loc, shortest_path, distance):
-    for idx in range(len(shortest_path)):
-        dx = shortest_path[idx][0] - current_phys_loc[0]
-        dy = shortest_path[idx][1] - current_phys_loc[1]
-
-        if math.sqrt(dx**2 + dy**2) < distance:
-            return shortest_path[idx], idx
-
-
 # pathfinds without a sensing region
 def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
     current_ltl_state = ltl_state_bounds[0]
@@ -205,7 +194,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                     # get astar's target cell
                     # this target cell will be somewhere on the current_planned_path line
                     # idx is the index of the astar_target cell
-                    astar_target, idx = get_astar_target(current_phys_loc, current_planned_path, VIEW_CELLS_SIZE * 2)
+                    astar_target, idx = dijkstra.get_astar_target(current_phys_loc, current_planned_path, VIEW_CELLS_SIZE * 2)
 
                     # get new path from current loc to astar_target
                     shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, astar_target), final_phys_loc, risk_reward_cell_cost_local, CELLS_SIZE)
