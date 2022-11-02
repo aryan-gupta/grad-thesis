@@ -21,16 +21,20 @@ def cell_cost_cfunc(points, cell_cost, direction):
     x, y = points
 
     if direction == 0:
-        return cell_cost[y][x]
+        if y > 0:
+            return cell_cost[y - 1][x]
 
     if direction == 1:
-        return cell_cost[y][x]
+        if x > 0:
+            return cell_cost[y][x - 1]
 
     if direction == 2:
-        return cell_cost[y][x]
+        if x < (len(cell_cost[0]) - 1):
+            return cell_cost[y][x + 1]
 
     if direction == 3:
-        return cell_cost[y][x]
+        if y < (len(cell_cost) - 1):
+            return cell_cost[y + 1][x]
 
 
 # creates a function that uses the euclidean distance to the next_phys_loc
