@@ -73,7 +73,7 @@ def parse_ltl_hoa_file():
 # pretty much blurs the risk image but will need to find better way to do this
 def get_assumed_risk(raw_risk_image):
     # create blurred risk image
-    return img_process.create_risk_img(raw_risk_image, 64, show=False)
+    return img_process.create_risk_img(raw_risk_image, 16, show=False)
 
 
 # this function gets the target of the DJK/astar algo

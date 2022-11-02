@@ -129,7 +129,7 @@ def apply_edge_blur(img, reward_size, show=False):
 # applys the edge gaussian blur to a risk image
 def create_risk_img(img, risk_size, show=False):
     # Wall risk image
-    dilate_factor = 4
+    dilate_factor = 1
     dilate_kernel = np.ones((risk_size//dilate_factor,risk_size//dilate_factor), np.uint8)
     gaussian_kernel_size = risk_size + 1
     wall_risk_image = cv2.dilate(img, dilate_kernel, 0)
