@@ -109,6 +109,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
         risk_reward_cell_type = cell_process.convert_cells(risk_reward_cell_type, objectives=["A", "B"], goals=["S", "F"])
 
         # convert cells to state diagram so we can apply dj's algo to it
+        # @TODO remove dependency to state_diagram just like updating_risk function
         state_diagram, _ = cell_process.cells_to_state_diagram(risk_reward_cell_type, risk_reward_cell_cost, show=False)
 
         # get start and finish locations for this ltl node
