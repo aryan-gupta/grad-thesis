@@ -129,7 +129,8 @@ def apply_edge_blur(img, reward_size, show=False):
 # applys the edge gaussian blur to a risk image
 def create_risk_img(img, risk_size, show=False):
     # Wall risk image
-    dilate_kernel = np.ones((risk_size,risk_size), np.uint8)
+    dilate_factor = 1
+    dilate_kernel = np.ones((risk_size//dilate_factor,risk_size//dilate_factor), np.uint8)
     gaussian_kernel_size = risk_size + 1
     wall_risk_image = cv2.dilate(img, dilate_kernel, 0)
     wall_risk_image = cv2.GaussianBlur(wall_risk_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
@@ -166,8 +167,8 @@ def get_reward_images(cell_type, img, cell_size, show=False):
                         for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
                             # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
                             # print(len(cell_type[col_num]), row_num, px_x, (row_num * cell_size), (row_num * (cell_size+1) - 1))
-                            if img[px_y][px_x] > 250:
-                                empty_image[px_y][px_x] = 254
+                            if img[px_y][px_x] > 0:
+                                empty_image[px_y][px_x] = 250
 
         reward_graphs[goal] = empty_image
         if show: print(goal)

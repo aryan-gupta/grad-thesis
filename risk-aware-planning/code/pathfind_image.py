@@ -10,6 +10,8 @@ import img_process
 import cell_process
 import ltl_process
 import dijkstra
+import env
+import random
 
 # GLOBAL VARS
 CELLS_SIZE = 8 # 32 pixels
@@ -17,42 +19,40 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELL_SIZE)
-map_h = 640
-map_w = 576
+map_h = 800
+map_w = 800
 
-input_image_file = './sample.jpg'
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
 
-# reads in an image and pre-process the image
-def read_process_image():
-    # read image and show it
-    img = img_process.read_image(input_image_file, show=False)
+# reads in an image but doesnt pre process it
+def get_env(input_image_file, show=False):
+    global map_h
+    global map_w
 
-    # perspective warp the image so its a top down view
-    points = [[1025, 132], [855, 2702], [3337, 2722], [2974, 165]]
-    wpcc_img = img_process.perspective_warp(img, points, map_w, map_h, show=False)
+    red_channel = green_channel = blue_channel = None
 
-    # seperate the image into the color segments to create binary images of each color
-    (red_channel, green_channel, blue_channel, yellow_channel) = img_process.color_segment_image(wpcc_img, show=False)
+    if input_image_file is None:
+        # read image and show it
+        img = env.create_env(2, (map_w, map_h))
+    else:
+        img = img_process.read_image(input_image_file, show=False)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        map_h, map_w , _= img.shape
 
-    # merge the color channels into one fully saturated and colorified image
-    processed_img = img_process.merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False)
+    red_channel, green_channel, blue_channel = cv2.split(img)
 
-    # create an image of all the goals and objectives
-    raw_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
+    if show: plt.imshow(green_channel); plt.show()
+    if show: plt.imshow(red_channel); plt.show()
 
-    return processed_img, raw_reward_image, green_channel
+    return img, red_channel, green_channel
 
 
 # creates all the reward graphs for each axiom
 def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
     # create cells based off of map and risk and assign costs to cells
     img_cells, cell_type, cell_cost = cell_process.create_cells(processed_img, raw_risk_image, CELLS_SIZE, show=False)
-
-    # convert cells to seperate objectives and goals (@TODO find a better way to do this)
-    cell_type = cell_process.convert_cells(cell_type, objectives=["A", "B"], goals=["S", "F"])
 
     # get start and finish locations from cell graph
     global_start, global_finish = cell_process.get_start_finish_locations(cell_type)
@@ -73,7 +73,7 @@ def parse_ltl_hoa_file():
 # pretty much blurs the risk image but will need to find better way to do this
 def get_assumed_risk(raw_risk_image):
     # create blurred risk image
-    return img_process.create_risk_img(raw_risk_image, 64, show=False)
+    return img_process.create_risk_img(raw_risk_image, 16, show=False)
 
 
 # this function gets the target of the DJK/astar algo
@@ -179,7 +179,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             if risk_reward_image_local is None:
                 if show: print("full replanning")
                 # create required data structures
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
+                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
                 # get next phys loc
@@ -190,7 +190,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, current_ltl_state_reward_graph])
+                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
 
                 if amount_risk_updated > 0:
@@ -229,7 +229,15 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
                 # save the image
                 print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
-                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", dj_path_image_local)
+                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+                # if img_tmp_idx_ltl == 0 and img_tmp_idx_phys == 30:
+                #     for y in risk_reward_cell_cost_local:
+                #         for cost in y:
+                #             print("{:.2f}".format(cost), end=", ")
+                #         print()
+                #     print()
+                #     print()
+                #     exit()
 
                 # increment our image file counter
                 img_tmp_idx_phys += 1
@@ -274,8 +282,11 @@ def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled,
 
 
 def main():
+    random.seed(0)
+
     # read in and process image
-    processed_img, raw_reward_image, raw_risk_image = read_process_image()
+    processed_img, raw_reward_image, raw_risk_image = get_env(None)
+    # processed_img, raw_reward_image, raw_risk_image = get_env('../../../maps/002.bmp')
 
     # create our axiom reward graphs
     processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
@@ -292,7 +303,7 @@ def main():
 
     # draw the path on img_cell to show the end user
     dj_path_image = create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, (mission_phys_start, mission_phys_finish))
-    cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", dj_path_image)
+    cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
 
 if __name__ == "__main__":
