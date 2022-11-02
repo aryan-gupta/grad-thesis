@@ -135,6 +135,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
     # the shortest path of the entire mission
     total_shortest_path = []
 
+    # the min possible path len if there was no risk
+    min_path_len = 0
+
     # our local copy of risk from using our viewing range
     assumed_risk_image_filled = assumed_risk_image.copy()
 
@@ -162,6 +165,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
         risk_reward_img_cells_local = None
         risk_reward_cell_type_local = None
         risk_reward_cell_cost_local = None
+
+        # calculate min path len
+        min_path_len += abs(current_phys_loc[0] - final_phys_loc[0]) + abs(current_phys_loc[1] - final_phys_loc[1])
 
         # the loop to traverse the phys enviroment
         while current_phys_loc != final_phys_loc:
@@ -241,7 +247,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
         current_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, final_phys_loc, CELLS_SIZE)
         img_tmp_idx_ltl += 1
 
-    return total_shortest_path, assumed_risk_image_filled
+    return total_shortest_path, min_path_len, assumed_risk_image_filled
 
 
 # creates the final image to output
@@ -287,7 +293,10 @@ def main():
 
     # pathfind the image
     # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
-    path, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+
+    print("path len:: ", len(path))
+    print("min  len:: ", min_path_len)
 
     # draw the path on img_cell to show the end user
     dj_path_image = create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, (mission_phys_start, mission_phys_finish))
