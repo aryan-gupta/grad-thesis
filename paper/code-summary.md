@@ -31,7 +31,7 @@ get our base assumed risk "satellite image"
 - create our risk image
 
 pathfind (different path finding methods are used and discribed at end)
-- todo
+- see algorithms below
 
 output the path
 - split image into rgb channels
