@@ -149,22 +149,22 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
         # get reward map of current LTL state
         current_ltl_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
 
-        # we wont know the next_phys_loc or the dj's target location until we run our algo
+        # we wont know the final_phys_loc or the dj's target location until we run our algo
         # store a dummy result in the meantime
-        next_phys_loc = (-1,-1)
+        final_phys_loc = (-1,-1)
 
         # the index for phys steps for the image output
         img_tmp_idx_phys=0
 
         # This is needed so we can do partial replans
-        shortest_path = []
+        current_planned_path = []
         risk_reward_image_local = None
         risk_reward_img_cells_local = None
         risk_reward_cell_type_local = None
         risk_reward_cell_cost_local = None
 
         # the loop to traverse the phys enviroment
-        while current_phys_loc != next_phys_loc:
+        while current_phys_loc != final_phys_loc:
             # add current node to path
             total_shortest_path.insert(0, current_phys_loc)
 
@@ -183,10 +183,10 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
                 # get next phys loc
-                _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
+                _, final_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
 
                 # apply dj's algo
-                shortest_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, next_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
+                current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
@@ -197,22 +197,22 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                     if show: print("part replanning")
 
                     # get astar's target cell
-                    # this target cell will be somewhere on the shortest_path line
+                    # this target cell will be somewhere on the current_planned_path line
                     # idx is the index of the astar_target cell
-                    astar_target, idx = get_astar_target(current_phys_loc, shortest_path, VIEW_CELLS_SIZE * 2)
+                    astar_target, idx = get_astar_target(current_phys_loc, current_planned_path, VIEW_CELLS_SIZE * 2)
 
                     # get new path from current loc to astar_target
-                    shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, astar_target), next_phys_loc, risk_reward_cell_cost_local, CELLS_SIZE)
+                    shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, astar_target), final_phys_loc, risk_reward_cell_cost_local, CELLS_SIZE)
 
                     # splice our two shortest_paths together
-                    shortest_path = shortest_path[0:idx]
-                    shortest_path = shortest_path + shortest_path_astar_target
+                    current_planned_path = current_planned_path[0:idx]
+                    current_planned_path = current_planned_path + shortest_path_astar_target
 
             if show:
                 # draw our taken path and future path on an image
                 dj_path_image_local = risk_reward_img_cells_local.copy()
                 dijkstra.draw_path_global(total_shortest_path, dj_path_image_local, (total_shortest_path[-1], total_shortest_path[0]), CELLS_SIZE)
-                dijkstra.draw_path_global(shortest_path, dj_path_image_local, (current_phys_loc, next_phys_loc), CELLS_SIZE)
+                dijkstra.draw_path_global(current_planned_path, dj_path_image_local, (current_phys_loc, final_phys_loc), CELLS_SIZE)
 
                 # draw the agent as a circle
                 half_cell = math.ceil((CELLS_SIZE/2))
@@ -235,15 +235,11 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 img_tmp_idx_phys += 1
 
             # get the next location in the shortest path
-            current_phys_loc = dijkstra.get_next_cell_shortest_path(shortest_path, current_phys_loc)
+            current_phys_loc = dijkstra.get_next_cell_shortest_path(current_planned_path, current_phys_loc)
 
-        # find next state that we should go to
-        next_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, next_phys_loc, CELLS_SIZE)
+        # find next state that we should go to and setup next interation
+        current_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, final_phys_loc, CELLS_SIZE)
         img_tmp_idx_ltl += 1
-
-        # setup next interation
-        current_ltl_state = next_ltl_state
-        current_phys_loc = next_phys_loc
 
     return total_shortest_path, assumed_risk_image_filled
 
