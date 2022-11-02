@@ -10,18 +10,7 @@ import bisect
 # this can be checked by testing if x/y elements is an array, because if it isnt, its
 # the raw cost value and not the state_diagram
 def get_cfunc(ds):
-    if hasattr(ds[0][0], "__len__"):
-        # is array use state_diagram
-        return state_diagram_cfunc
-    else:
-        # is scalar use cell_cost
-        return cell_cost_cfunc
-
-
-# the cost function for the state diagram method
-def state_diagram_cfunc(points, state_diagram, direction):
-    x, y = points
-    return state_diagram[y][x][direction]
+    return cell_cost_cfunc
 
 
 # the cost function for the cell_cost raw method
