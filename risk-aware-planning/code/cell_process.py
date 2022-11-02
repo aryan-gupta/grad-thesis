@@ -185,19 +185,19 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
 
             # check up
             if y > 0:
-                state_diagram[y][x][0] = cell_cost[y][x]
+                state_diagram[y][x][0] = cell_cost[y - 1][x]
                 state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
             # check up right
             # NOT IMPL
 
             # check left
             if x > 0:
-                state_diagram[y][x][1] = cell_cost[y][x]
+                state_diagram[y][x][1] = cell_cost[y][x - 1]
                 state_dict[f"{x}-{y}"].append(('l', f"{x-1}-{y}"))
 
             # check right
             if x < (len(cell_type[0]) - 1):
-                state_diagram[y][x][2] = cell_cost[y][x]
+                state_diagram[y][x][2] = cell_cost[y][x + 1]
                 state_dict[f"{x}-{y}"].append(('r', f"{x+1}-{y}"))
 
             # check down left
@@ -205,7 +205,7 @@ def cells_to_state_diagram(cell_type, cell_cost, show=False):
 
             # check down
             if y < (len(cell_type) - 1):
-                state_diagram[y][x][3] = cell_cost[y][x]
+                state_diagram[y][x][3] = cell_cost[y + 1][x]
                 state_dict[f"{x}-{y}"].append(('d', f"{x}-{y+1}"))
             # check down right
             # NOT IMPL
