@@ -22,40 +22,31 @@ UPDATE_WEIGHT = 0 #5
 map_h = 640
 map_w = 576
 
-input_image_file = '../../../maps/002.bmp'
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
 
 # reads in an image but doesnt pre process it
-def read_image(show=False):
-    # read image and show it
-    img = env.create_env(2, (map_w, map_h))
+def get_env(input_image_file, show=False):
+    global map_h
+    global map_w
+
+    red_channel = green_channel = blue_channel = None
+
+    if input_image_file is None:
+        # read image and show it
+        img = env.create_env(2, (map_w, map_h))
+    else:
+        img = img_process.read_image(input_image_file, show=False)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        map_h, map_w , _= img.shape
+
     red_channel, green_channel, blue_channel = cv2.split(img)
+
     if show: plt.imshow(green_channel); plt.show()
     if show: plt.imshow(red_channel); plt.show()
+
     return img, red_channel, green_channel
-
-
-# reads in an image and pre-process the image
-def read_process_image():
-    # read image and show it
-    img = img_process.read_image(input_image_file, show=False)
-
-    # perspective warp the image so its a top down view
-    points = [[1025, 132], [855, 2702], [3337, 2722], [2974, 165]]
-    wpcc_img = img_process.perspective_warp(img, points, map_w, map_h, show=False)
-
-    # seperate the image into the color segments to create binary images of each color
-    (red_channel, green_channel, blue_channel, yellow_channel) = img_process.color_segment_image(wpcc_img, show=False)
-
-    # merge the color channels into one fully saturated and colorified image
-    processed_img = img_process.merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False)
-
-    # create an image of all the goals and objectives
-    raw_reward_image = cv2.add(cv2.add(red_channel, blue_channel), yellow_channel)
-
-    return processed_img, raw_reward_image, green_channel
 
 
 # creates all the reward graphs for each axiom
@@ -294,7 +285,8 @@ def main():
     random.seed(0)
 
     # read in and process image
-    processed_img, raw_reward_image, raw_risk_image = read_image()
+    processed_img, raw_reward_image, raw_risk_image = get_env(None)
+    # processed_img, raw_reward_image, raw_risk_image = get_env('../../../maps/002.bmp')
 
     # create our axiom reward graphs
     processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
