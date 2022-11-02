@@ -1,14 +1,3 @@
-
-path finding using product automata
- - The algo creates a product automata, djk's is run on it
- - agent follows path
-
-risk pathfinding using product automata
- - after each move the product automata is created
- - it path finds and moved one step, then does it again
- - each time the risk is
-
-
 features:
 
 
@@ -94,7 +83,39 @@ pathfind_updating_risk:
 
 
 
+pathfind_no_sensing_range:
+- get start ltl and start phys state
+- create an array to store the path we have taken
+- create variable (img_tmp_idx_ltl) so our pictures have unique names and they are ordered (TODO)
+- start the ltl traversal loop
+    - get the current reward images for all the possible paths out of this current node (current_ltl_state_reward_graph)
+    - merge our current_ltl_state_reward_graph with our assumed_risk_image_filled (risk_reward_image) to create our enviroment image
+    - create our cell image (risk_reward_img_cells), cells types (risk_reward_cell_type), and cell cost (risk_reward_cell_cost) on   risk_reward_image
+    - convert risk_reward_cell_type and risk_reward_cell_cost into a state diagram
+    - get out next_phys_loc based off of risk_reward_cell_type
+    - calculate djk/astar and store it in shortest_path
+    - splice shortest_path into total_shortest_path
+    - get the next ltl state we need to go to based off the current location (should be next_phys_loc)
+- end "ltl traversal loop"
+- return path taken and assumed_risk_image_filled (should be unchanged since we dont have a sening region)
 
-pathfind_no_sening_range:
-pathfind_product_auto:
-pathfind_product_sensing_region:
+
+
+
+pathfind_product_auto: basic path finding
+- create state diagram
+- create product automata with state_diagram and ltl_state_diag
+- astar the product automata
+- travel entire path
+
+
+
+
+pathfind_product_sensing_region: basic path finding with a sensing region
+- update risk
+- create required data structures
+- create state diagram
+- create product automata with state_diagram and ltl_state_diag
+- astar the product automata
+- travel one cell
+- maybe only update product automata cells that have changed
