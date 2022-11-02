@@ -3,12 +3,12 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-map_h = 640
-map_w = 576
+map_h = 800
+map_w = 800
 
 def add_circular_risk(img):
     # large circles
-    for i in range(int(random.randrange(0, 5))):
+    for i in range(int(random.randrange(0, 10))):
         # determine size of circle
         circle_size = int(random.gauss(64, 16))
         # determine location
@@ -19,7 +19,7 @@ def add_circular_risk(img):
 
 
     # medium circles
-    for i in range(int(random.randrange(20, 30))):
+    for i in range(int(random.randrange(30, 40))):
         # determine size of circle
         circle_size = int(random.gauss(18, 5))
         # determine location
@@ -27,17 +27,6 @@ def add_circular_risk(img):
         y = random.randrange(0, map_h)
         # add risk
         img = cv2.circle(img, (x, y), circle_size, (0, 255, 0), -1)
-
-    # # small circles
-    for i in range(int(random.randrange(100, 200))):
-        # determine size of circle
-        circle_size = 4
-        # determine location
-        x = random.randrange(0, map_w)
-        y = random.randrange(0, map_h)
-        # add risk
-        img = cv2.circle(img, (x, y), circle_size, (0, 255, 0), -1)
-
 
     return img
 
@@ -78,6 +67,36 @@ def add_ltl_targets(num_ltl_target, img):
 
     return img
 
+def try_draw_circle(img):
+    # determine size of circle
+    circle_size = 4
+    # determine location
+    x = random.randrange(0, map_w)
+    y = random.randrange(0, map_h)
+
+    for yp in range(y-circle_size, y+circle_size):
+        if yp >= map_h: return False
+
+        for xp in range(x-circle_size, x+circle_size):
+            if xp >= map_w: return False
+
+            if img[yp, xp][0] != 0:
+                return False
+
+    # add risk
+    img = cv2.circle(img, (x, y), circle_size, (0, 255, 0), -1)
+    return True
+
+def add_small_circular_risk(img):
+
+    # small circles
+    for i in range(int(random.randrange(200, 300))):
+        circle_drawn = False
+        while not circle_drawn:
+            circle_drawn = try_draw_circle(img)
+
+    return img
+
 
 def verify_valid_env(img):
     return True
@@ -92,6 +111,7 @@ def create_env(num_ltl_target, size):
         img = np.zeros((map_h,map_w,3), np.uint8)
         img = add_circular_risk(img)
         img = add_ltl_targets(num_ltl_target + 2, img)
+        img = add_small_circular_risk(img)
         valid = verify_valid_env(img)
 
     return img

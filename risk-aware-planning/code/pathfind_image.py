@@ -19,8 +19,8 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELL_SIZE)
-map_h = 640
-map_w = 576
+map_h = 800
+map_w = 800
 
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
