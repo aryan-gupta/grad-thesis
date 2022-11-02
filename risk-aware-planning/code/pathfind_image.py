@@ -303,7 +303,7 @@ def main():
 
     # draw the path on img_cell to show the end user
     dj_path_image = create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, (mission_phys_start, mission_phys_finish))
-    cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", dj_path_image)
+    cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
 
 if __name__ == "__main__":
