@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import math
+import sys
 # import matplotlib.pyplot as plt
 
 
@@ -111,3 +112,43 @@ def get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, current_phy
             break
 
     return next_state
+
+
+def get_finish_location(cell_type, ltl_state_diag, ltl_heuristic, reward_graphs, current_ltl_state, CELLS_SIZE):
+    jump_cost = sys.maxsize
+    next_state = None
+    for next_possible_state in ltl_state_diag[current_ltl_state].keys():
+        trans = ltl_state_diag[current_ltl_state][next_possible_state]
+        axioms = trans.split('&')
+
+        cond = 0
+        for axiom in axioms:
+            if axiom[0] != '!':
+                cond += 1
+
+        if cond == 1 and ltl_heuristic[next_possible_state] <= jump_cost:
+        # if cond == 1 and ltl_heuristic[next_possible_state] < jump_cost:
+            next_state = next_possible_state
+            jump_cost = ltl_heuristic[next_possible_state]
+
+    print(next_state)
+
+    # get maximization of what axiom leads to next_state
+    axioms = ltl_state_diag[current_ltl_state][next_state]
+    axiom_list = axioms.split('&')
+    axiom = None
+    for a in axiom_list:
+        if a[0] != '!':
+            axiom = a.upper()
+
+    print(axiom)
+
+    # return the location of that axiom using T and reward graphs
+    for row in range(len(cell_type)):
+        for col in range(len(cell_type[row])):
+            y = row * CELLS_SIZE + (CELLS_SIZE//2)
+            x = col * CELLS_SIZE + (CELLS_SIZE//2)
+
+            pixel_valid = reward_graphs[axiom][y][x] != 0
+            if cell_type[row][col] == 'T' and pixel_valid:
+                return (col, row)

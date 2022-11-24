@@ -77,7 +77,7 @@ def get_assumed_risk(raw_risk_image):
 
 
 # pathfinds without a sensing region
-def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
+def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds):
     current_ltl_state = ltl_state_bounds[0]
     start_phys_loc = mission_phys_bounds[0]
     next_phys_loc = mission_phys_bounds[1]
@@ -116,7 +116,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
 
 
 # pathfinds using a view range that updates the risk live
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=False):
+def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=False):
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
@@ -177,8 +177,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
-                # get next phys loc
-                _, final_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
+                # get next phys loc based off the LTL state diag
+                final_phys_loc = ltl_process.get_finish_location(risk_reward_cell_type_local, ltl_state_diag, ltl_heuristic, reward_graphs, current_ltl_state, CELLS_SIZE)
+                # print(final_phys_loc)
 
                 # apply dj's algo
                 current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
@@ -285,14 +286,15 @@ def main():
 
     # get the ltl formula
     ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
+    ltl_heuristic = dijkstra.dj_algo_ltl_heuristic(ltl_state_diag, final_ltl_state)
 
     # create our assumed risk image
     assumed_risk_image = get_assumed_risk(raw_risk_image)
     # assumed_risk_image = raw_risk_image
 
     # pathfind the image
-    # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
-    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     print("path len:: ", len(path))
     print("min  len:: ", min_path_len)
