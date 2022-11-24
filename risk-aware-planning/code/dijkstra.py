@@ -261,3 +261,46 @@ def get_astar_target(current_phys_loc, shortest_path, distance):
 
         if math.sqrt(dx**2 + dy**2) < distance:
             return shortest_path[idx], idx
+
+# @todo use markov desicison process table instead of dictionary
+def dj_algo_ltl_heuristic(ltl_state_diag, final_node):
+    # ltw[start][finish] = weight
+    # ltl_transiton_weights = {{}}
+
+    # lnw[node] = weight
+    ltl_heuristic = { final_node : 0}
+    queue = [final_node]
+    distance = 1
+
+    while len(queue) != 0:
+        # get first element
+        current_node = queue[0]
+        queue = queue[1:]
+
+        for node in ltl_state_diag.keys():
+            for next_node in ltl_state_diag[node].keys():
+                trans = ltl_state_diag[node][next_node]
+                axioms = trans.split('&')
+
+                cond = 0
+                for axiom in axioms:
+                    if axiom[0] != '!':
+                        cond += 1
+
+                if next_node == current_node and cond == 1:
+                    if node not in ltl_heuristic.keys():
+                        queue.append(node)
+                        ltl_heuristic[node] = distance
+                    elif ltl_heuristic[node] > distance:
+                        ltl_heuristic[node] = distance
+        # print(queue)
+        distance += 1
+
+    # print(ltl_heuristic)
+    # ltl_heuristic_aps = {}
+    # for key in ltl_heuristic.keys():
+    #     ltl_heuristic_aps[aps[key]] = ltl_heuristic[key]
+
+    # print(ltl_heuristic_aps)
+
+    return ltl_heuristic

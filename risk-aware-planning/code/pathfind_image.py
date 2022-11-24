@@ -77,7 +77,7 @@ def get_assumed_risk(raw_risk_image):
 
 
 # pathfinds without a sensing region
-def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds):
+def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds):
     current_ltl_state = ltl_state_bounds[0]
     start_phys_loc = mission_phys_bounds[0]
     next_phys_loc = mission_phys_bounds[1]
@@ -116,7 +116,7 @@ def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, 
 
 
 # pathfinds using a view range that updates the risk live
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_state_bounds, mission_phys_bounds, show=False):
+def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=False):
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
@@ -285,14 +285,15 @@ def main():
 
     # get the ltl formula
     ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
+    ltl_heuristic = dijkstra.dj_algo_ltl_heuristic(ltl_state_diag, final_ltl_state)
 
     # create our assumed risk image
     assumed_risk_image = get_assumed_risk(raw_risk_image)
     # assumed_risk_image = raw_risk_image
 
     # pathfind the image
-    # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
-    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     print("path len:: ", len(path))
     print("min  len:: ", min_path_len)
