@@ -172,7 +172,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
             # only do a full replan if its our first run
             # if we havent, then update the local data structures and do a partial replan if the risk values have changed
             if risk_reward_image_local is None:
-                if show: print("full replanning")
+                if show: print("full cells replanning")
                 # create required data structures
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
@@ -182,14 +182,20 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
 
                 # apply dj's algo
                 current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
+                if show: print(len(current_planned_path))
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
 
-                if amount_risk_updated > 0:
-                    if show: print("part replanning")
+                if show: print(amount_risk_updated)
+
+                if amount_risk_updated > 10_000:
+                    if show: print("full astar replanning")
+                    current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
+                elif amount_risk_updated > 0:
+                    if show: print("part astar replanning")
 
                     # get astar's target cell
                     # this target cell will be somewhere on the current_planned_path line
@@ -202,6 +208,7 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                     # splice our two shortest_paths together
                     current_planned_path = current_planned_path[0:idx]
                     current_planned_path = current_planned_path + shortest_path_astar_target
+                    if show: print(len(current_planned_path))
 
             if show:
                 # draw our taken path and future path on an image
@@ -223,8 +230,10 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                     astar_target = None
 
                 # save the image
-                print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
-                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl }-{ img_tmp_idx_phys }.bmp", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+                # print(img_tmp_idx_ltl, "-", img_tmp_idx_phys, " :: ", current_phys_loc, "(", amount_risk_updated, ")")
+                img_tmp_idx_ltl_str  = str(img_tmp_idx_ltl).zfill(2)
+                img_tmp_idx_phys_str = str(img_tmp_idx_phys).zfill(3)
+                cv2.imwrite(f"{ output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.bmp", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
 
                 # increment our image file counter
                 img_tmp_idx_phys += 1
@@ -279,6 +288,7 @@ def main():
 
     # create our assumed risk image
     assumed_risk_image = get_assumed_risk(raw_risk_image)
+    # assumed_risk_image = raw_risk_image
 
     # pathfind the image
     # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
