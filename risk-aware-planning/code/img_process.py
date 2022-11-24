@@ -152,7 +152,7 @@ def create_risk_img(img, risk_size, show=False):
 
 
 # creates all the reward images for each axiom
-def get_reward_images(cell_type, img, cell_size, show=False):
+def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
     # plt.imshow(img); plt.show()
     map_h, map_w = img.shape
     reward_graphs = {}
@@ -163,10 +163,10 @@ def get_reward_images(cell_type, img, cell_size, show=False):
             for row_num in range(len(cell_type[col_num])):
                 if goal == cell_type[col_num][row_num]:
 
-                    for px_y in range(col_num * cell_size, (col_num+1) * cell_size):
-                        for px_x in range(row_num * cell_size, (row_num+1) * cell_size):
-                            # print(len(cell_type), col_num, px_y, (col_num * cell_size), (col_num * (cell_size+1) - 1))
-                            # print(len(cell_type[col_num]), row_num, px_x, (row_num * cell_size), (row_num * (cell_size+1) - 1))
+                    for px_y in range(col_num * CELLS_SIZE, (col_num+1) * CELLS_SIZE):
+                        for px_x in range(row_num * CELLS_SIZE, (row_num+1) * CELLS_SIZE):
+                            # print(len(cell_type), col_num, px_y, (col_num * CELLS_SIZE), (col_num * (CELLS_SIZE+1) - 1))
+                            # print(len(cell_type[col_num]), row_num, px_x, (row_num * CELLS_SIZE), (row_num * (CELLS_SIZE+1) - 1))
                             if img[px_y][px_x] > 0:
                                 empty_image[px_y][px_x] = 250
 

@@ -18,7 +18,7 @@ CELLS_SIZE = 8 # 32 pixels
 VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
-# final image dimensions (must be divisiable by CELL_SIZE)
+# final image dimensions (must be divisiable by CELLS_SIZE)
 map_h = 800
 map_w = 800
 
