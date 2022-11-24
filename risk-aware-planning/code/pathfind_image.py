@@ -177,8 +177,9 @@ def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, l
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image_filled, np.zeros((map_h,map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
-                # get next phys loc
-                _, final_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type_local)
+                # get next phys loc based off the LTL state diag
+                final_phys_loc = ltl_process.get_finish_location(risk_reward_cell_type_local, ltl_state_diag, ltl_heuristic, reward_graphs, current_ltl_state, CELLS_SIZE)
+                # print(final_phys_loc)
 
                 # apply dj's algo
                 current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
