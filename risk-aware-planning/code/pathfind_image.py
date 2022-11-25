@@ -75,48 +75,8 @@ def get_assumed_risk(raw_risk_image):
     # create blurred risk image
     return img_process.create_risk_img(raw_risk_image, 16, show=False)
 
-
-# pathfinds without a sensing region
-def pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds):
-    current_ltl_state = ltl_state_bounds[0]
-    start_phys_loc = mission_phys_bounds[0]
-    next_phys_loc = mission_phys_bounds[1]
-
-    total_shortest_path = []
-
-    # the loop to traverse the LTL formula
-    while current_ltl_state != ltl_state_bounds[1]:
-        # get reward map of current LTL state
-        current_ltl_state_reward_graph = ltl_process.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
-
-        # merge risk, reward into a single image map
-        risk_reward_image = cv2.merge([current_ltl_state_reward_graph, assumed_risk_image, current_ltl_state_reward_graph])
-
-        # Convert risk_reward_image into cells
-        risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost = cell_process.create_cells(risk_reward_image, assumed_risk_image, CELLS_SIZE, show=False)
-
-        risk_reward_cell_type = cell_process.convert_cells(risk_reward_cell_type, objectives=["A", "B"], goals=["S", "F"])
-
-        # get start and finish locations for this ltl node
-        _, next_phys_loc = cell_process.get_start_finish_locations(risk_reward_cell_type)
-
-        # apply dj's algo
-        shortest_path = dijkstra.dj_algo(risk_reward_img_cells, risk_reward_cell_type, (start_phys_loc, next_phys_loc), risk_reward_cell_cost, CELLS_SIZE)
-
-        # find next state that we should go to
-        next_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, next_phys_loc, CELLS_SIZE)
-
-        # setup next interation
-        current_ltl_state = next_ltl_state
-        start_phys_loc = next_phys_loc
-        total_shortest_path[0:0] = shortest_path
-
-
-    return total_shortest_path, assumed_risk_image
-
-
 # pathfinds using a view range that updates the risk live
-def pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=False):
+def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=True):
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
@@ -275,28 +235,38 @@ def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled,
 
 
 def main():
+    # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(0)
 
     # read in and process image
     processed_img, raw_reward_image, raw_risk_image = get_env(None)
+    # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
     # processed_img, raw_reward_image, raw_risk_image = get_env('../../../maps/002.bmp')
 
     # create our axiom reward graphs
     processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
 
-    # get the ltl formula
+    # get the task details using LTL
     ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
+
+    # create our basic LTL heuristic model
     ltl_heuristic = dijkstra.dj_algo_ltl_heuristic(ltl_state_diag, final_ltl_state)
 
     # create our assumed risk image
     assumed_risk_image = get_assumed_risk(raw_risk_image)
-    # assumed_risk_image = raw_risk_image
 
-    # pathfind the image
-    # path, assumed_risk_image_filled = pathfind_no_sensing_rage(reward_graphs, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
-    path, min_path_len, assumed_risk_image_filled = pathfind_updateing_risk(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # pathfind while updating risk
+    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
+    # pathfind without any risk
+    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+
+    # pathfinding on assumed risk without updating
+    path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, assumed_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+
+    # path len is the length of the actual final path taken
     print("path len:: ", len(path))
+    # min len is the triangle distance sum[(x2-x1)+(y2-y1)]
     print("min  len:: ", min_path_len)
 
     # draw the path on img_cell to show the end user

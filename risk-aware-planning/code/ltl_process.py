@@ -126,8 +126,8 @@ def get_finish_location(cell_type, ltl_state_diag, ltl_heuristic, reward_graphs,
             if axiom[0] != '!':
                 cond += 1
 
-        if cond == 1 and ltl_heuristic[next_possible_state] <= jump_cost:
-        # if cond == 1 and ltl_heuristic[next_possible_state] < jump_cost:
+        # if cond == 1 and ltl_heuristic[next_possible_state] <= jump_cost:
+        if cond == 1 and ltl_heuristic[next_possible_state] < jump_cost:
             next_state = next_possible_state
             jump_cost = ltl_heuristic[next_possible_state]
 
