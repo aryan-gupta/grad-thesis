@@ -38,5 +38,5 @@ for src_1, src_2 in key_f:
             auto_final[key_f_src_str].append(key_f_dest_str)
 
 for key in auto_final:
-    print(key, end=" : ") 
-    print(auto_final[key]) 
+    print(key, end=" : ")
+    print(auto_final[key])

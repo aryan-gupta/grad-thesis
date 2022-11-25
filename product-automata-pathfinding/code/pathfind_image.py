@@ -81,7 +81,7 @@ hue_channel, sat_channel, _ = cv2.split(wpcc_img)
 # that are slightly red, we then use the saturation channel to remove the slightly red gray values and only
 # keep the deep red colors
 # red = (hue_red_low or hue_red_high) and sat_high
-# the and distributes and creates 
+# the and distributes and creates
 # red = (hue_red_low and sat_high) or (hue_red_high and sat_high)
 # This same can be used for all the colors that we want to extract
 red_low_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 0, 5), cv2.inRange(sat_channel, 100, 255))
@@ -101,7 +101,7 @@ yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(s
 # plt.show()
 
 # We want to convert the different color channels into an RGB image and since yellow is Red and Green
-# we want add the yellow channel into the red and green channels 
+# we want add the yellow channel into the red and green channels
 red_channel = cv2.bitwise_or(red_channel, yellow_channel)
 green_channel = cv2.bitwise_or(green_channel, yellow_channel)
 
@@ -142,13 +142,13 @@ for y in range(0, dim[0], CELLS_SIZE):
 
         # draw rectangles
         img_cells = cv2.rectangle(processed_img, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (255,255,255), 1)
-        
+
         # determine what the cell is
         cell_known = False
         for u in range(y, y + CELLS_SIZE, 1):
             if u >= dim[0]:
                 break
-            
+
             for v in range(x, x + CELLS_SIZE, 1):
                 if v >= dim[1]:
                     break
@@ -156,7 +156,7 @@ for y in range(0, dim[0], CELLS_SIZE):
                 # keep a record of all the different colors
                 if tuple(processed_img[u,v]) not in colors:
                     colors.append(tuple(processed_img[u,v]))
-                
+
                 # mark the cells if its corosponding color exists in the cell
                 if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                     cell_known = True
@@ -169,18 +169,18 @@ for y in range(0, dim[0], CELLS_SIZE):
                 if tuple(processed_img[u,v]) == (255, 255, 0): # Objective Cells
                     cell_known = True
                     img_cells = cv2.putText(img_cells, 'O',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
-                    cell_type[cell_num_width][cell_num_height] = 'O'              
+                    cell_type[cell_num_width][cell_num_height] = 'O'
                 if tuple(processed_img[u,v]) == (0, 0, 255): # Refuel Cells
                     cell_known = True
                     img_cells = cv2.putText(img_cells, 'R',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
                     cell_type[cell_num_width][cell_num_height] = 'R'
-                
+
             # Exit loop if we know the cell type
             if cell_known:
                 break
 
         # if we dont know the cell type (its all white), mark it as a clean cell
-        if not cell_known:    
+        if not cell_known:
             img_cells = cv2.putText(img_cells, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (255,255,255),1)
         cell_num_height += 1
     cell_num_width += 1
@@ -254,14 +254,14 @@ for y in range(len(cell_type)):
             continue
         # check up left
         # NOT IMPL
-        
+
         # check up
         if y > 0 and is_valid_travel_cell(cell_type[y - 1][x]):
             state_diagram[y][x][0] = 1
             state_dict[f"{x}-{y}"].append(('u', f"{x}-{y-1}"))
         # check up right
         # NOT IMPL
-        
+
         # check left
         if x > 0 and is_valid_travel_cell(cell_type[y][x - 1]):
             state_diagram[y][x][1] = 1
@@ -314,7 +314,7 @@ for row in state_diagram:
             print(" ", end="")
         print(" ", end="") # space for the right arrow
     print()
-    
+
 print(state_dict)
 
 # find the start node
@@ -409,7 +409,7 @@ for y in distances:
 for y in prev:
     print(y)
 
-# calculate the shortest path and create a video while 
+# calculate the shortest path and create a video while
 shortest_path = []
 current_node = finish
 while current_node != start:
@@ -435,15 +435,15 @@ print(shortest_path)
 img_plain_djk = img_cells.copy()
 for i in range(len(shortest_path)):
     half_cell = math.ceil((CELLS_SIZE/2))
-    
+
     if shortest_path[i] == start: break
-    
+
     node = shortest_path[i]
     next_node = shortest_path[i+1]
-    
+
     center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-    
+
     img_plain_djk = cv2.line(img_plain_djk, center, next_center, (255,255,255), 8)
 
 # Show the path found image from D's algo
@@ -502,8 +502,8 @@ for src_1, src_2 in key_f:
             auto_final[key_f_src_str].append(key_f_dest_str)
 
 for key in auto_final:
-    print(key, end=" : ") 
-    print(auto_final[key]) 
+    print(key, end=" : ")
+    print(auto_final[key])
 
 auto_final_start = f"{start[0]}-{start[1]},2"
 auto_final_end = f"{finish[0]}-{finish[1]},0"
@@ -513,7 +513,7 @@ print(auto_final_start)
 print(auto_final_end)
 
 ## MOST OF THE CODE BELOW IS COPIED FROM ABOVE and does the same thing so Im not going to detail
-## comment it. 
+## comment it.
 # pretty much its just D's algo, video making, and making the images
 
 # Dijkstras algo
@@ -557,25 +557,25 @@ while len(queue) != 0:
 
     for path in valid_paths:
         if path not in distances.keys(): distances[path] = MAX_WEIGHT
-        
+
         old_distance = distances[path]
         new_distance = dist + 1
-        
+
         if new_distance <= old_distance:
             distances[path] = new_distance
             prev[path] = node
-        
+
         bisect.insort(queue, (distances[path], path), key=lambda a: a[0])
 
 for key in distances.keys():
-    print(key, end=" : ") 
-    print(distances[key]) 
+    print(key, end=" : ")
+    print(distances[key])
 
-print() 
-print() 
+print()
+print()
 for key in prev.keys():
-    print(key, end=" : ") 
-    print(prev[key]) 
+    print(key, end=" : ")
+    print(prev[key])
 
 # calculate the shortest path
 shortest_path = []
@@ -610,18 +610,18 @@ print(shortest_path_phys)
 img_final_djk = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
 for i in range(len(shortest_path_phys) - 1):
     half_cell = math.ceil((CELLS_SIZE/2))
-    
+
     if shortest_path_phys[i] == start: break
-    
+
     node_str = shortest_path_phys[i]
     next_node_str = shortest_path_phys[i+1]
-    
+
     node = (int(node_str.split("-")[0]), int(node_str.split("-")[1]))
     next_node = (int(next_node_str.split("-")[0]), int(next_node_str.split("-")[1]))
 
     center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-    
+
     img_final_djk = cv2.line(img_final_djk, center, next_center, (255,255,255), 8)
 
 for i in range(60):

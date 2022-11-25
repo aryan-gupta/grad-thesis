@@ -5,12 +5,12 @@ Data, code, and documents for my grad thesis on robotics, pathfinding, and tempo
 # modules
 - lectures
     - scans of lectures with my advisor
-- pathfinding-example
-    - pathfinding using static non-risky environment with Dijkstra's algo
-- product-automata-example
-    - LTL/Environment pathfinding using basic product automata
+- dijkstra-pathfinding
+    - basic a to b path finding using djk
+- product-automata-pathfinding
+    - pathfinding using static non-risky environment and LTL based task using product automata
 - risk-aware-planning
-    - LTL/Environment pathfinding in a risky environment
+    - LTL/task and environment pathfinding in a risky environment
 - fast-risk-aware-ltl-planning
     - Fast LTL/Environment pathfinding in a risky environment
     - First Paper

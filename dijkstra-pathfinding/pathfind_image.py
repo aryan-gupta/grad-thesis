@@ -7,7 +7,7 @@ import bisect
 CELLS_SIZE = 31 # 32 pixels
 MAX_WEIGHT = 99
 
-img = cv2.imread('./sample.png', cv2.IMREAD_COLOR) 
+img = cv2.imread('./sample.png', cv2.IMREAD_COLOR)
 
 dim = img.shape
 print(dim)
@@ -33,13 +33,13 @@ for y in range(0, dim[0], CELLS_SIZE):
 
         # draw rectangles
         img2show = cv2.rectangle(img, (x+1,y+1), (x + CELLS_SIZE,y + CELLS_SIZE), (0,0,0), 1)
-        
+
         # determine what the cell is
         cell_known = False
         for u in range(y, y + CELLS_SIZE, 1):
             if u >= dim[0]:
                 break
-            
+
             for v in range(x, x + CELLS_SIZE, 1):
                 if v >= dim[1]:
                     break
@@ -47,7 +47,7 @@ for y in range(0, dim[0], CELLS_SIZE):
                 # keep a record of all the different colors
                 if tuple(img[u,v]) not in colors:
                     colors.append(tuple(img[u,v]))
-                
+
                 # mark the cells if its corosponding color exists in the cell
                 if tuple(img[u,v]) == (128,0,255):
                     cell_known = True
@@ -61,13 +61,13 @@ for y in range(0, dim[0], CELLS_SIZE):
                     cell_known = True
                     img2show = cv2.putText(img2show, 'S',(x+3, y+CELLS_SIZE-3), 2, 1, (0,0,0),1)
                     cell_type[cell_num_width][cell_num_height] = 'S'
-                
+
             # Exit loop if we know the cell type
             if cell_known:
                 break
 
         # if we dont know the cell type (its all white), mark it as a clean cell
-        if not cell_known:    
+        if not cell_known:
             img2show = cv2.putText(img2show, 'C',(x+3, y+CELLS_SIZE-3), 2, 1, (0,0,0),1)
         cell_num_height += 1
     cell_num_width += 1
@@ -91,13 +91,13 @@ for y in range(len(cell_type)):
             continue
         # check up left
         # NOT IMPL
-        
+
         # check up
         if y > 0 and is_valid_travel_cell(cell_type[y - 1][x]):
             state_diagram[y][x][0] = 1
         # check up right
         # NOT IMPL
-        
+
         # check left
         if x > 0 and is_valid_travel_cell(cell_type[y][x - 1]):
             state_diagram[y][x][1] = 1
@@ -145,7 +145,7 @@ for row in state_diagram:
             print(" ", end="")
         print(" ", end="") # space for the right arrow
     print()
-    
+
 
 start = ()
 finish = ()
@@ -230,21 +230,21 @@ while current_node != start:
     shortest_path.append(current_node)
     current_node = prev[current_node[1]][current_node[0]]
 shortest_path.append(start)
-    
+
 print(shortest_path)
 
 # draw the shortest path
 for i in range(len(shortest_path)):
     half_cell = math.ceil((CELLS_SIZE/2))
-    
+
     if shortest_path[i] == start: break
-    
+
     node = shortest_path[i]
     next_node = shortest_path[i+1]
-    
+
     center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
     next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
-    
+
     path_image = cv2.line(img2show, center, next_center, (255,0,0), 2)
 
 
