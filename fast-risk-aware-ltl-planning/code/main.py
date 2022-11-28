@@ -173,7 +173,6 @@ def main():
     # create our axiom reward graphs
     # convert this to get_reward_locations (store the reward locations as coorinates, not as image graphs)
     e.create_reward_graphs()
-    # processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
 
     # create our assumed risk image
     e.create_assumed_risk()
@@ -188,10 +187,12 @@ def main():
     path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfind without any risk
-    # path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.raw_risk_image, t.ltl_state_diag, t.ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # e.assumed_risk_image = e.raw_risk_image
+    # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfinding on assumed risk without updating
-    # path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.assumed_risk_image, e.assumed_risk_image, t.ltl_state_diag, t.ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # e.raw_risk_image = e.assumed_risk_image
+    # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # path len is the length of the actual final path taken
     print("path len:: ", len(path))
