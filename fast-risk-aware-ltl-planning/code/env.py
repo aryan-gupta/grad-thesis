@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+import risk
 import img
 import cell
 import dijkstra
@@ -142,13 +143,14 @@ class Enviroment:
 
 
     def channel_split(self):
-        self.raw_reward_image, self.raw_risk_image, _ = cv2.split(self.processed_img)
+        self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
+        self.r = risk.Risk(raw_risk_image)
 
 
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.processed_img, self.raw_risk_image, CELLS_SIZE, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.processed_img, self.r.raw_risk_image, CELLS_SIZE, show=False)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
@@ -161,7 +163,7 @@ class Enviroment:
     # pretty much blurs the risk image but will need to find better way to do this
     def create_assumed_risk(self):
         # create blurred risk image
-        self.assumed_risk_image = img.create_risk_img(self.raw_risk_image, 16, show=False)
+        self.assumed_risk_image = img.create_risk_img(self.r.raw_risk_image, 16, show=False)
 
 
     # creates the final image to output
@@ -173,9 +175,9 @@ class Enviroment:
         green_channel = cv2.add(green_channel, assumed_risk_image_filled)
 
         # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
-        red_channel = cv2.add(red_channel, self.raw_risk_image)
-        green_channel = cv2.add(green_channel, self.raw_risk_image)
-        blue_channel = cv2.add(blue_channel, self.raw_risk_image)
+        red_channel = cv2.add(red_channel, self.r.raw_risk_image)
+        green_channel = cv2.add(green_channel, self.r.raw_risk_image)
+        blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
 
         # merge back our image into a single image
         dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])

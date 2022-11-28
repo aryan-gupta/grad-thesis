@@ -74,7 +74,7 @@ def pathfind(e, t, show=False):
             total_shortest_path.insert(0, current_phys_loc)
 
             # update risk map everytime we move
-            assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(assumed_risk_image_filled, e.raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
+            assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(assumed_risk_image_filled, e.r.raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
 
             # the temp target for partial astar algorithm
             astar_target = None
@@ -187,11 +187,11 @@ def main():
     path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfind without any risk
-    # e.assumed_risk_image = e.raw_risk_image
+    # e.assumed_risk_image = e.r.raw_risk_image
     # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfinding on assumed risk without updating
-    # e.raw_risk_image = e.assumed_risk_image
+    # e.r.raw_risk_image = e.assumed_risk_image
     # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # path len is the length of the actual final path taken
