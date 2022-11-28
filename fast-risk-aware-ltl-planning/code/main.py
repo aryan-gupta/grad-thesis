@@ -38,7 +38,7 @@ def pathfind(e, t, show=False):
     min_path_len = 0
 
     # our local copy of risk from using our viewing range
-    assumed_risk_image_filled = e.assumed_risk_image.copy()
+    assumed_risk_image_filled = e.r.assumed_risk_image.copy()
 
     # any risk of 0 has min risk 5
     # assumed_risk_image_filled = cv2.normalize(assumed_risk_image_filled, None, 254, 10, norm_type = cv2.NORM_MINMAX)
@@ -175,7 +175,7 @@ def main():
     e.create_reward_graphs()
 
     # create our assumed risk image
-    e.create_assumed_risk()
+    e.r.create_assumed_risk()
 
     # get the task details using LTL
     t = ltl.Task(ltl_hoa_file)
@@ -187,11 +187,11 @@ def main():
     path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfind without any risk
-    # e.assumed_risk_image = e.r.raw_risk_image
+    # e.r.assumed_risk_image = e.r.raw_risk_image
     # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfinding on assumed risk without updating
-    # e.r.raw_risk_image = e.assumed_risk_image
+    # e.r.raw_risk_image = e.r.assumed_risk_image
     # path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # path len is the length of the actual final path taken

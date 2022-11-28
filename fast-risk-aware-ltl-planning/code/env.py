@@ -159,13 +159,6 @@ class Enviroment:
         self.reward_graphs = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
 
 
-    # creates tha unknown/assumed risk image
-    # pretty much blurs the risk image but will need to find better way to do this
-    def create_assumed_risk(self):
-        # create blurred risk image
-        self.assumed_risk_image = img.create_risk_img(self.r.raw_risk_image, 16, show=False)
-
-
     # creates the final image to output
     def create_final_image(self, filename, assumed_risk_image_filled, path):
         # seperate the image into RGB channels
