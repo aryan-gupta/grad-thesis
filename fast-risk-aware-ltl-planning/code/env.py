@@ -5,6 +5,7 @@ import numpy as np
 
 import img
 import cell
+import dijkstra
 
 CELLS_SIZE = 8 # 32 pixels
 
@@ -161,6 +162,31 @@ class Enviroment:
     def create_assumed_risk(self):
         # create blurred risk image
         self.assumed_risk_image = img.create_risk_img(self.raw_risk_image, 16, show=False)
+
+
+    # creates the final image to output
+    def create_final_image(self, filename, assumed_risk_image_filled, path):
+        # seperate the image into RGB channels
+        red_channel, green_channel, blue_channel = cv2.split(self.processed_img)
+
+        # add our filled out assumed risk
+        green_channel = cv2.add(green_channel, assumed_risk_image_filled)
+
+        # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
+        red_channel = cv2.add(red_channel, self.raw_risk_image)
+        green_channel = cv2.add(green_channel, self.raw_risk_image)
+        blue_channel = cv2.add(blue_channel, self.raw_risk_image)
+
+        # merge back our image into a single image
+        dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])
+
+        # create our img_cell
+        dj_path_image, _, _ = cell.create_cells(dj_path_image, assumed_risk_image_filled, CELLS_SIZE, show=False)
+
+        # draw the path on img_cell
+        dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
+
+        cv2.imwrite(filename, cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
 
 def main():

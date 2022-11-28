@@ -163,32 +163,6 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
 
     return total_shortest_path, min_path_len, assumed_risk_image_filled
 
-
-# creates the final image to output
-def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, mission_phys_bounds):
-    # seperate the image into RGB channels
-    red_channel, green_channel, blue_channel = cv2.split(processed_img)
-
-    # add our filled out assumed risk
-    green_channel = cv2.add(green_channel, assumed_risk_image_filled)
-
-    # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
-    red_channel = cv2.add(red_channel, raw_risk_image)
-    green_channel = cv2.add(green_channel, raw_risk_image)
-    blue_channel = cv2.add(blue_channel, raw_risk_image)
-
-    # merge back our image into a single image
-    dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])
-
-    # create our img_cell
-    dj_path_image, _, _ = cell.create_cells(dj_path_image, assumed_risk_image_filled, CELLS_SIZE, show=False)
-
-    # draw the path on img_cell
-    dijkstra.draw_path_global(path, dj_path_image, mission_phys_bounds, CELLS_SIZE)
-
-    return dj_path_image
-
-
 def main():
     # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(0)
@@ -230,8 +204,7 @@ def main():
     print("min  len:: ", min_path_len)
 
     # draw the path on img_cell to show the end user
-    dj_path_image = create_final_image(e.processed_img, e.raw_risk_image, assumed_risk_image_filled, path, e.mission_phys_bounds)
-    cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
+    e.create_final_image(f"{ output_images_dir }/!picfinal.bmp", assumed_risk_image_filled, path)
 
 
 if __name__ == "__main__":
