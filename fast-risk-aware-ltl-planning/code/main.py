@@ -25,11 +25,6 @@ map_w = 800
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
-# parses the ltl hoa file
-def parse_ltl_hoa_file():
-    # parse through LTL automata
-    return ltl.parse_ltl_hoa(ltl_hoa_file)
-
 # pathfinds using a view range that updates the risk live
 def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=True):
     # get the start conditions
@@ -184,13 +179,13 @@ def main():
     e.create_assumed_risk()
 
     # get the task details using LTL
-    ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
+    t = ltl.Task(ltl_hoa_file)
 
     # create our basic LTL heuristic model
-    ltl_heuristic = dijkstra.dj_algo_ltl_heuristic(ltl_state_diag, final_ltl_state)
+    t.create_task_heuristic()
 
     # pathfind while updating risk
-    path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), e.mission_phys_bounds)
+    path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.assumed_risk_image, t.ltl_state_diag, t.ltl_heuristic, t.task_bounds, e.mission_phys_bounds)
 
     # pathfind without any risk
     # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))

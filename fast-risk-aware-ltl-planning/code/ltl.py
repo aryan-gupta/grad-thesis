@@ -5,53 +5,101 @@ import sys
 # import matplotlib.pyplot as plt
 
 
-# parse an ltl HOA formatted file
-def parse_ltl_hoa(filename, show=False):
-    # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
-    ltl_state_diag = {}
-    aps = []
-    state = -1
-    final_state = -1
-    start_state = -1
-    next_state_dict = None
-    with open(filename, "r") as f:
-        for line in f:
-            line = line.strip()
+class Task:
+    def __init__(self, filename):
+        self.parse_ltl_hoa(filename)
 
-            if line.startswith("Start:"):
-                start_state = int(line.split(" ")[1])
 
-            if line.startswith("AP:"):
-                aps = line.replace("\"", "").split(" ")[2:]
+    # @todo use markov desicison process table instead of dictionary
+    def create_task_heuristic(self):
+        # ltw[start][finish] = weight
+        # ltl_transiton_weights = {{}}
 
-            if line.startswith("State:"):
-                # we are finished parsing the previous state, add it to the master ltl dict
-                if next_state_dict is not None and state != -1:
-                    ltl_state_diag[state] = next_state_dict
+        # lnw[node] = weight
+        final_node = self.task_bounds[1]
+        self.ltl_heuristic = { final_node : 0}
+        queue = [final_node]
+        distance = 1
+
+        while len(queue) != 0:
+            # get first element
+            current_node = queue[0]
+            queue = queue[1:]
+
+            for node in self.ltl_state_diag.keys():
+                for next_node in self.ltl_state_diag[node].keys():
+                    trans = self.ltl_state_diag[node][next_node]
+                    axioms = trans.split('&')
+
+                    cond = 0
+                    for axiom in axioms:
+                        if axiom[0] != '!':
+                            cond += 1
+
+                    if next_node == current_node and cond == 1:
+                        if node not in self.ltl_heuristic.keys():
+                            queue.append(node)
+                            self.ltl_heuristic[node] = distance
+                        elif self.ltl_heuristic[node] > distance:
+                            self.ltl_heuristic[node] = distance
+            # print(queue)
+            distance += 1
+
+        # print(self.ltl_heuristic)
+        # ltl_heuristic_aps = {}
+        # for key in self.ltl_heuristic.keys():
+        #     ltl_heuristic_aps[aps[key]] = self.ltl_heuristic[key]
+
+        # print(ltl_heuristic_aps)
+
+
+    # parse an ltl HOA formatted file
+    def parse_ltl_hoa(self, filename, show=False):
+        # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
+        self.ltl_state_diag = {}
+        self.aps = []
+        state = -1
+        final_state = -1
+        start_state = -1
+        next_state_dict = None
+        with open(filename, "r") as f:
+            for line in f:
+                line = line.strip()
+
+                if line.startswith("Start:"):
+                    start_state = int(line.split(" ")[1])
+
+                if line.startswith("AP:"):
+                    self.aps = line.replace("\"", "").split(" ")[2:]
+
+                if line.startswith("State:"):
+                    # we are finished parsing the previous state, add it to the master ltl dict
+                    if next_state_dict is not None and state != -1:
+                        self.ltl_state_diag[state] = next_state_dict
+                        next_state_dict = {}
+                    state = int(line.split(" ")[1])
                     next_state_dict = {}
-                state = int(line.split(" ")[1])
-                next_state_dict = {}
-                if len(line.split(" ")) >= 3 and line.split(" ")[2] == "{0}":
-                    final_state = state
+                    if len(line.split(" ")) >= 3 and line.split(" ")[2] == "{0}":
+                        final_state = state
 
-            if line.startswith("["):
-                splits = line.split(" ", maxsplit=1)
-                next_state = int(splits[1])
-                ap_temp = splits[0].replace("[", "").replace("]", "")
-                for ap_num in range(len(aps)):
-                    ap_temp = ap_temp.replace(str(ap_num), aps[ap_num])
-                next_state_dict[next_state] = ap_temp
+                if line.startswith("["):
+                    splits = line.split(" ", maxsplit=1)
+                    next_state = int(splits[1])
+                    ap_temp = splits[0].replace("[", "").replace("]", "")
+                    for ap_num in range(len(self.aps)):
+                        ap_temp = ap_temp.replace(str(ap_num), self.aps[ap_num])
+                    next_state_dict[next_state] = ap_temp
 
-    if next_state_dict is not None and state != -1:
-        ltl_state_diag[state] = next_state_dict
-        next_state_dict = {}
+        if next_state_dict is not None and state != -1:
+            self.ltl_state_diag[state] = next_state_dict
+            next_state_dict = {}
 
-    if show:
-        print(ltl_state_diag)
-        print(start_state)
-        print(final_state)
+        if show:
+            print(self.ltl_state_diag)
+            print(start_state)
+            print(final_state)
 
-    return ltl_state_diag, aps, start_state, final_state
+        self.task_bounds = (start_state, final_state)
 
 
 # get the reward image based off the possible transitions from the current state
