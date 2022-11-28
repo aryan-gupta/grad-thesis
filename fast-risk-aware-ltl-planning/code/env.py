@@ -3,6 +3,11 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+import img
+import cell
+
+CELLS_SIZE = 8 # 32 pixels
+
 class Enviroment:
     def __init__(self, targets=2, size=(800, 800), validate=False, filename=None):
         if filename is None:
@@ -133,6 +138,29 @@ class Enviroment:
     def save_env(self, filename):
         env_bgr = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         cv2.imwrite(filename, env_bgr)
+
+
+    def channel_split(self):
+        self.raw_reward_image, self.raw_risk_image, _ = cv2.split(self.processed_img)
+
+
+    # creates all the reward graphs for each axiom
+    def create_reward_graphs(self):
+        # create cells based off of map and risk and assign costs to cells
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.processed_img, self.raw_risk_image, CELLS_SIZE, show=False)
+
+        # get start and finish locations from cell graph
+        self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
+
+        # get reward map for each objectives and goals
+        self.reward_graphs = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
+
+
+    # creates tha unknown/assumed risk image
+    # pretty much blurs the risk image but will need to find better way to do this
+    def create_assumed_risk(self):
+        # create blurred risk image
+        self.assumed_risk_image = img.create_risk_img(self.raw_risk_image, 16, show=False)
 
 
 def main():

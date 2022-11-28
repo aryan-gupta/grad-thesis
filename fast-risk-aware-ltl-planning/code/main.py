@@ -25,55 +25,10 @@ map_w = 800
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
-
-# reads in an image but doesnt pre process it
-def get_env(input_image_file, show=False):
-    global map_h
-    global map_w
-
-    red_channel = green_channel = blue_channel = None
-
-    if input_image_file is None:
-        # read image and show it
-        img = env.create_env(2, (map_w, map_h))
-    else:
-        img = img.read_image(input_image_file, show=False)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        map_h, map_w , _= img.shape
-
-    red_channel, green_channel, blue_channel = cv2.split(img)
-
-    if show: plt.imshow(green_channel); plt.show()
-    if show: plt.imshow(red_channel); plt.show()
-
-    return img, red_channel, green_channel
-
-
-# creates all the reward graphs for each axiom
-def create_reward_graphs(processed_img, raw_reward_image, raw_risk_image):
-    # create cells based off of map and risk and assign costs to cells
-    img_cells, cell_type, cell_cost = cell.create_cells(processed_img, raw_risk_image, CELLS_SIZE, show=False)
-
-    # get start and finish locations from cell graph
-    global_start, global_finish = cell.get_start_finish_locations(cell_type)
-
-    # get reward map for each objectives and goals
-    reward_graphs = img.get_reward_images(cell_type, raw_reward_image, CELLS_SIZE, show=False)
-
-    return img_cells, reward_graphs, (global_start, global_finish)
-
-
 # parses the ltl hoa file
 def parse_ltl_hoa_file():
     # parse through LTL automata
     return ltl.parse_ltl_hoa(ltl_hoa_file)
-
-
-# creates tha unknown/assumed risk image
-# pretty much blurs the risk image but will need to find better way to do this
-def get_assumed_risk(raw_risk_image):
-    # create blurred risk image
-    return img.create_risk_img(raw_risk_image, 16, show=False)
 
 # pathfinds using a view range that updates the risk live
 def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=True):
@@ -239,12 +194,20 @@ def main():
     random.seed(0)
 
     # read in and process image
-    processed_img, raw_reward_image, raw_risk_image = get_env(None)
+    e = env.Enviroment(targets=4, size=(800,800), validate=False)
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    # processed_img, raw_reward_image, raw_risk_image = get_env('../../../maps/002.bmp')
+    # e = Enviroment(filename='../../../maps/002.bmp')
+
+    # split the env into R (targets), G (Risk), B (Unused)
+    e.channel_split()
 
     # create our axiom reward graphs
-    processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
+    # convert this to get_reward_locations (store the reward locations as coorinates, not as image graphs)
+    e.create_reward_graphs()
+    # processed_img_cells, reward_graphs, (mission_phys_start, mission_phys_finish) = create_reward_graphs(processed_img, raw_reward_image, raw_risk_image)
+
+    # create our assumed risk image
+    e.create_assumed_risk()
 
     # get the task details using LTL
     ltl_state_diag, aps, start_ltl_state, final_ltl_state = parse_ltl_hoa_file()
@@ -252,11 +215,8 @@ def main():
     # create our basic LTL heuristic model
     ltl_heuristic = dijkstra.dj_algo_ltl_heuristic(ltl_state_diag, final_ltl_state)
 
-    # create our assumed risk image
-    assumed_risk_image = get_assumed_risk(raw_risk_image)
-
     # pathfind while updating risk
-    path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), e.mission_phys_bounds)
 
     # pathfind without any risk
     # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
@@ -270,7 +230,7 @@ def main():
     print("min  len:: ", min_path_len)
 
     # draw the path on img_cell to show the end user
-    dj_path_image = create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled, path, (mission_phys_start, mission_phys_finish))
+    dj_path_image = create_final_image(e.processed_img, e.raw_risk_image, assumed_risk_image_filled, path, e.mission_phys_bounds)
     cv2.imwrite(f"{ output_images_dir }/!picfinal.bmp", cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
 
