@@ -26,10 +26,10 @@ output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
 # pathfinds using a view range that updates the risk live
-def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=True):
+def pathfind(e, t, show=False):
     # get the start conditions
-    current_ltl_state = ltl_state_bounds[0]
-    current_phys_loc = mission_phys_bounds[0]
+    current_ltl_state = t.task_bounds[0]
+    current_phys_loc = e.mission_phys_bounds[0]
 
     # the shortest path of the entire mission
     total_shortest_path = []
@@ -38,7 +38,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
     min_path_len = 0
 
     # our local copy of risk from using our viewing range
-    assumed_risk_image_filled = assumed_risk_image.copy()
+    assumed_risk_image_filled = e.assumed_risk_image.copy()
 
     # any risk of 0 has min risk 5
     # assumed_risk_image_filled = cv2.normalize(assumed_risk_image_filled, None, 254, 10, norm_type = cv2.NORM_MINMAX)
@@ -47,9 +47,9 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
     img_tmp_idx_ltl = 0
 
     # the loop to traverse the LTL formula
-    while current_ltl_state != ltl_state_bounds[1]:
+    while current_ltl_state != t.task_bounds[1]:
         # get reward map of current LTL state
-        current_ltl_state_reward_graph = ltl.get_reward_img_state(ltl_state_diag, current_ltl_state, reward_graphs, (map_h, map_w))
+        current_ltl_state_reward_graph = ltl.get_reward_img_state(t.ltl_state_diag, current_ltl_state, e.reward_graphs, (map_h, map_w))
 
         # we wont know the final_phys_loc or the dj's target location until we run our algo
         # store a dummy result in the meantime
@@ -74,7 +74,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
             total_shortest_path.insert(0, current_phys_loc)
 
             # update risk map everytime we move
-            assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
+            assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(assumed_risk_image_filled, e.raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
 
             # the temp target for partial astar algorithm
             astar_target = None
@@ -88,7 +88,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell.create_cells(risk_reward_image_local, assumed_risk_image_filled, CELLS_SIZE, show=False)
 
                 # get next phys loc based off the LTL state diag
-                final_phys_loc = ltl.get_finish_location(risk_reward_cell_type_local, ltl_state_diag, ltl_heuristic, reward_graphs, current_ltl_state, CELLS_SIZE)
+                final_phys_loc = ltl.get_finish_location(risk_reward_cell_type_local, t.ltl_state_diag, t.ltl_heuristic, e.reward_graphs, current_ltl_state, CELLS_SIZE)
                 # print(final_phys_loc)
 
                 # apply dj's algo
@@ -153,7 +153,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
             current_phys_loc = dijkstra.get_next_cell_shortest_path(current_planned_path, current_phys_loc)
 
         # find next state that we should go to and setup next interation
-        current_ltl_state = ltl.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, final_phys_loc, CELLS_SIZE)
+        current_ltl_state = ltl.get_next_state(t.ltl_state_diag, e.reward_graphs, current_ltl_state, final_phys_loc, CELLS_SIZE)
         img_tmp_idx_ltl += 1
 
     return total_shortest_path, min_path_len, assumed_risk_image_filled
@@ -185,13 +185,13 @@ def main():
     t.create_task_heuristic()
 
     # pathfind while updating risk
-    path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.assumed_risk_image, t.ltl_state_diag, t.ltl_heuristic, t.task_bounds, e.mission_phys_bounds)
+    path, min_path_len, assumed_risk_image_filled = pathfind(e, t, show=True)
 
     # pathfind without any risk
-    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.raw_risk_image, e.raw_risk_image, t.ltl_state_diag, t.ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     # pathfinding on assumed risk without updating
-    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, assumed_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # path, min_path_len, assumed_risk_image_filled = pathfind(e.reward_graphs, e.assumed_risk_image, e.assumed_risk_image, t.ltl_state_diag, t.ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     # path len is the length of the actual final path taken
     print("path len:: ", len(path))
