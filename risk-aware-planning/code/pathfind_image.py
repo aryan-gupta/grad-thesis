@@ -77,12 +77,15 @@ def get_assumed_risk(raw_risk_image):
 
 # pathfinds using a view range that updates the risk live
 def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, ltl_state_bounds, mission_phys_bounds, show=True):
+    current_phys_loc_ant = (10, 10)
+
     # get the start conditions
     current_ltl_state = ltl_state_bounds[0]
     current_phys_loc = mission_phys_bounds[0]
 
     # the shortest path of the entire mission
     total_shortest_path = []
+    total_shortest_path_ant = []
 
     # the min possible path len if there was no risk
     min_path_len = 0
@@ -110,6 +113,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
 
         # This is needed so we can do partial replans
         current_planned_path = []
+        current_planned_path_ant = []
         risk_reward_image_local = None
         risk_reward_img_cells_local = None
         risk_reward_cell_type_local = None
@@ -122,6 +126,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
         while current_phys_loc != final_phys_loc:
             # add current node to path
             total_shortest_path.insert(0, current_phys_loc)
+            total_shortest_path_ant.insert(0, current_phys_loc_ant)
 
             # update risk map everytime we move
             assumed_risk_image_filled, amount_risk_updated, cells_updated = img_process.update_local_risk_image(assumed_risk_image_filled, raw_risk_image, current_phys_loc, CELLS_SIZE, VIEW_CELLS_SIZE, UPDATE_WEIGHT)
@@ -143,6 +148,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
 
                 # apply dj's algo
                 current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
+                current_planned_path_ant = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc_ant, current_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
                 if show: print(len(current_planned_path))
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
@@ -151,6 +157,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell_process.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE)
 
                 if show: print(amount_risk_updated)
+                current_planned_path_ant = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc_ant, current_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
 
                 if amount_risk_updated > 10_000:
                     if show: print("full astar replanning")
@@ -175,12 +182,20 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
                 # draw our taken path and future path on an image
                 dj_path_image_local = risk_reward_img_cells_local.copy()
                 dijkstra.draw_path_global(total_shortest_path, dj_path_image_local, (total_shortest_path[-1], total_shortest_path[0]), CELLS_SIZE)
-                dijkstra.draw_path_global(current_planned_path, dj_path_image_local, (current_phys_loc, final_phys_loc), CELLS_SIZE)
+                # dijkstra.draw_path_global(current_planned_path, dj_path_image_local, (current_phys_loc, final_phys_loc), CELLS_SIZE)
+
+                # print(total_shortest_path_ant)
+                dijkstra.draw_path_global(total_shortest_path_ant, dj_path_image_local, (total_shortest_path_ant[-1], total_shortest_path_ant[0]), CELLS_SIZE, color=(0,0,255))
+                # dijkstra.draw_path_global(current_planned_path_ant, dj_path_image_local, (current_phys_loc_ant, current_phys_loc), CELLS_SIZE, color=(0,0,255))
 
                 # draw the agent as a circle
                 half_cell = math.ceil((CELLS_SIZE/2))
                 center = (current_phys_loc[0]*CELLS_SIZE+half_cell, current_phys_loc[1]*CELLS_SIZE+half_cell)
                 dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
+
+                center = (current_phys_loc_ant[0]*CELLS_SIZE+half_cell, current_phys_loc_ant[1]*CELLS_SIZE+half_cell)
+                dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (100, 100, 255), 1)
+
 
                 # draw the partial target is there is one
                 if astar_target != None:
@@ -201,6 +216,7 @@ def pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, 
 
             # get the next location in the shortest path
             current_phys_loc = dijkstra.get_next_cell_shortest_path(current_planned_path, current_phys_loc)
+            current_phys_loc_ant = dijkstra.get_next_cell_shortest_path(current_planned_path_ant, current_phys_loc_ant)
 
         # find next state that we should go to and setup next interation
         current_ltl_state = ltl_process.get_next_state(ltl_state_diag, reward_graphs, current_ltl_state, final_phys_loc, CELLS_SIZE)
@@ -214,13 +230,13 @@ def create_final_image(processed_img, raw_risk_image, assumed_risk_image_filled,
     # seperate the image into RGB channels
     red_channel, green_channel, blue_channel = cv2.split(processed_img)
 
-    # add our filled out assumed risk
-    green_channel = cv2.add(green_channel, assumed_risk_image_filled)
+    # # add our filled out assumed risk
+    # green_channel = cv2.add(green_channel, assumed_risk_image_filled)
 
-    # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
-    red_channel = cv2.add(red_channel, raw_risk_image)
-    green_channel = cv2.add(green_channel, raw_risk_image)
-    blue_channel = cv2.add(blue_channel, raw_risk_image)
+    # # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
+    # red_channel = cv2.add(red_channel, raw_risk_image)
+    # green_channel = cv2.add(green_channel, raw_risk_image)
+    # blue_channel = cv2.add(blue_channel, raw_risk_image)
 
     # merge back our image into a single image
     dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])
@@ -259,10 +275,10 @@ def main():
     # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     # pathfind without any risk
-    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, raw_risk_image, raw_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     # pathfinding on assumed risk without updating
-    path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, assumed_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
+    # path, min_path_len, assumed_risk_image_filled = pathfind(reward_graphs, assumed_risk_image, assumed_risk_image, ltl_state_diag, ltl_heuristic, (start_ltl_state, final_ltl_state), (mission_phys_start, mission_phys_finish))
 
     # path len is the length of the actual final path taken
     print("path len:: ", len(path))

@@ -226,7 +226,7 @@ def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, poin
 
 
 # Draws the path for one transition
-def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
+def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE, color=(0,255,255)):
     start, finish = points
 
     for i in range(len(shortest_path)):
@@ -240,7 +240,7 @@ def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
         center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
         next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
 
-        img_cells = cv2.line(img_cells, center, next_center, (0,255,255), 1)
+        img_cells = cv2.line(img_cells, center, next_center, color, 1)
 
 
 # Gets the next cell in the shortest path

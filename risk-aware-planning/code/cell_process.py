@@ -93,6 +93,8 @@ def create_cells(processed_img, risk_image, CELLS_SIZE, show=False):
         # Show the images with the cell type and cell boundries
         plt.imshow(img_cells); plt.show()
 
+    cv2.imwrite(f"pixels.png", cv2.cvtColor(img_cells, cv2.COLOR_RGB2BGR) )
+
     return img_cells, cell_type, cell_cost
 
 
@@ -147,9 +149,9 @@ def handle_unknown_cell(points, cell_loc, img_cells, cell_sum, cell_cost, CELLS_
     #     cell_cost[ycell][xcell] = 0.9999999
 
     if cost == 0:
-        img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (50,50,50), 1)
+        img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (50,50,50), -1)
     else:
-        img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (cost,0,cost), 1)
+        img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (cost,0,cost), -1)
 
     return cost
 
@@ -190,32 +192,32 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
 
             if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,255,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,255,0), -1)
                 cell_type[ycell][xcell] = 'H'
                 break
             if tuple(processed_img[u,v]) == (250, g, 0): # LTL Current Target
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (250,0,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (250,0,0), -1)
                 cell_type[ycell][xcell] = 'T'
                 break
             if tuple(processed_img[u,v]) == (225, g, 0): # Mission Start Cell
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (225,0,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (225,0,0), -1)
                 cell_type[ycell][xcell] = 'S'
                 break
             if tuple(processed_img[u,v]) == (200, g, 0): # Mission Finish Cell
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (200,0,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (200,0,0), -1)
                 cell_type[ycell][xcell] = 'F'
                 break
             if tuple(processed_img[u,v]) == (175, g, 0): # A Target
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (175,0,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (175,0,0), -1)
                 cell_type[ycell][xcell] = 'A'
                 break
             if tuple(processed_img[u,v]) == (150, g, 0): # B Target
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), -1)
                 cell_type[ycell][xcell] = 'B'
                 break
 
