@@ -101,6 +101,9 @@ class Task:
 
         self.task_bounds = (start_state, final_state)
 
+    # @TODO
+    def check_valid_jump(self, current_ltl_state, axiom):
+        return True
 
 # get the reward image based off the possible transitions from the current state
 def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):

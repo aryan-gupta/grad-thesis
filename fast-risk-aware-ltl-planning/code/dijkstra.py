@@ -62,7 +62,7 @@ def astar_algo_partial_target(img_cells, cell_type, points, next_phys_loc, cell_
 def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
     # for the a* algo, the heuristic function is the euclidean distance
     # from the current pos to the final pos
-    def astar_algo_hfunc(current_phys_loc, next_phy_loc):
+    def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction):
         dx = current_phys_loc[0] - next_phy_loc[0]
         dy = current_phys_loc[1] - next_phy_loc[1]
         euclidean_distance = math.sqrt((dx**2) + (dy**2))
@@ -71,6 +71,22 @@ def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
     cfunc = get_cfunc(cell_cost)
     return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
+
+def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
+    def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction, optimizer=optimizer):
+        if not optimizer.is_valid_direction(current_phys_loc, direction):
+            return float("inf")
+
+        if optimizer.is_direction_forbidden_by_task(current_phys_loc, direction):
+            return float("inf")
+
+        dx = current_phys_loc[0] - next_phy_loc[0]
+        dy = current_phys_loc[1] - next_phy_loc[1]
+        euclidean_distance = math.sqrt((dx**2) + (dy**2))
+        return 0.0005 * euclidean_distance
+
+    cfunc = get_cfunc(cell_cost)
+    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
 # for djk's algo, the heuristic function always return 0 since we dont use
 # a heuristic
@@ -134,28 +150,28 @@ def dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SI
         # check each direction we can travel
         if y > 0: # UP
             old_distance = distances[y - 1][x]
-            new_distance = dist + cfunc((x, y), cell_cost, 0) + hfunc(current[1], finish)
+            new_distance = dist + cfunc((x, y), cell_cost, 0) + hfunc(current[1], finish, 0)
             if new_distance < old_distance:
                 distances[y - 1][x] = new_distance
                 prev[y - 1][x] = (x,y)
                 bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
         if x > 0: # LEFT
             old_distance = distances[y][x - 1]
-            new_distance = dist + cfunc((x, y), cell_cost, 1) + hfunc(current[1], finish)
+            new_distance = dist + cfunc((x, y), cell_cost, 1) + hfunc(current[1], finish, 1)
             if new_distance < old_distance:
                 distances[y][x - 1] = new_distance
                 prev[y][x - 1] = (x,y)
                 bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
         if x < (len(cell_type[0]) - 1): # RIGHT
             old_distance = distances[y][x + 1]
-            new_distance = dist + cfunc((x, y), cell_cost, 2) + hfunc(current[1], finish)
+            new_distance = dist + cfunc((x, y), cell_cost, 2) + hfunc(current[1], finish, 2)
             if new_distance < old_distance:
                 distances[y][x + 1] = new_distance
                 prev[y][x + 1] = (x,y)
                 bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
         if y < (len(cell_type) - 1): # DOWN
             old_distance = distances[y + 1][x]
-            new_distance = dist + cfunc((x, y), cell_cost, 3) + hfunc(current[1], finish)
+            new_distance = dist + cfunc((x, y), cell_cost, 3) + hfunc(current[1], finish, 3)
             if new_distance < old_distance:
                 distances[y + 1][x] = new_distance
                 prev[y + 1][x] = (x,y)
