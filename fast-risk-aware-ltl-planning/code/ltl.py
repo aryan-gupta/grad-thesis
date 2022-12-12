@@ -101,9 +101,40 @@ class Task:
 
         self.task_bounds = (start_state, final_state)
 
-    # @TODO
+    @staticmethod
+    def check_jump(target, trans):
+        axioms = trans.split('&')
+        target = target.lower()
+
+        valid = 0
+        for axiom in axioms:
+            # if we jump needs a not but our input has it, jump is not valid
+            if   axiom[0] == '!' and target == axiom[1]:
+                return -1
+            elif axiom[0] == '!' and target != axiom[1]:
+                valid += 1
+
+            # if the jump doesnt have the right input but needs it for the transition, its not valid
+            elif target != axiom[0]:
+                return -1
+            elif target == axiom[0]:
+                valid += 1
+
+        return valid
+
+
     def check_valid_jump(self, current_ltl_state, axiom):
-        return True
+        # print(current_ltl_state, axiom)
+
+        valid = False
+        for target in self.ltl_state_diag[current_ltl_state].keys():
+            num = Task.check_jump(axiom, self.ltl_state_diag[current_ltl_state][target])
+            # print(self.ltl_state_diag[current_ltl_state][target]," :: " , num)
+            valid |= (num >= 0)
+
+        # print(valid)
+
+        return valid
 
 # get the reward image based off the possible transitions from the current state
 def get_reward_img_state(ltl_state_diag, current_state, reward_graphs, size):

@@ -33,6 +33,8 @@ class EnvTMP:
 
 # pathfinds using a view range that updates the risk live
 def pathfind(e, t, show=False):
+    t2 = ltl.Task("risk.hoa.txt")
+
     # get the start conditions
     current_ltl_state = t.task_bounds[0]
     current_phys_loc = e.mission_phys_bounds[0]
@@ -97,12 +99,15 @@ def pathfind(e, t, show=False):
                 final_phys_loc = ltl.get_finish_location(risk_reward_cell_type_local, t.ltl_state_diag, t.ltl_heuristic, e.reward_graphs, current_ltl_state, CELLS_SIZE)
                 # print(final_phys_loc)
 
-                # apply dj's algo
+                # create optimizer
                 envTMP = EnvTMP()
-                envTMP.cell_type = risk_reward_cell_type_local
+                envTMP.cell_type = e.cell_type
                 envTMP.cell_cost = risk_reward_cell_cost_local
                 opt = optimizer.Optimizer(envTMP, t)
                 opt.set_task_state(0, current_ltl_state)
+                opt.add_task(t2)
+
+                # apply dj's algo
                 current_planned_path = dijkstra.astar_opt(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE, opt)
                 if show: print(len(current_planned_path))
             else:
@@ -115,12 +120,16 @@ def pathfind(e, t, show=False):
 
                 if amount_risk_updated > 0:
                     if show: print("full astar replanning")
+
+                    # create optimizer
                     envTMP = EnvTMP()
-                    envTMP.cell_type = risk_reward_cell_type_local
+                    envTMP.cell_type = e.cell_type
                     envTMP.cell_cost = risk_reward_cell_cost_local
                     opt = optimizer.Optimizer(envTMP, t)
                     opt.set_task_state(0, current_ltl_state)
-                    current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE)
+                    opt.add_task(t2)
+
+                    current_planned_path = dijkstra.astar_opt(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE, opt)
                 elif amount_risk_updated > 0:
                     if show: print("part astar replanning")
 
