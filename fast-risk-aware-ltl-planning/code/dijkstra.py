@@ -4,36 +4,6 @@ import math
 import matplotlib.pyplot as plt
 import bisect
 
-
-# returns the cost function
-# the cost function returns the correct cost function for the cell_cost data structure
-# this can be checked by testing if x/y elements is an array, because if it isnt, its
-# the raw cost value and not the state_diagram
-def get_cfunc(ds):
-    return cell_cost_cfunc
-
-
-# the cost function for the cell_cost raw method
-def cell_cost_cfunc(points, cell_cost, direction):
-    x, y = points
-
-    if direction == 0:
-        if y > 0:
-            return cell_cost[y - 1][x]
-
-    if direction == 1:
-        if x > 0:
-            return cell_cost[y][x - 1]
-
-    if direction == 2:
-        if x < (len(cell_cost[0]) - 1):
-            return cell_cost[y][x + 1]
-
-    if direction == 3:
-        if y < (len(cell_cost) - 1):
-            return cell_cost[y + 1][x]
-
-
 # creates a function that uses the euclidean distance to the next_phys_loc
 # is used when doing a partial a* algo
 def create_astar_partial_hfunc(next_phys_loc):
@@ -52,8 +22,7 @@ def create_astar_partial_hfunc(next_phys_loc):
 # the euclidean distance heuristic
 def astar_algo_partial_target(img_cells, cell_type, points, next_phys_loc, cell_cost, CELLS_SIZE):
     astar_algo_hfunc = create_astar_partial_hfunc(next_phys_loc)
-    cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_hfunc(img_cells, cell_type, points, cell_cost, CELLS_SIZE, astar_algo_hfunc)
 
 
 # this is only here for legacy reasons, will be removed later
@@ -68,8 +37,7 @@ def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
         euclidean_distance = math.sqrt((dx**2) + (dy**2))
         return 0.0005 * euclidean_distance
 
-    cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_hfunc(img_cells, cell_type, points, cell_cost, CELLS_SIZE, astar_algo_hfunc)
 
 
 def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
@@ -85,8 +53,7 @@ def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
         euclidean_distance = math.sqrt((dx**2) + (dy**2))
         return 0.0005 * euclidean_distance
 
-    cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_hfunc(img_cells, cell_type, points, cell_cost, CELLS_SIZE, astar_algo_hfunc)
 
 # for djk's algo, the heuristic function always return 0 since we dont use
 # a heuristic
@@ -97,14 +64,13 @@ def dj_algo_default_hfunc(*args, **kwargs):
 # to prevent breaking changes, this helper function will fix legacy
 # functions that call djk algo without an hfunc
 def dj_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
-    cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, dj_algo_default_hfunc)
+    return dj_algo_hfunc(img_cells, cell_type, points, cell_cost, CELLS_SIZE, dj_algo_default_hfunc)
 
 
 # Runs a dijkstra's algorithm on cell_type from the start and end locations
 # from points. The img_cells are used to make the video
 # @TODO remove img_cells parameter
-def dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
+def dj_algo_hfunc(img_cells, cell_type, points, cell_cost, CELLS_SIZE, hfunc):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
     # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
@@ -147,34 +113,31 @@ def dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SI
         # video_out.write(visited_image)
         # visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 1)
 
-        def cfunc(a, b, c):
-            return 0
-
         # check each direction we can travel
         if y > 0: # UP
             old_distance = distances[y - 1][x]
-            new_distance = dist + cfunc((x, y), cell_cost, 0) + hfunc(current[1], finish, 0)
+            new_distance = dist + hfunc(current[1], finish, 0)
             if new_distance < old_distance:
                 distances[y - 1][x] = new_distance
                 prev[y - 1][x] = (x,y)
                 bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
         if x > 0: # LEFT
             old_distance = distances[y][x - 1]
-            new_distance = dist + cfunc((x, y), cell_cost, 1) + hfunc(current[1], finish, 1)
+            new_distance = dist + hfunc(current[1], finish, 1)
             if new_distance < old_distance:
                 distances[y][x - 1] = new_distance
                 prev[y][x - 1] = (x,y)
                 bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
         if x < (len(cell_type[0]) - 1): # RIGHT
             old_distance = distances[y][x + 1]
-            new_distance = dist + cfunc((x, y), cell_cost, 2) + hfunc(current[1], finish, 2)
+            new_distance = dist + hfunc(current[1], finish, 2)
             if new_distance < old_distance:
                 distances[y][x + 1] = new_distance
                 prev[y][x + 1] = (x,y)
                 bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
         if y < (len(cell_type) - 1): # DOWN
             old_distance = distances[y + 1][x]
-            new_distance = dist + cfunc((x, y), cell_cost, 3) + hfunc(current[1], finish, 3)
+            new_distance = dist + hfunc(current[1], finish, 3)
             if new_distance < old_distance:
                 distances[y + 1][x] = new_distance
                 prev[y + 1][x] = (x,y)
