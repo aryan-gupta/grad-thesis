@@ -223,7 +223,7 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:
             if cell_type[ycell][xcell] == 'H':
-                cell_cost[ycell][xcell] = float("inf")
+                cell_cost[ycell][xcell] = 1.0 # float("inf")
             else:
                 cell_cost[ycell][xcell] = 0.0
             break

@@ -34,6 +34,7 @@ class EnvTMP:
 # pathfinds using a view range that updates the risk live
 def pathfind(e, t, show=False):
     t2 = ltl.Task("risk.hoa.txt")
+    t3 = ltl.Task("risk_max.hoa.txt")
 
     # get the start conditions
     current_ltl_state = t.task_bounds[0]
@@ -106,6 +107,7 @@ def pathfind(e, t, show=False):
                 opt = optimizer.Optimizer(envTMP, t)
                 opt.set_task_state(0, current_ltl_state)
                 opt.add_task(t2)
+                opt.add_task(t3)
 
                 # apply dj's algo
                 current_planned_path = dijkstra.astar_opt(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE, opt)
@@ -128,6 +130,7 @@ def pathfind(e, t, show=False):
                     opt = optimizer.Optimizer(envTMP, t)
                     opt.set_task_state(0, current_ltl_state)
                     opt.add_task(t2)
+                    opt.add_task(t3)
 
                     current_planned_path = dijkstra.astar_opt(risk_reward_img_cells_local, risk_reward_cell_type_local, (current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, CELLS_SIZE, opt)
                 elif amount_risk_updated > 0:

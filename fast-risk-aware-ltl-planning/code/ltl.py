@@ -4,6 +4,7 @@ import math
 import sys
 # import matplotlib.pyplot as plt
 
+RISK_MAX = 0.9
 
 class Task:
     def __init__(self, filename):
@@ -102,12 +103,18 @@ class Task:
         self.task_bounds = (start_state, final_state)
 
     @staticmethod
-    def check_jump(target, trans):
+    def check_jump(target, cost, trans):
         axioms = trans.split('&')
         target = target.lower()
 
         valid = 0
         for axiom in axioms:
+            # check cost_max
+            if   axiom == '!z' and cost > RISK_MAX:
+                return -1
+            else:
+                valid += 1
+
             # if we jump needs a not but our input has it, jump is not valid
             if   axiom[0] == '!' and target == axiom[1]:
                 return -1
@@ -123,12 +130,12 @@ class Task:
         return valid
 
 
-    def check_valid_jump(self, current_ltl_state, axiom):
+    def check_valid_jump(self, current_ltl_state, axiom, cost):
         # print(current_ltl_state, axiom)
 
         valid = False
         for target in self.ltl_state_diag[current_ltl_state].keys():
-            num = Task.check_jump(axiom, self.ltl_state_diag[current_ltl_state][target])
+            num = Task.check_jump(axiom, cost, self.ltl_state_diag[current_ltl_state][target])
             # print(self.ltl_state_diag[current_ltl_state][target]," :: " , num)
             valid |= (num >= 0)
 

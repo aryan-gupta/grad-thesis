@@ -147,6 +147,9 @@ def dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SI
         # video_out.write(visited_image)
         # visited_image = cv2.circle(visited_image, center, 4, (100 + (dist*10), 0, 100 + (dist*10)), 1)
 
+        def cfunc(a, b, c):
+            return 0
+
         # check each direction we can travel
         if y > 0: # UP
             old_distance = distances[y - 1][x]

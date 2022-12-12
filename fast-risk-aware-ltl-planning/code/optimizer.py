@@ -50,9 +50,10 @@ class Optimizer:
         for task_num in range(len(self.tasks)):
             # get what value the direction optimizes
             axiom = self.env.cell_type[y][x]
+            cost  = self.env.cell_cost[y][x]
             # check is that value is allowed by ltl
             current_ltl_state = self.task_state[task_num]
-            valid = self.tasks[task_num].check_valid_jump(current_ltl_state, axiom)
+            valid = self.tasks[task_num].check_valid_jump(current_ltl_state, axiom, cost)
 
             global_valid &= valid
 
