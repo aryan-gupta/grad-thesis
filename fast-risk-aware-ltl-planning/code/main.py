@@ -191,7 +191,7 @@ def main():
     e.create_reward_graphs()
 
     # create our assumed risk image
-    e.r.create_assumed_risk()
+    e.create_assumed_risk()
 
     # get the task details using LTL
     t = ltl.Task(ltl_hoa_file)

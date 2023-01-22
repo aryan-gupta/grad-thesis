@@ -159,6 +159,10 @@ class Enviroment:
         self.reward_graphs = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
 
 
+    def create_assumed_risk(self):
+        self.r.create_assumed_risk()
+
+
     # creates the final image to output
     def create_final_image(self, filename, assumed_risk_image_filled, path):
         # seperate the image into RGB channels
