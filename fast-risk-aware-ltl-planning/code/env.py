@@ -7,20 +7,17 @@ import risk
 import img
 import cell
 import dijkstra
+from vector2 import vector2
 
 CELLS_SIZE = 8 # 32 pixels
 
-class Enviroment:
-    def __init__(self, targets=2, size=(800, 800), validate=False, filename=None):
-        if filename is None:
-            while self.create_random(targets, size) and validate:
-                pass
-        else:
-            self.load_env(filename)
+TEMP_XTRA_TARGETS = [ vector2(5, 8), vector2(15, 3) ]
 
-
-    def load_env(self, filename):
-        pass
+class EnviromentCreator:
+    def __init__(self, targets=2, size=(800, 800), validate=False):
+        while self.create_random(targets, size) and validate:
+            pass
+        self.xtra_targets = TEMP_XTRA_TARGETS
 
 
     def create_random(self, targets, size):
@@ -37,6 +34,11 @@ class Enviroment:
 
         return self.verify_valid_env()
 
+    # https://stackoverflow.com/questions/4047935/
+    def preprocess(self):
+        self.__class__ = Enviroment
+        self.__init__(self)
+        return self
 
     def __add_circular_risk(self):
         # large circles
@@ -140,6 +142,28 @@ class Enviroment:
     def save_env(self, filename):
         env_bgr = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         cv2.imwrite(filename, env_bgr)
+
+
+
+class Enviroment(EnviromentCreator):
+    def __init__(self, ec, filename=None):
+        # load enviroment file
+        if filename is not None:
+            self.load_env(filename)
+
+        # split the env into R (targets), G (Risk), B (Unused)
+        self.channel_split()
+
+        # create our axiom reward graphs
+        # convert this to get_reward_locations (store the reward locations as coorinates, not as image graphs)
+        self.create_reward_graphs()
+
+        # create our assumed risk image
+        self.create_assumed_risk()
+
+
+    def load_env(self, filename):
+        pass
 
 
     def channel_split(self):

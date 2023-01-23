@@ -33,19 +33,12 @@ def main():
     random.seed(0)
 
     # read in and process image
-    e = env.Enviroment(targets=4, size=(800,800), validate=False)
+    e = env.EnviromentCreator(targets=4, size=(800,800), validate=False)
+    # e.save_env(f"./map.bmp")
+
+    e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
     # e = Enviroment(filename='../../../maps/002.bmp')
-
-    # split the env into R (targets), G (Risk), B (Unused)
-    e.channel_split()
-
-    # create our axiom reward graphs
-    # convert this to get_reward_locations (store the reward locations as coorinates, not as image graphs)
-    e.create_reward_graphs()
-
-    # create our assumed risk image
-    e.create_assumed_risk()
 
     # get the task details using LTL
     t = ltl.Task(ltl_hoa_file)
