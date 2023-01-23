@@ -8,7 +8,7 @@ import PIL as pil
 
 import img
 import cell
-import ltl
+import task
 import dijkstra
 import env
 import random
@@ -41,7 +41,7 @@ def main():
     # e = Enviroment(filename='../../../maps/002.bmp')
 
     # get the task details using LTL
-    t = ltl.Task(ltl_hoa_file)
+    t = task.Task(ltl_hoa_file)
 
     # create our basic LTL heuristic model
     t.create_task_heuristic()
