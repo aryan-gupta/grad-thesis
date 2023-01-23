@@ -70,12 +70,12 @@ class Pathfinder:
         # the loop to traverse the LTL formula
         while self.current_ltl_state != task_node:
             # get reward map of current LTL state
-            current_ltl_state_reward_graph = ltl.get_reward_img_state(self.task.ltl_state_diag, self.current_ltl_state, self.env.reward_graphs, (main.map_h, main. map_w))
+            current_ltl_state_reward_graph = self.task.get_reward_img_state(self.current_ltl_state, self.env.reward_graphs)
 
             self.pathfind_until_final_loc(current_ltl_state_reward_graph)
 
             # find next state that we should go to and setup next interation
-            self.current_ltl_state = ltl.get_next_state(self.task.ltl_state_diag, self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc, main.CELLS_SIZE)
+            self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
             self.img_tmp_idx_ltl += 1
 
 
@@ -116,7 +116,7 @@ class Pathfinder:
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell.create_cells(risk_reward_image_local, self.assumed_risk_image_filled, main.CELLS_SIZE, show=False)
 
                 # get next phys loc based off the LTL state diag
-                final_phys_loc = ltl.get_finish_location(risk_reward_cell_type_local, self.task.ltl_state_diag, self.task.ltl_heuristic, self.env.reward_graphs, self.current_ltl_state, main.CELLS_SIZE)
+                final_phys_loc = self.task.get_finish_location(risk_reward_cell_type_local, self.env.reward_graphs, self.current_ltl_state)
                 # print(final_phys_loc)
 
                 # apply dj's algo
