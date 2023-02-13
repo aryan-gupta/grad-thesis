@@ -21,8 +21,8 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 800
-map_w = 800
+map_h = 485
+map_w = 485
 
 output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
@@ -33,12 +33,12 @@ def main():
     random.seed(0)
 
     # read in and process image
-    e = env.EnviromentCreator(targets=4, size=(800,800), validate=False)
+    # e = env.EnviromentCreator(targets=4, size=(800,800), validate=False)
     # e.save_env(f"./map.bmp")
 
-    e = e.preprocess()
+    # e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    # e = env.Enviroment(filename='../../../maps/hospital.bmp')
+    e = env.Enviroment(filename='../../../maps/hospital.bmp')
 
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)

@@ -218,26 +218,26 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
                 cell_type[ycell][xcell] = 'B'
                 break
-            if tuple(processed_img[u,v]) == (125, g, 0): # B Target
+            if tuple(processed_img[u,v]) == (r, g, 0) and not r == 0: # R Target
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'C'
+                cell_type[ycell][xcell] = 'R'
                 break
-            if tuple(processed_img[u,v]) == (100, g, 0): # B Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'D'
-                break
-            if tuple(processed_img[u,v]) == (75, g, 0): # B Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'E'
-                break
-            if tuple(processed_img[u,v]) == (50, g, 0): # B Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'G'
-                break
+            # if tuple(processed_img[u,v]) == (100, g, 0): # B Target
+            #     cell_known = True
+            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+            #     cell_type[ycell][xcell] = 'D'
+            #     break
+            # if tuple(processed_img[u,v]) == (75, g, 0): # B Target
+            #     cell_known = True
+            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+            #     cell_type[ycell][xcell] = 'E'
+            #     break
+            # if tuple(processed_img[u,v]) == (50, g, 0): # B Target
+            #     cell_known = True
+            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+            #     cell_type[ycell][xcell] = 'G'
+            #     break
             # if tuple(processed_img[u,v]) == (25, g, 0): # B Target
             #     cell_known = True
             #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)

@@ -164,6 +164,7 @@ class Enviroment(EnviromentCreator):
 
     def load_env(self, filename):
         self.processed_img = cv2.imread(filename)
+        self.processed_img = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         self.height, self.width, _ = self.processed_img.shape
         self.num_targets = None
 
