@@ -38,7 +38,7 @@ def main():
 
     e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    # e = Enviroment(filename='../../../maps/002.bmp')
+    # e = env.Enviroment(filename='../../../maps/hospital.bmp')
 
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)

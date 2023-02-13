@@ -37,7 +37,7 @@ class EnviromentCreator:
     # https://stackoverflow.com/questions/4047935/
     def preprocess(self):
         self.__class__ = Enviroment
-        self.__init__(self)
+        self.__init__(filename=None)
         return self
 
     def __add_circular_risk(self):
@@ -146,7 +146,7 @@ class EnviromentCreator:
 
 
 class Enviroment(EnviromentCreator):
-    def __init__(self, ec, filename=None):
+    def __init__(self, filename=None):
         # load enviroment file
         if filename is not None:
             self.load_env(filename)
@@ -163,7 +163,9 @@ class Enviroment(EnviromentCreator):
 
 
     def load_env(self, filename):
-        pass
+        self.processed_img = cv2.imread(filename)
+        self.height, self.width, _ = self.processed_img.shape
+        self.num_targets = None
 
 
     def channel_split(self):
@@ -214,9 +216,9 @@ class Enviroment(EnviromentCreator):
 
 def main():
     random.seed(0)
-    e = Enviroment(targets=4, size=(800,800), validate=False)
+    e = EnviromentCreator(targets=4, size=(800,800), validate=False)
     e.show_env()
-    e.save_env(f"../../../maps/000.bmp")
+    # e.save_env(f"../../../maps/000.bmp")
 
 
 if __name__ == "__main__":
