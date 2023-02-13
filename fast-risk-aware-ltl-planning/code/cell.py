@@ -125,7 +125,7 @@ def get_cell_types(cell_type):
     #         if cell_type[col_num][row_num] not in types:
     #             # print(cell_type[col_num][row_num])
     #             types.append(cell_type[col_num][row_num])
-    types = ["A","B","F","S","R"]
+    types = ["K","L","M","N","O","P","Q","F","S","R"]
     return types
 
 
@@ -208,41 +208,41 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (200,0,0), 1)
                 cell_type[ycell][xcell] = 'F'
                 break
-            if tuple(processed_img[u,v]) == (175, g, 0): # A Target
+            if tuple(processed_img[u,v]) == (175, g, 0): # K Target
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (175,0,0), 1)
-                cell_type[ycell][xcell] = 'A'
+                cell_type[ycell][xcell] = 'K'
                 break
-            if tuple(processed_img[u,v]) == (150, g, 0): # B Target
+            if tuple(processed_img[u,v]) == (150, g, 0): # L Target
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'B'
+                cell_type[ycell][xcell] = 'L'
                 break
-            if tuple(processed_img[u,v]) == (r, g, 0) and not r == 0: # R Target
+            if tuple(processed_img[u,v]) == (125, g, 0): # M Target
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'R'
+                cell_type[ycell][xcell] = 'M'
                 break
-            # if tuple(processed_img[u,v]) == (100, g, 0): # B Target
-            #     cell_known = True
-            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-            #     cell_type[ycell][xcell] = 'D'
-            #     break
-            # if tuple(processed_img[u,v]) == (75, g, 0): # B Target
-            #     cell_known = True
-            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-            #     cell_type[ycell][xcell] = 'E'
-            #     break
-            # if tuple(processed_img[u,v]) == (50, g, 0): # B Target
-            #     cell_known = True
-            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-            #     cell_type[ycell][xcell] = 'G'
-            #     break
-            # if tuple(processed_img[u,v]) == (25, g, 0): # B Target
-            #     cell_known = True
-            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-            #     cell_type[ycell][xcell] = 'I'
-            #     break
+            if tuple(processed_img[u,v]) == (100, g, 0): # N Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'N'
+                break
+            if tuple(processed_img[u,v]) == (75, g, 0): # O Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'O'
+                break
+            if tuple(processed_img[u,v]) == (50, g, 0): # P Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'P'
+                break
+            if tuple(processed_img[u,v]) == (25, g, 0): # Q Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'Q'
+                break
 
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:
