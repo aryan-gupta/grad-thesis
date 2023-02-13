@@ -218,7 +218,31 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
                 cell_type[ycell][xcell] = 'B'
                 break
-
+            if tuple(processed_img[u,v]) == (125, g, 0): # B Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'C'
+                break
+            if tuple(processed_img[u,v]) == (100, g, 0): # B Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'D'
+                break
+            if tuple(processed_img[u,v]) == (75, g, 0): # B Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'E'
+                break
+            if tuple(processed_img[u,v]) == (50, g, 0): # B Target
+                cell_known = True
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+                cell_type[ycell][xcell] = 'G'
+                break
+            # if tuple(processed_img[u,v]) == (25, g, 0): # B Target
+            #     cell_known = True
+            #     img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
+            #     cell_type[ycell][xcell] = 'I'
+            #     break
 
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:
