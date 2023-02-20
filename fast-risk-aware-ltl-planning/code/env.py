@@ -199,9 +199,9 @@ class Enviroment(EnviromentCreator):
         green_channel = cv2.add(green_channel, assumed_risk_image_filled)
 
         # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
-        red_channel = cv2.add(red_channel, self.r.raw_risk_image)
-        green_channel = cv2.add(green_channel, self.r.raw_risk_image)
-        blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
+        # red_channel = cv2.add(red_channel, self.r.raw_risk_image)
+        # green_channel = cv2.add(green_channel, self.r.raw_risk_image)
+        # blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
 
         # merge back our image into a single image
         dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])

@@ -80,7 +80,7 @@ class Pathfinder:
 
 
     def pathfind_until_final_loc(self, current_ltl_state_reward_graph):
-        show = True
+        show = False
         # we wont know the final_phys_loc or the dj's target location until we run our algo
         # store a dummy result in the meantime
         final_phys_loc = (-1,-1)
@@ -114,6 +114,8 @@ class Pathfinder:
                 # create required data structures
                 risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, self.assumed_risk_image_filled, np.zeros((main.map_h, main.map_w), np.uint8)])
                 risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell.create_cells(risk_reward_image_local, self.assumed_risk_image_filled, main.CELLS_SIZE, show=False)
+
+                # cv2.imwrite(f"{ main.output_images_dir }/paper-tmp.png", cv2.cvtColor(risk_reward_img_cells_local, cv2.COLOR_RGB2BGR) ); exit()
 
                 # get next phys loc based off the LTL state diag
                 final_phys_loc = self.task.get_finish_location(risk_reward_cell_type_local, self.env.reward_graphs, self.current_ltl_state)
@@ -197,7 +199,7 @@ class Pathfinder:
 
 
         if self.output is OutputType.DISK:
-            cv2.imwrite(f"{ main.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.bmp", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+            cv2.imwrite(f"{ main.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
 
 
     def get_total_shortest_path(self):

@@ -47,7 +47,7 @@ class Task:
             # print(queue)
             distance += 1
 
-        # print(self.ltl_heuristic)
+        print(self.ltl_heuristic)
         # ltl_heuristic_aps = {}
         # for key in self.ltl_heuristic.keys():
         #     ltl_heuristic_aps[aps[key]] = self.ltl_heuristic[key]
@@ -81,7 +81,7 @@ class Task:
                         next_state_dict = {}
                     state = int(line.split(" ")[1])
                     next_state_dict = {}
-                    if len(line.split(" ")) >= 3 and line.split(" ")[2] == "{0}":
+                    if final_state == -1 and len(line.split(" ")) >= 3 and line.split(" ")[2] == "{0}":
                         final_state = state
 
                 if line.startswith("["):
@@ -169,7 +169,7 @@ class Task:
                 next_state = next_possible_state
                 jump_cost = self.ltl_heuristic[next_possible_state]
 
-        # print(next_state)
+        print(next_state)
 
         # get maximization of what axiom leads to next_state
         axioms = self.ltl_state_diag[current_ltl_state][next_state]
@@ -179,7 +179,7 @@ class Task:
             if a[0] != '!':
                 axiom = a.upper()
 
-        # print(axiom)
+        print(axiom)
 
         # return the location of that axiom using T and reward graphs
         for row in range(len(cell_type)):

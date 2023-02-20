@@ -25,11 +25,13 @@ map_h = 485
 map_w = 485
 
 output_images_dir = '../../../tmp'
-ltl_hoa_file = 'ltl.hoa.txt'
+final_image = f"{ output_images_dir }/!picfinal.png"
+ltl_hoa_file = '../tasks/complex-dual.hoa.txt'
+enviroment_file = '../maps/hospital.png'
 
 
 HAZARD_CELL_CHAR = 'X'
-EMPTY_CELL_CHAR = ' '
+EMPTY_CELL_CHAR = '#'
 
 START_CELL_CHAR = 'A'
 LTL_TARGET_CELL_CHAR = 'Y'
@@ -57,7 +59,7 @@ def main():
 
     # e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    e = env.Enviroment(filename='../maps/hospital.png')
+    e = env.Enviroment(filename=enviroment_file)
 
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
@@ -66,7 +68,7 @@ def main():
     t.create_task_heuristic()
 
     # pathfind without any risk
-    # e.r.assumed_risk_image = e.r.raw_risk_image
+    e.r.assumed_risk_image = e.r.raw_risk_image
 
     # pathfinding on assumed risk without updating
     # e.r.raw_risk_image = e.r.assumed_risk_image
@@ -75,7 +77,7 @@ def main():
     p.pathfind_until_task()
 
     # draw the path on img_cell to show the end user
-    e.create_final_image(f"{ output_images_dir }/!picfinal.bmp", p.get_filled_assumed_risk(), p.get_total_shortest_path())
+    e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
 
 
 if __name__ == "__main__":
