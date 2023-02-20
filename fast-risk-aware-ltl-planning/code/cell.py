@@ -79,7 +79,11 @@ def create_cells(processed_img, risk_image, CELLS_SIZE, show=False):
 
         # Print the cell type map for debugging
         for y in cell_type:
-            print(y)
+            for ch in y:
+                if ch =='Y': ch = 'C'
+                if ch =='#': ch = ' '
+                print(ch,' ', end="")
+            print("")
         print()
         print()
 
