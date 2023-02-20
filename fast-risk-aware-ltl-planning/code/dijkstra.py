@@ -222,7 +222,8 @@ def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, poin
     map_w, map_h = (risk_reward_img_cells.shape[1], risk_reward_img_cells.shape[0])
     empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
     img_plain_djk = risk_reward_img_cells.copy()
-    img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs['S']]))
+    img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs[cell.START_CELL_CHAR]]))
+    print(cell.START_CELL_CHAR)
     for i in range(len(shortest_path)):
         half_cell = math.ceil((CELLS_SIZE/2))
 

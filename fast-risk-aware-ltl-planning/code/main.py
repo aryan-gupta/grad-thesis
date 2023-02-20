@@ -28,6 +28,25 @@ output_images_dir = '../../../tmp'
 ltl_hoa_file = 'ltl.hoa.txt'
 
 
+HAZARD_CELL_CHAR = 'X'
+EMPTY_CELL_CHAR = ' '
+
+START_CELL_CHAR = 'A'
+LTL_TARGET_CELL_CHAR = 'Y'
+END_CELL_CHAR = 'Z'
+CHAR_COLOR_MAP = {
+    250 : LTL_TARGET_CELL_CHAR,
+    225 : START_CELL_CHAR,
+    200 : END_CELL_CHAR,
+    175 : 'B',
+    150 : 'C',
+    125 : 'D',
+    100 : 'E',
+     75 : 'F',
+     50 : 'G',
+     25 : 'H'
+}
+
 def main():
     # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(0)

@@ -5,6 +5,7 @@ import math
 import sys
 # import matplotlib.pyplot as plt
 
+import main
 
 class Task:
     def __init__(self, filename):
@@ -187,7 +188,7 @@ class Task:
                 x = col * main.CELLS_SIZE + (main.CELLS_SIZE//2)
 
                 pixel_valid = reward_graphs[axiom][y][x] != 0
-                if cell_type[row][col] == 'T' and pixel_valid:
+                if cell_type[row][col] == main.LTL_TARGET_CELL_CHAR and pixel_valid:
                     return (col, row)
 
 
@@ -203,4 +204,4 @@ def get_current_phys_state_type(reward_graphs, current_phys_loc):
                     return axiom
 
     print("Illegal, didnt want to throw")
-    return 'T'
+    return main.LTL_TARGET_CELL_CHAR

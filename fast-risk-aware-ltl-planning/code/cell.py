@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 
 import img
+import main
 
 # I honestly thought there was a built in map function, but I guess Im wrong
 # https://stackoverflow.com/questions/1969240
@@ -49,7 +50,7 @@ def create_cells(processed_img, risk_image, CELLS_SIZE, show=False):
         xcell = 0
 
         for x in range(0, map_w, CELLS_SIZE):
-            cell_type[ycell].append('C')
+            cell_type[ycell].append(main.EMPTY_CELL_CHAR)
             cell_cost[ycell].append(0.0)
 
             cell_known, cell_sum = update_a_cell((xcell, ycell), processed_img, cell_type, cell_cost, img_cells, risk_image, CELLS_SIZE)
@@ -103,11 +104,11 @@ def get_start_finish_locations(cell_type):
     finish = ()
     for y in range(len(cell_type)):
         for x in range(len(cell_type[0])):
-            if cell_type[y][x] == 'S':
+            if cell_type[y][x] == main.START_CELL_CHAR:
                 start = (x, y)
-            if cell_type[y][x] == 'F':
+            if cell_type[y][x] == main.END_CELL_CHAR:
                 finish = (x, y)
-            if cell_type[y][x] == 'T':
+            if cell_type[y][x] == main.LTL_TARGET_CELL_CHAR:
                 finish = (x, y)
 
     # print(start)
@@ -125,8 +126,8 @@ def get_cell_types(cell_type):
     #         if cell_type[col_num][row_num] not in types:
     #             # print(cell_type[col_num][row_num])
     #             types.append(cell_type[col_num][row_num])
-    types = ["K","L","M","N","O","P","Q","F","S","R"]
-    return types
+    # https://stackoverflow.com/questions/16228248
+    return list(main.CHAR_COLOR_MAP.values())
 
 
 # handles an unknown cell during the cell creation or cell updating period
@@ -191,62 +192,37 @@ def update_a_cell(cell_loc, processed_img, cell_type, cell_cost, img_cells, risk
             if tuple(processed_img[u,v]) == (0,255,0): # Hazard Cells
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (0,255,0), 1)
-                cell_type[ycell][xcell] = 'H'
+                cell_type[ycell][xcell] = main.HAZARD_CELL_CHAR
                 break
             if tuple(processed_img[u,v]) == (250, g, 0): # LTL Current Target
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (250,0,0), 1)
-                cell_type[ycell][xcell] = 'T'
+                cell_type[ycell][xcell] = main.LTL_TARGET_CELL_CHAR
                 break
             if tuple(processed_img[u,v]) == (225, g, 0): # Mission Start Cell
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (225,0,0), 1)
-                cell_type[ycell][xcell] = 'S'
+                cell_type[ycell][xcell] = main.START_CELL_CHAR
                 break
             if tuple(processed_img[u,v]) == (200, g, 0): # Mission Finish Cell
                 cell_known = True
                 img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (200,0,0), 1)
-                cell_type[ycell][xcell] = 'F'
+                cell_type[ycell][xcell] = main.END_CELL_CHAR
                 break
-            if tuple(processed_img[u,v]) == (175, g, 0): # K Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (175,0,0), 1)
-                cell_type[ycell][xcell] = 'K'
-                break
-            if tuple(processed_img[u,v]) == (150, g, 0): # L Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'L'
-                break
-            if tuple(processed_img[u,v]) == (125, g, 0): # M Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'M'
-                break
-            if tuple(processed_img[u,v]) == (100, g, 0): # N Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'N'
-                break
-            if tuple(processed_img[u,v]) == (75, g, 0): # O Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'O'
-                break
-            if tuple(processed_img[u,v]) == (50, g, 0): # P Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'P'
-                break
-            if tuple(processed_img[u,v]) == (25, g, 0): # Q Target
-                cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (150,0,0), 1)
-                cell_type[ycell][xcell] = 'Q'
+
+            for color in main.CHAR_COLOR_MAP.keys():
+                if tuple(processed_img[u,v]) == (color, g, 0): # K Target
+                    cell_known = True
+                    img_cells = cv2.rectangle(img_cells, (x,y), (x + CELLS_SIZE - 1,y + CELLS_SIZE - 1), (color,0,0), 1)
+                    cell_type[ycell][xcell] = main.CHAR_COLOR_MAP[color]
+                    break
+
+            if cell_known:
                 break
 
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:
-            if cell_type[ycell][xcell] == 'H':
+            if cell_type[ycell][xcell] == main.HAZARD_CELL_CHAR:
                 cell_cost[ycell][xcell] = float("inf")
             else:
                 cell_cost[ycell][xcell] = 0.0

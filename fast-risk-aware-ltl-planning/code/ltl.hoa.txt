@@ -1,8 +1,8 @@
 HOA: v1
-name: "(!m U o) & Ff & (!f U m) & (!f U l) & G(!o | X(m & !o))"
+name: "(!d U f) & Fz & (!z U d) & (!z U c) & G(!f | X(d & !f))"
 States: 8
 Start: 2
-AP: 4 "m" "o" "f" "l"
+AP: 4 "d" "f" "z" "c"
 acc-name: Buchi
 Acceptance: 1 Inf(0)
 properties: trans-labels explicit-labels state-acc deterministic weak
