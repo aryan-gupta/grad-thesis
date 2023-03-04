@@ -28,6 +28,7 @@ output_images_dir = '../../../tmp'
 final_image = f"{ output_images_dir }/!picfinal.png"
 ltl_hoa_file = '../tasks/complex-dual.hoa.txt'
 enviroment_file = '../maps/hospital.png'
+tmp_raw_env_save_file = f'../maps/raw_env.png'
 
 
 HAZARD_CELL_CHAR = 'X'
@@ -55,7 +56,7 @@ def main():
 
     # read in and process image
     # e = env.EnviromentCreator(targets=4, size=(800,800), validate=False)
-    # e.save_env(f"./map.bmp")
+    # e.save_env(tmp_raw_env_save_file)
 
     # e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
