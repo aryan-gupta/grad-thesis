@@ -21,12 +21,12 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 485
-map_w = 485
+map_h = 1600
+map_w = 1600
 
 output_images_dir = '../../../tmp'
 final_image = f"{ output_images_dir }/!picfinal.png"
-ltl_hoa_file = '../tasks/complex-dual.hoa.txt'
+ltl_hoa_file = '../tasks/complex-dual-2.hoa.txt'
 enviroment_file = '../maps/hospital.png'
 
 
@@ -51,15 +51,15 @@ CHAR_COLOR_MAP = {
 
 def main():
     # since the seed is 0, the env will always be the same, helps when debugging
-    random.seed(0)
+    random.seed(1)
 
     # read in and process image
-    # e = env.EnviromentCreator(targets=4, size=(800,800), validate=False)
+    e = env.EnviromentCreator(targets=6, size=(1600,1600), validate=False)
     # e.save_env(f"./map.bmp")
 
-    # e = e.preprocess()
+    e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    e = env.Enviroment(filename=enviroment_file)
+    # e = env.Enviroment(filename=enviroment_file)
 
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
@@ -68,7 +68,7 @@ def main():
     t.create_task_heuristic()
 
     # pathfind without any risk
-    e.r.assumed_risk_image = e.r.raw_risk_image
+    # e.r.assumed_risk_image = e.r.raw_risk_image
 
     # pathfinding on assumed risk without updating
     # e.r.raw_risk_image = e.r.assumed_risk_image
