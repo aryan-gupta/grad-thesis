@@ -1,0 +1,2 @@
+Fz & (!z U c) & (!z U e) & G(d -> X(e & !d)) & (!e U d) & G(b -> X(c & !b)) & (!c U b)
+Fz & (!z U c) & (!z U e) & G(b -> X(c & !b)) & (!c U b) & G(d -> X(e & !d)) & (!e U d)

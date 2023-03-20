@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+import main
 import risk
 import img
 import cell
@@ -166,6 +167,10 @@ class Enviroment(EnviromentCreator):
         self.processed_img = cv2.imread(filename)
         self.processed_img = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         self.height, self.width, _ = self.processed_img.shape
+        # global main.map_h, main.map_w
+        # main.map_h, main.map_w, _ = self.processed_img.shape
+        main.update_dim(self.height, self.width)
+        print(main.map_h)
         self.num_targets = None
 
 

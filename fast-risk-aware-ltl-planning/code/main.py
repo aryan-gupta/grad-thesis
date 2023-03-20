@@ -16,23 +16,48 @@ import optimizer
 import pathfinder
 
 # GLOBAL VARS
+# stores the size of each cell or square in the environment
 CELLS_SIZE = 8 # 32 pixels
+
+# stores the agent's viewing distance. As the agent moves around,
+# it can see \p VIEW_CELLS_SIZE distance away in each direction.
+# the viewing circle diameter is `2*VIEW_CELLS_SIZE`
 VIEW_CELLS_SIZE = 8
+
+# [deprecated], will be removed in a future commit
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 1600
-map_w = 1600
+map_h = 486
+map_w = 485
 
+# directory the progress images, images can then be combined with
+# `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
 output_images_dir = '../../../tmp'
+
+# location of where the final image should go. This image has all
+# the cells, uncovered risk, assumed risk (if any), path that the
+# agent traveled, and LTL targets
 final_image = f"{ output_images_dir }/!picfinal.png"
-ltl_hoa_file = '../tasks/complex-dual-2.hoa.txt'
+
+# input for the LTL hoa file, @TODO will become a array to support
+# multiple HOA files
+ltl_hoa_file = '../tasks/complex-dual.hoa.txt'
+
+# the environment file the agent is in. This file must be a
+# - RGB (R - LTL Targets, G - Environment Risk, B - Unused)
+# - PNG (to prevent JPEG aliasing and artifacts)
 enviroment_file = '../maps/hospital.png'
 
+# CHAR REPRESENTATIONS
 
+# char representation of a hazard cell or wall cell
 HAZARD_CELL_CHAR = 'X'
+
+# char representation of a empty traversable cell
 EMPTY_CELL_CHAR = '#'
 
+# chars representing the different targets
 START_CELL_CHAR = 'A'
 LTL_TARGET_CELL_CHAR = 'Y'
 END_CELL_CHAR = 'Z'
@@ -54,13 +79,15 @@ def main():
     random.seed(1)
 
     # read in and process image
-    e = env.EnviromentCreator(targets=6, size=(1600,1600), validate=False)
+    # e = env.EnviromentCreator(targets=6, size=(1600,1600), validate=False)
     # e.save_env(f"./map.bmp")
+    # e = e.preprocess()
 
-    e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    # e = env.Enviroment(filename=enviroment_file)
-
+    print(map_h)
+    e = env.Enviroment(filename=enviroment_file)
+    print(map_h)
+    exit()
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
 
@@ -79,6 +106,9 @@ def main():
     # draw the path on img_cell to show the end user
     e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
 
+
+def update_dim(h, w):
+    map_h, map_w = h, w
 
 if __name__ == "__main__":
     main()
