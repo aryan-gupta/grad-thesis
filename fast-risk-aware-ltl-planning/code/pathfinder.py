@@ -53,16 +53,16 @@ class Pathfinder:
         self.img_tmp_idx_phys = 0
 
     # pathfinds until the set task node is reached
-    def pathfind_until_task(self, task_node=None):
+    def pathfind_until_task(self, final_task_node=None):
         # set the final node as the final task node
-        if task_node is None:
-            task_node = self.task.task_bounds[1]
+        if final_task_node is None:
+            final_task_node = self.task.task_bounds[1]
 
         # reset the counter:
         self.img_tmp_idx_ltl = 0
 
         # the loop to traverse the LTL formula
-        while self.current_ltl_state != task_node:
+        while self.current_ltl_state != final_task_node:
             # get reward map of current LTL state
             current_ltl_state_reward_graph = self.task.get_reward_img_state(self.current_ltl_state, self.env.reward_graphs)
 
