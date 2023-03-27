@@ -62,6 +62,8 @@ def main():
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
     # e = env.Enviroment(filename=enviroment_file)
 
+    # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
+
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
 

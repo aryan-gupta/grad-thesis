@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 
 import cell
+import main
 
 # read in a image
 def read_image(filename, show=False):
@@ -265,3 +266,17 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
     total_diff += copy_pixels_risk(risk_image_local, raw_risk_image, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, sub_lambda, sub_lambda)
 
     return risk_image_local, total_diff, cells_updated
+
+
+def save_channel_image(name, r=None, g=None, b=None):
+    if r is None:
+        r = np.zeros((main.map_h, main.map_w), np.uint8)
+
+    if g is None:
+        g = np.zeros((main.map_h, main.map_w), np.uint8)
+
+    if b is None:
+        b = np.zeros((main.map_h, main.map_w), np.uint8)
+
+    img = cv2.merge([r, g, b])
+    cv2.imwrite(name, img)
