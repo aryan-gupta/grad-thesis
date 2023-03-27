@@ -55,7 +55,7 @@ def main():
     random.seed(1)
 
     # read in and process image
-    e = env.EnviromentCreator(targets=6, size=(1600,1600), validate=False)
+    e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
     # e.save_env(tmp_raw_env_save_file)
 
     e = e.preprocess()
