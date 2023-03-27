@@ -144,6 +144,13 @@ class EnviromentCreator:
         cv2.imwrite(filename, env_bgr)
 
 
+# this class is a place holder to store an minimal environment
+# this will be deprecated in the future, hopefully
+class EnviromentMinimal:
+    def __init__(self):
+        self.cell_cost = None
+        self.cell_type = None
+
 
 class Enviroment(EnviromentCreator):
     def __init__(self, filename=None):
@@ -214,6 +221,11 @@ class Enviroment(EnviromentCreator):
 
         cv2.imwrite(filename, cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
+    @staticmethod
+    def get_minimal_env(cell_type, cell_cost):
+        envMin = EnviromentMinimal()
+        envMin.cell_type = cell_type
+        envMin.cell_cost = cell_cost
 
 def main():
     random.seed(0)

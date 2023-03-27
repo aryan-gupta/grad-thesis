@@ -16,12 +16,6 @@ import env
 import random
 import optimizer
 
-class EnvTMP:
-    def __init__(self):
-        self.cell_cost = None
-        self.cell_type = None
-
-
 
 class OutputType(Enum):
     NONE       = 0 # do not output anything
@@ -122,10 +116,7 @@ class Pathfinder:
                 # print(final_phys_loc)
 
                 # apply dj's algo
-                envTMP = EnvTMP()
-                envTMP.cell_type = risk_reward_cell_type_local
-                envTMP.cell_cost = risk_reward_cell_cost_local
-                opt = optimizer.Optimizer(envTMP, self.task)
+                opt = optimizer.Optimizer(env.Enviroment.get_minimal_env(risk_reward_cell_type_local, risk_reward_cell_cost_local), self.task)
                 opt.set_task_state(0, self.current_ltl_state)
                 current_planned_path = dijkstra.astar_opt(risk_reward_img_cells_local, risk_reward_cell_type_local, (self.current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, main.CELLS_SIZE, opt)
                 if show: print(len(current_planned_path))
@@ -139,10 +130,7 @@ class Pathfinder:
 
                 if amount_risk_updated > 0:
                     if show: print("full astar replanning")
-                    envTMP = EnvTMP()
-                    envTMP.cell_type = risk_reward_cell_type_local
-                    envTMP.cell_cost = risk_reward_cell_cost_local
-                    opt = optimizer.Optimizer(envTMP, self.task)
+                    opt = optimizer.Optimizer(env.Enviroment.get_minimal_env(risk_reward_cell_type_local, risk_reward_cell_cost_local), self.task)
                     opt.set_task_state(0, self.current_ltl_state)
                     current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (self.current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, main.CELLS_SIZE)
                 elif amount_risk_updated > 0:
