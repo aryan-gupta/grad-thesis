@@ -230,6 +230,8 @@ class Enviroment(EnviromentCreator):
         envMin.cell_type = cell_type
         envMin.cell_cost = cell_cost
 
+        return envMin
+
 def main2():
     random.seed(0)
     e = EnviromentCreator(targets=4, size=(800,800), validate=False)
