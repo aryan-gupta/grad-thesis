@@ -174,10 +174,8 @@ class Enviroment(EnviromentCreator):
         self.processed_img = cv2.imread(filename)
         self.processed_img = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         self.height, self.width, _ = self.processed_img.shape
-        # global main.map_h, main.map_w
-        # main.map_h, main.map_w, _ = self.processed_img.shape
-        main.update_dim(self.height, self.width)
-        print(main.map_h)
+        assert self.height == main.map_h, f"Image height not same as main.map_h"
+        assert self.width == main.map_w, f"Image height not same as main.map_h"
         self.num_targets = None
 
 

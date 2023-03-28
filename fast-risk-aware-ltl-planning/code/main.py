@@ -88,11 +88,6 @@ def main():
 
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
-    # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    print(map_h)
-    e = env.Enviroment(filename=enviroment_file)
-    print(map_h)
-    exit()
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
 
@@ -110,10 +105,6 @@ def main():
 
     # draw the path on img_cell to show the end user
     e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
-
-
-def update_dim(h, w):
-    map_h, map_w = h, w
 
 if __name__ == "__main__":
     main()
