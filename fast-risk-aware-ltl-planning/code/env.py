@@ -186,8 +186,11 @@ class Enviroment(EnviromentCreator):
 
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
+        # seperate the image into RGB channels
+        red_channel, _, _ = cv2.split(self.processed_img)
+
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.processed_img, self.r.raw_risk_image, CELLS_SIZE, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(red_channel, self.r.raw_risk_image, self.processed_img, CELLS_SIZE, show=False)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
@@ -213,11 +216,8 @@ class Enviroment(EnviromentCreator):
         # green_channel = cv2.add(green_channel, self.r.raw_risk_image)
         # blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
 
-        # merge back our image into a single image
-        dj_path_image = cv2.merge([red_channel, green_channel, blue_channel])
-
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(dj_path_image, assumed_risk_image_filled, CELLS_SIZE, show=False)
+        dj_path_image, _, _ = cell.create_cells(red_channel, assumed_risk_image_filled, self.processed_img, CELLS_SIZE, show=False)
 
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
@@ -236,17 +236,18 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
-        img_cells, cell_type, cell_cost = cell.create_cells(image, assumed_risk_image, main.CELLS_SIZE, show=False)
+        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, main.CELLS_SIZE, show=False)
 
         return img_cells, cell_type, cell_cost
 
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
-        image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
-        img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, image, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
+        img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, ltl_reward_map, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
 
         return img_cells, cell_type, cell_cost
 
+    def create_cell_image(r, g, b):
+        pass
 
 def main2():
     random.seed(0)
