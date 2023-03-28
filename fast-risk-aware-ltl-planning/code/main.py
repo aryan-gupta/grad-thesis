@@ -28,8 +28,8 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 486
-map_w = 485
+map_h = 1600
+map_w = 1600
 
 # directory the progress images, images can then be combined with
 # `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
@@ -79,9 +79,14 @@ def main():
     random.seed(1)
 
     # read in and process image
-    # e = env.EnviromentCreator(targets=6, size=(1600,1600), validate=False)
-    # e.save_env(f"./map.bmp")
-    # e = e.preprocess()
+    e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
+    # e.save_env(tmp_raw_env_save_file)
+
+    e = e.preprocess()
+    # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
+    # e = env.Enviroment(filename=enviroment_file)
+
+    # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
     print(map_h)
