@@ -232,7 +232,7 @@ class Enviroment(EnviromentCreator):
         envMin.cell_type = cell_type
         envMin.cell_cost = cell_cost
 
-def main():
+def main2():
     random.seed(0)
     e = EnviromentCreator(targets=4, size=(800,800), validate=False)
     e.show_env()
@@ -240,4 +240,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main2()
