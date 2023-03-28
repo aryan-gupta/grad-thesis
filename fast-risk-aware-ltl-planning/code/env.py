@@ -232,6 +232,22 @@ class Enviroment(EnviromentCreator):
 
         return envMin
 
+    def create_cells(self, ltl_reward_map, assumed_risk_image):
+        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
+        # create required data structures
+        image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
+        img_cells, cell_type, cell_cost = cell.create_cells(image, assumed_risk_image, main.CELLS_SIZE, show=False)
+
+        return img_cells, cell_type, cell_cost
+
+    def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
+        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
+        image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
+        img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, image, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
+
+        return img_cells, cell_type, cell_cost
+
+
 def main2():
     random.seed(0)
     e = EnviromentCreator(targets=4, size=(800,800), validate=False)

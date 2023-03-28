@@ -81,7 +81,6 @@ class Pathfinder:
 
         # This is needed so we can do partial replans
         current_planned_path = []
-        risk_reward_image_local = None
         risk_reward_img_cells_local = None
         risk_reward_cell_type_local = None
         risk_reward_cell_cost_local = None
@@ -103,11 +102,9 @@ class Pathfinder:
 
             # only do a full replan if its our first run
             # if we havent, then update the local data structures and do a partial replan if the risk values have changed
-            if risk_reward_image_local is None:
+            if risk_reward_cell_type_local is None:
                 if show: print("full cells replanning")
-                # create required data structures
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, self.assumed_risk_image_filled, np.zeros((main.map_h, main.map_w), np.uint8)])
-                risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell.create_cells(risk_reward_image_local, self.assumed_risk_image_filled, main.CELLS_SIZE, show=False)
+                risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
 
                 # cv2.imwrite(f"{ main.output_images_dir }/paper-tmp.png", cv2.cvtColor(risk_reward_img_cells_local, cv2.COLOR_RGB2BGR) ); exit()
 
@@ -123,8 +120,7 @@ class Pathfinder:
             else:
                 # instead of recreating out required data structures, just update the ones we "saw"
                 # these are the same calls as full_replan except update_cells instead of create_cells
-                risk_reward_image_local = cv2.merge([current_ltl_state_reward_graph, self.assumed_risk_image_filled, np.zeros((main.map_h, main.map_w), np.uint8)])
-                risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = cell.update_cells(cells_updated, risk_reward_image_local, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, self.current_phys_loc, self.assumed_risk_image_filled, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
+                risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = self.env.update_cells(cells_updated, current_ltl_state_reward_graph, self.assumed_risk_image_filled, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, self.current_phys_loc)
 
                 if show: print(amount_risk_updated)
 
