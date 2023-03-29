@@ -33,6 +33,9 @@ def perspective_warp(img, points, map_w, map_h, show=False):
 
 
 # split the image into the color segments
+# this is more complicated than just RGB channel splitting. The
+# function uses HSV to find the hue and sat values that are in
+# the appropriate bounds
 def color_segment_image(img, show=False):
     # Split the image into the seperate HSV vhannels
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -71,6 +74,9 @@ def color_segment_image(img, show=False):
 
 
 # merge back the colors
+# essentially does the opposite of color_segment_image. However,
+# since color_segment_image is a lossy algorithm, running it then
+# running merge_colors will result in a different but clean image
 def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False):
 
     # We want to convert the different color channels into an RGB image and since yellow is Red and Green
@@ -92,6 +98,7 @@ def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=
 
 
 # applys the edge gaussian blur to a risk image
+# @TODO move this to the risk module
 def apply_edge_blur(img, reward_size, show=False):
     map_h, map_w = img.shape
     # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
@@ -128,6 +135,7 @@ def apply_edge_blur(img, reward_size, show=False):
 
 
 # applys the edge gaussian blur to a risk image
+# @TODO move this to the risk module
 def create_risk_img(img, risk_size, show=False):
     # Wall risk image
     dilate_factor = 1
@@ -268,6 +276,9 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
     return risk_image_local, total_diff, cells_updated
 
 
+# saves an image that only has one or two channel
+# creates the other channels using a blank image the
+# same size as the param channel
 def save_channel_image(name, r=None, g=None, b=None):
     if r is None:
         r = np.zeros((main.map_h, main.map_w), np.uint8)

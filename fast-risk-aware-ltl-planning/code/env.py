@@ -14,6 +14,7 @@ CELLS_SIZE = 8 # 32 pixels
 
 TEMP_XTRA_TARGETS = [ vector2(5, 8), vector2(15, 3) ]
 
+# this class creates a blank environment from scratch
 class EnviromentCreator:
     def __init__(self, targets=2, size=(800, 800), validate=False):
         while self.create_random(targets, size) and validate:
@@ -153,6 +154,7 @@ class EnviromentMinimal:
         self.cell_type = None
 
 
+# this class stores the environment
 class Enviroment(EnviromentCreator):
     def __init__(self, filename=None):
         # load enviroment file
@@ -170,6 +172,8 @@ class Enviroment(EnviromentCreator):
         self.create_assumed_risk()
 
 
+    # loads in an image by filename, and checks the size of the
+    # image to be the same as the global variables
     def load_env(self, filename):
         self.processed_img = cv2.imread(filename)
         self.processed_img = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
@@ -179,6 +183,7 @@ class Enviroment(EnviromentCreator):
         self.num_targets = None
 
 
+    # splits the images into the RGB channels
     def channel_split(self):
         self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
         self.r = risk.Risk(raw_risk_image)
@@ -198,7 +203,7 @@ class Enviroment(EnviromentCreator):
         # get reward map for each objectives and goals
         self.reward_graphs = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
 
-
+    # creates the assumed risk by applying a blurring to it
     def create_assumed_risk(self):
         self.r.create_assumed_risk()
 
@@ -224,6 +229,9 @@ class Enviroment(EnviromentCreator):
 
         cv2.imwrite(filename, cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
+
+    # returns a minimal environment. Used to pass it to the optimizer
+    # @TODO deprecate this function by passing the entire environment class to the optimizer
     @staticmethod
     def get_minimal_env(cell_type, cell_cost):
         envMin = EnviromentMinimal()
@@ -232,6 +240,9 @@ class Enviroment(EnviromentCreator):
 
         return envMin
 
+
+    # create the cells on the environment
+    # @TODO modify this function so its only run once in pathfinder, rather than everytime a LTL path jump takes place
     def create_cells(self, ltl_reward_map, assumed_risk_image):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         # create required data structures
@@ -240,21 +251,27 @@ class Enviroment(EnviromentCreator):
 
         return img_cells, cell_type, cell_cost
 
+
+    # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, ltl_reward_map, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
 
         return img_cells, cell_type, cell_cost
 
+
+    # @TODO move img_cells to this function so that the profiler doesnt have to run it during the timing
     def create_cell_image(r, g, b):
         pass
 
-def main2():
-    random.seed(0)
+
+# creates and saves a random environment
+def create_save_random_environment(seed):
+    random.seed(seed)
     e = EnviromentCreator(targets=4, size=(800,800), validate=False)
     e.show_env()
     # e.save_env(f"../../../maps/000.bmp")
 
 
 if __name__ == "__main__":
-    main2()
+    create_save_random_environment(0)

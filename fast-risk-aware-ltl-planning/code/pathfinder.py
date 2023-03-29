@@ -16,7 +16,7 @@ import env
 import random
 import optimizer
 
-
+# This simple enum tells how to output the intermediary images
 class OutputType(Enum):
     NONE       = 0 # do not output anything
     DISK       = 1 # output images to the disk
@@ -24,7 +24,8 @@ class OutputType(Enum):
     SHOW_FINAL = 3 # only show final image window to user
 
 
-
+# This class holds information about one single pathfinding instance
+# this class holds the high level algorithm for this paper
 class Pathfinder:
     def __init__(self, e, t):
         self.env = e
@@ -52,7 +53,10 @@ class Pathfinder:
         # the index for phys steps for the image output
         self.img_tmp_idx_phys = 0
 
-    # pathfinds until the set task node is reached
+
+    # pathfinds on the LTL automata
+    # until the set target task node is reached. If no task node is passed
+    # then it assumes the accepting state of the LTL task
     def pathfind_until_task(self, final_task_node=None):
         # set the final node as the final task node
         if final_task_node is None:
@@ -73,6 +77,10 @@ class Pathfinder:
             self.img_tmp_idx_ltl += 1
 
 
+    # pathfinds from the physical environment
+    # starts from the \param self.current_phys_loc to the final_phys_loc
+    # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
+    # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
     def pathfind_until_final_loc(self, current_ltl_state_reward_graph):
         show = False
         # we wont know the final_phys_loc or the dj's target location until we run our algo
@@ -152,7 +160,8 @@ class Pathfinder:
             # increment our image file counter
             self.img_tmp_idx_phys += 1
 
-
+    # outputs the current state of the pathfinding class
+    # @TODO remove img_cells and put it in here. img_cells is an expensive thing to calculate so I do not want it in the main algo part of the code
     def output_current_state(self, risk_reward_img_cells_local, current_planned_path, final_phys_loc, astar_target):
         if self.output is OutputType.NONE:
             return
@@ -186,9 +195,11 @@ class Pathfinder:
             cv2.imwrite(f"{ main.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
 
 
+    # returns the shortest path the algo has determined
     def get_total_shortest_path(self):
         return self.total_shortest_path
 
 
+    # returns the filled in risk map after the agent has traveled around the environment
     def get_filled_assumed_risk(self):
         return self.assumed_risk_image_filled

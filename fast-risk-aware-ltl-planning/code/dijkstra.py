@@ -72,6 +72,7 @@ def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
     return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
 
+# runs the astar algo using the optimizer
 def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
     def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction, optimizer=optimizer):
         if not optimizer.is_valid_direction(current_phys_loc, direction):
@@ -87,6 +88,7 @@ def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
 
     cfunc = get_cfunc(cell_cost)
     return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+
 
 # for djk's algo, the heuristic function always return 0 since we dont use
 # a heuristic

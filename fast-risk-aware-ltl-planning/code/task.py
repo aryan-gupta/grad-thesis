@@ -7,12 +7,16 @@ import matplotlib.pyplot as plt
 
 import main
 
+# stores an LTL task
 class Task:
     def __init__(self, filename):
         self.parse_ltl_hoa(filename)
 
 
-    # @todo use markov desicison process table instead of dictionary
+    # @TODO use markov desicison process table instead of dictionary
+    # @TODO move the euclidean task heuristic from DJK module to here
+    # creates the task heuristic for the agent to use. is part of
+    # pre processing
     def create_task_heuristic(self):
         # ltw[start][finish] = weight
         # ltl_transiton_weights = {{}}
@@ -103,9 +107,13 @@ class Task:
 
         self.task_bounds = (start_state, final_state)
 
+
     # @TODO
+    # checks if the axiom allows any jump to the next LTL state from the
+    # \p current_ltl_state
     def check_valid_jump(self, current_ltl_state, axiom):
         return True
+
 
     # get the reward image based off the possible transitions from the current state
     def get_reward_img_state(self, current_state, reward_graphs):
@@ -152,6 +160,8 @@ class Task:
         return next_state
 
 
+    # gets the locations of the next physical locations that would cause
+    # a LTL task jump
     def get_finish_location(self, cell_type, reward_graphs, current_ltl_state):
         jump_cost = sys.maxsize
         next_state = None
