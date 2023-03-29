@@ -221,8 +221,10 @@ class Enviroment(EnviromentCreator):
         # green_channel = cv2.add(green_channel, self.r.raw_risk_image)
         # blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
 
+        image = cv2.merge([red_channel,green_channel,blue_channel])
+
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(red_channel, assumed_risk_image_filled, self.processed_img, CELLS_SIZE, show=False)
+        dj_path_image, _, _ = cell.create_cells(red_channel, assumed_risk_image_filled, image, CELLS_SIZE, show=False)
 
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
