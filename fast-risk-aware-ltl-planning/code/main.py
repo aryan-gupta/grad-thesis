@@ -28,8 +28,8 @@ VIEW_CELLS_SIZE = 8
 UPDATE_WEIGHT = 0 #5
 
 # final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 1600
-map_w = 1600
+map_h = 640
+map_w = 576
 
 # directory the progress images, images can then be combined with
 # `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
@@ -42,12 +42,12 @@ final_image = f"{ output_images_dir }/!picfinal.png"
 
 # input for the LTL hoa file, @TODO will become a array to support
 # multiple HOA files
-ltl_hoa_file = '../tasks/complex-dual.hoa.txt'
+ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
 
 # the environment file the agent is in. This file must be a
 # - RGB (R - LTL Targets, G - Environment Risk, B - Unused)
 # - PNG (to prevent JPEG aliasing and artifacts)
-enviroment_file = '../maps/hospital.png'
+enviroment_file = '../maps/002.png'
 
 # CHAR REPRESENTATIONS
 
@@ -79,12 +79,12 @@ def main():
     random.seed(1)
 
     # read in and process image
-    e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
+    # e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
     # e.save_env(tmp_raw_env_save_file)
 
-    e = e.preprocess()
+    # e = e.preprocess()
     # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    # e = env.Enviroment(filename=enviroment_file)
+    e = env.Enviroment(filename=enviroment_file)
 
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
