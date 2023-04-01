@@ -191,11 +191,8 @@ class Enviroment(EnviromentCreator):
 
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
-        # seperate the image into RGB channels
-        red_channel, _, _ = cv2.split(self.processed_img)
-
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(red_channel, self.r.raw_risk_image, self.processed_img, CELLS_SIZE, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img, CELLS_SIZE, show=False)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
@@ -211,20 +208,20 @@ class Enviroment(EnviromentCreator):
     # creates the final image to output
     def create_final_image(self, filename, assumed_risk_image_filled, path):
         # seperate the image into RGB channels
-        red_channel, green_channel, blue_channel = cv2.split(self.processed_img)
+        _, _, blue_channel = cv2.split(self.processed_img)
 
         # add our filled out assumed risk
-        green_channel = cv2.add(green_channel, assumed_risk_image_filled)
+        combined_risk_image = cv2.add(self.r.raw_risk_image, assumed_risk_image_filled)
 
         # make the actual walls white so its easy to tell apart from the green assumed risk surroundings
         # red_channel = cv2.add(red_channel, self.r.raw_risk_image)
         # green_channel = cv2.add(green_channel, self.r.raw_risk_image)
         # blue_channel = cv2.add(blue_channel, self.r.raw_risk_image)
 
-        image = cv2.merge([red_channel,green_channel,blue_channel])
+        image = cv2.merge([self.raw_reward_image,combined_risk_image,blue_channel])
 
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(red_channel, assumed_risk_image_filled, image, CELLS_SIZE, show=False)
+        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, CELLS_SIZE, show=False)
 
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
