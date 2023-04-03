@@ -261,7 +261,7 @@ def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, r
 # so we dont have to call create_cells everytime
 def update_cells(cells_updated, ltl_target_image, risk_reward_cell_type, risk_reward_cell_cost, risk_reward_img_cells, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE):
     # get image size
-    map_h, map_w = risk_reward_img_cells.shape
+    map_h, map_w, _ = risk_reward_img_cells.shape
 
     # create copy of the processed image so we cn draw the cells on it
     img_cells = risk_reward_img_cells.copy()
