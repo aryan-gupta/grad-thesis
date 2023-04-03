@@ -253,7 +253,6 @@ class Enviroment(EnviromentCreator):
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
-        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, ltl_reward_map, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
 
         return img_cells, cell_type, cell_cost
