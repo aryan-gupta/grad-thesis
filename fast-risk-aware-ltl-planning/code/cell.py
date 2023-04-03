@@ -261,10 +261,10 @@ def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, r
 # so we dont have to call create_cells everytime
 def update_cells(cells_updated, ltl_target_image, risk_reward_cell_type, risk_reward_cell_cost, risk_reward_img_cells, current_phys_loc, assumed_risk_image_filled, CELLS_SIZE, VIEW_CELLS_SIZE):
     # get image size
-    map_h, map_w = ltl_target_image.shape
+    map_h, map_w = risk_reward_img_cells.shape
 
     # create copy of the processed image so we cn draw the cells on it
-    img_cells = ltl_target_image.copy()
+    img_cells = risk_reward_img_cells.copy()
 
     # go through each updated cell and each pixel of the cell to decide what type of cell it is
     # use this info to update the cell type map of the area

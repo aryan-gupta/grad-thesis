@@ -54,6 +54,48 @@ class Pathfinder:
         self.img_tmp_idx_phys = 0
 
 
+    def pathfind_ltl(self, start_task_node=None, final_task_node=None):
+        # set the start node as the start task node
+        if start_task_node is None:
+            start_task_node = self.task.task_bounds[0]
+
+        # set the final node as the final task node
+        if final_task_node is None:
+            final_task_node = self.task.task_bounds[1]
+
+        # reset the counter:
+        self.img_tmp_idx_ltl = 0
+
+        self.current_ltl_state = start_task_node
+        while self.current_ltl_state != final_task_node:
+            # get reward locations
+            # @TODO move self.enc.reward_graphs to task class
+            reward_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_graphs)
+
+            target_phys_loc = pick_best_reward_location(reward_locations)
+
+            self.pathfind_phys(
+                start_phys_loc=self.current_phys_loc,
+                final_phys_loc=target_phys_loc
+            )
+
+
+    def pathfind_phys(self, start_phys_loc=None, final_phys_loc=None):
+        if final_phys_loc == None:
+            pass
+
+        if start_phys_loc == None:
+            start_phys_loc = self.current_phys_loc
+
+        # This is needed so we can do partial replans
+        current_planned_path = []
+
+        # reset the counter:
+        self.img_tmp_idx_phys = 0
+
+        while self.current_phys_loc != final_phys_loc:
+            pass
+
     # pathfinds on the LTL automata
     # until the set target task node is reached. If no task node is passed
     # then it assumes the accepting state of the LTL task
