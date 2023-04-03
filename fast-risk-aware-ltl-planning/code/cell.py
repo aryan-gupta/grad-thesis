@@ -27,7 +27,10 @@ def make_interpolater(left_min, left_max, right_min, right_max):
 
 
 # Creates the cells based off an risk/reward image based off of the CELLS_SIZE
+# @TODO \param CELLS_SIZE is deprecated and will be removed
 def create_cells(ltl_target_image, risk_image, img_cells, CELLS_SIZE, show=False):
+    CELLS_SIZE = main.CELLS_SIZE
+
     # get image size
     map_h, map_w = ltl_target_image.shape
 
