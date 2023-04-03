@@ -96,6 +96,7 @@ class Pathfinder:
         while self.current_phys_loc != final_phys_loc:
             pass
 
+
     # pathfinds on the LTL automata
     # until the set target task node is reached. If no task node is passed
     # then it assumes the accepting state of the LTL task
@@ -180,6 +181,7 @@ class Pathfinder:
 
             # increment our image file counter
             self.img_tmp_idx_phys += 1
+
 
     # outputs the current state of the pathfinding class
     # @TODO remove img_cells and put it in here. img_cells is an expensive thing to calculate so I do not want it in the main algo part of the code
