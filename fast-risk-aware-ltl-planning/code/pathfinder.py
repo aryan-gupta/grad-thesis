@@ -66,18 +66,33 @@ class Pathfinder:
         # reset the counter:
         self.img_tmp_idx_ltl = 0
 
+        # create the cells needed
+        img_cells, env_min = self.env.create_cells_internal(self.assumed_risk_image_filled)
+
+        # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
         while self.current_ltl_state != final_task_node:
             # get reward locations
-            # @TODO move self.enc.reward_graphs to task class
-            reward_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_graphs)
+            # @TODO move self.env.reward_graphs to task class
+            # reward_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_graphs)
+            # target_phys_loc = pick_best_reward_location(reward_locations)
 
-            target_phys_loc = pick_best_reward_location(reward_locations)
+            target_phys_loc = [(23, 70), (45, 10), (42, 61)][self.img_tmp_idx_ltl]
+            # self.pathfind_phys(
+            #     start_phys_loc=self.current_phys_loc,
+            #     final_phys_loc=target_phys_loc
+            # )
 
-            self.pathfind_phys(
-                start_phys_loc=self.current_phys_loc,
-                final_phys_loc=target_phys_loc
+            print(target_phys_loc)
+            self.pathfind_until_final_loc(
+                target_phys_loc,
+                img_cells,
+                env_min
             )
+
+            # find next state that we should go to and setup next interation
+            self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
+            self.img_tmp_idx_ltl += 1
 
 
     def pathfind_phys(self, start_phys_loc=None, final_phys_loc=None):
@@ -101,6 +116,8 @@ class Pathfinder:
     # until the set target task node is reached. If no task node is passed
     # then it assumes the accepting state of the LTL task
     def pathfind_until_task(self, final_task_node=None):
+        # self.pathfind_ltl(); return
+
         # set the final node as the final task node
         if final_task_node is None:
             final_task_node = self.task.task_bounds[1]

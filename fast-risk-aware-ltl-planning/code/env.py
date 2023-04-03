@@ -42,6 +42,7 @@ class EnviromentCreator:
         self.__init__(filename=None)
         return self
 
+
     def __add_circular_risk(self):
         # large circles
         for i in range(int(random.randrange(0, 10))):
@@ -153,10 +154,20 @@ class EnviromentMinimal:
         self.cell_cost = None
         self.cell_type = None
 
+        self.cell_img = None
+
 
 # this class stores the environment
 class Enviroment(EnviromentCreator):
     def __init__(self, filename=None):
+        self.processed_img = None
+        self.height = None
+        self.width = None
+        self.num_targets = None
+        self.raw_reward_image = None
+        self.r = None
+
+
         # load enviroment file
         if filename is not None:
             self.load_env(filename)
@@ -177,10 +188,11 @@ class Enviroment(EnviromentCreator):
     def load_env(self, filename):
         self.processed_img = cv2.imread(filename)
         self.processed_img = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
+
         self.height, self.width, _ = self.processed_img.shape
+
         assert self.height == main.map_h, f"Image height not same as main.map_h"
         assert self.width == main.map_w, f"Image height not same as main.map_h"
-        self.num_targets = None
 
 
     # splits the images into the RGB channels
@@ -250,6 +262,14 @@ class Enviroment(EnviromentCreator):
 
         return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
+
+    def create_cells_internal(self, assumed_risk_image):
+        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
+        image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
+
+        img_cells, cell_type, cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, main.CELLS_SIZE, show=False)
+
+        return img_cells, get_minimal_env(cell_type, cell_cost)
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
