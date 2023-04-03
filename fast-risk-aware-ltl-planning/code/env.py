@@ -233,11 +233,11 @@ class Enviroment(EnviromentCreator):
     # @TODO deprecate this function by passing the entire environment class to the optimizer
     @staticmethod
     def get_minimal_env(cell_type, cell_cost):
-        envMin = EnviromentMinimal()
-        envMin.cell_type = cell_type
-        envMin.cell_cost = cell_cost
+        env_min = EnviromentMinimal()
+        env_min.cell_type = cell_type
+        env_min.cell_cost = cell_cost
 
-        return envMin
+        return env_min
 
 
     # create the cells on the environment
