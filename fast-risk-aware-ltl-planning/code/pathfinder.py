@@ -118,7 +118,7 @@ class Pathfinder:
             final_phys_loc = self.task.get_finish_location(env_min.cell_type, self.env.reward_graphs, self.current_ltl_state)
             print(final_phys_loc)
 
-            self.pathfind_until_final_loc(current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, env_min)
+            self.pathfind_until_final_loc(final_phys_loc, risk_reward_img_cells_local, env_min)
 
             # find next state that we should go to and setup next interation
             self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
@@ -129,7 +129,7 @@ class Pathfinder:
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
-    def pathfind_until_final_loc(self, current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, env_min):
+    def pathfind_until_final_loc(self, final_phys_loc, risk_reward_img_cells_local, env_min):
         show = False
 
         # This is needed so we can do partial replans
@@ -151,7 +151,7 @@ class Pathfinder:
 
             # instead of recreating out required data structures, just update the ones we "saw"
             # these are the same calls as full_replan except update_cells instead of create_cells
-            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, current_ltl_state_reward_graph, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
+            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, self.env.raw_reward_image, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
 
             if show: print(amount_risk_updated)
 
