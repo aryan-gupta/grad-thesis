@@ -192,7 +192,7 @@ class Enviroment(EnviromentCreator):
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img, CELLS_SIZE, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img, show=False)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
@@ -221,7 +221,7 @@ class Enviroment(EnviromentCreator):
         image = cv2.merge([self.raw_reward_image,combined_risk_image,blue_channel])
 
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, CELLS_SIZE, show=False)
+        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, show=False)
 
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
@@ -246,14 +246,14 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
-        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, main.CELLS_SIZE, show=False)
+        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, show=False)
 
-        return img_cells, get_minimal_env(cell_type, cell_cost)
+        return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
-        img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, ltl_reward_map, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image, main.CELLS_SIZE, main.VIEW_CELLS_SIZE)
+        img_cells, cell_type, cell_cost = cell.update_cells(cells_updated, ltl_reward_map, cell_type, cell_cost, img_cells, phys_loc, assumed_risk_image)
 
         return img_cells, cell_type, cell_cost
 
