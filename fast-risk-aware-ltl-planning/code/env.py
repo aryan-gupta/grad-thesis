@@ -248,7 +248,7 @@ class Enviroment(EnviromentCreator):
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
         img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, main.CELLS_SIZE, show=False)
 
-        return img_cells, cell_type, cell_cost
+        return img_cells, get_minimal_env(cell_type, cell_cost)
 
 
     # updates a list of cells

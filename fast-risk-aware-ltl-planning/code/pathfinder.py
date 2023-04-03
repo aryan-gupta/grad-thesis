@@ -114,10 +114,11 @@ class Pathfinder:
             current_ltl_state_reward_graph = self.task.get_reward_img_state(self.current_ltl_state, self.env.reward_graphs)
 
             # calaculate final location
-            risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
-            final_phys_loc = self.task.get_finish_location(risk_reward_cell_type_local, self.env.reward_graphs, self.current_ltl_state)
+            risk_reward_img_cells_local, env_min = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
+            final_phys_loc = self.task.get_finish_location(env_min.cell_type, self.env.reward_graphs, self.current_ltl_state)
+            print(final_phys_loc)
 
-            self.pathfind_until_final_loc(current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local)
+            self.pathfind_until_final_loc(current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, env_min)
 
             # find next state that we should go to and setup next interation
             self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
@@ -128,7 +129,7 @@ class Pathfinder:
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
-    def pathfind_until_final_loc(self, current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local):
+    def pathfind_until_final_loc(self, current_ltl_state_reward_graph, final_phys_loc, risk_reward_img_cells_local, env_min):
         show = False
 
         # This is needed so we can do partial replans
@@ -150,15 +151,15 @@ class Pathfinder:
 
             # instead of recreating out required data structures, just update the ones we "saw"
             # these are the same calls as full_replan except update_cells instead of create_cells
-            risk_reward_img_cells_local, risk_reward_cell_type_local, risk_reward_cell_cost_local = self.env.update_cells(cells_updated, current_ltl_state_reward_graph, self.assumed_risk_image_filled, risk_reward_cell_type_local, risk_reward_cell_cost_local, risk_reward_img_cells_local, self.current_phys_loc)
+            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, current_ltl_state_reward_graph, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
 
             if show: print(amount_risk_updated)
 
             if amount_risk_updated > 0:
                 if show: print("full astar replanning")
-                opt = optimizer.Optimizer(env.Enviroment.get_minimal_env(risk_reward_cell_type_local, risk_reward_cell_cost_local), self.task)
+                opt = optimizer.Optimizer(env_min, self.task)
                 opt.set_task_state(0, self.current_ltl_state)
-                current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, risk_reward_cell_type_local, (self.current_phys_loc, final_phys_loc), risk_reward_cell_cost_local, main.CELLS_SIZE)
+                current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost, main.CELLS_SIZE)
             elif amount_risk_updated > 0:
                 if show: print("part astar replanning")
 
@@ -168,7 +169,7 @@ class Pathfinder:
                 astar_target, idx = dijkstra.get_astar_target(self.current_phys_loc, current_planned_path, main.VIEW_CELLS_SIZE * 2)
 
                 # get new path from current loc to astar_target
-                shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, risk_reward_cell_type_local, (self.current_phys_loc, astar_target), final_phys_loc, risk_reward_cell_cost_local, main.CELLS_SIZE)
+                shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, env_min.cell_type, (self.current_phys_loc, astar_target), final_phys_loc, env_min.cell_cost, main.CELLS_SIZE)
 
                 # splice our two shortest_paths together
                 current_planned_path = current_planned_path[0:idx]
