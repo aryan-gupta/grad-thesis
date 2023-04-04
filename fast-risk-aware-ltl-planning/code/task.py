@@ -115,6 +115,33 @@ class Task:
         return True
 
 
+    def get_reward_locations(self, current_state, reward_locations):
+        potential_reward_location = set([])
+
+        for next_state in self.ltl_state_diag[current_state].keys():
+            this_state_reward_graph = None
+            axon = self.ltl_state_diag[current_state][next_state].upper()
+            nomials = axon.split('&')
+
+            for nomial in nomials:
+                if nomial[0] != '!':
+                    if this_state_reward_graph is None:
+                        this_state_reward_graph = set(reward_locations[nomial[0]])
+                    else:
+                        this_state_reward_graph = this_state_reward_graph.intersection(reward_locations[nomial[0]])
+                else:
+                    if this_state_reward_graph is None:
+                        # @TODO place all cells in potential reward locations and then take union or intersection
+                        pass
+                    else:
+                        this_state_reward_graph = this_state_reward_graph.difference(reward_locations[nomial[1]])
+
+
+            if this_state_reward_graph:
+                potential_reward_location = potential_reward_location.union(this_state_reward_graph)
+
+        return potential_reward_location
+
     # get the reward image based off the possible transitions from the current state
     def get_reward_img_state(self, current_state, reward_graphs):
         # get the image for each transition from the current state
