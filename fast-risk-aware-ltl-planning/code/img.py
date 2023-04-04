@@ -162,12 +162,12 @@ def create_risk_img(img, risk_size, show=False):
 
 # creates all the reward images for each axiom
 def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
-    # plt.imshow(img); plt.show()
-    map_h, map_w = img.shape
+    if show: plt.imshow(img); plt.show()
+
     reward_graphs = {}
     types = cell.get_cell_types(cell_type)
     for goal in types:
-        empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
+        empty_image = np.zeros((main.map_h, main.map_w, 1), dtype = "uint8")
         for col_num in range(len(cell_type)):
             for row_num in range(len(cell_type[col_num])):
                 if goal == cell_type[col_num][row_num]:
