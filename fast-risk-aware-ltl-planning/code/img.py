@@ -165,12 +165,22 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
     if show: plt.imshow(img); plt.show()
 
     reward_graphs = {}
-    types = cell.get_cell_types(cell_type)
-    for goal in types:
+    reward_locations = {}
+
+    # we are searching the cell_type for all the goals and where they are
+    # for each goal we are searching
+    # find the cell that its at
+    # copy the pixels of that cell into the image
+    # keep a log of the cells that have that goal
+    for goal in cell.get_cell_types(cell_type):
+        goal_locations = []
         empty_image = np.zeros((main.map_h, main.map_w, 1), dtype = "uint8")
+
         for col_num in range(len(cell_type)):
             for row_num in range(len(cell_type[col_num])):
+
                 if goal == cell_type[col_num][row_num]:
+                    goal_locations.append((col_num, row_num))
 
                     for px_y in range(col_num * CELLS_SIZE, (col_num+1) * CELLS_SIZE):
                         for px_x in range(row_num * CELLS_SIZE, (row_num+1) * CELLS_SIZE):
@@ -180,10 +190,16 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
                                 empty_image[px_y][px_x] = 250
 
         reward_graphs[goal] = empty_image
+        reward_locations[goal] = goal_locations
+
         if show: print(goal)
         if show: plt.imshow(empty_image); plt.show()
+        if show:
+            for loc in reward_locations[goal]:
+                print(loc)
+                print(cell_type[loc[0]][loc[1]])
 
-    return reward_graphs
+    return reward_graphs, reward_locations
 
 
 # copy pixels from src to dest pixel by pixel

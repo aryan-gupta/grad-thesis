@@ -210,7 +210,8 @@ class Enviroment(EnviromentCreator):
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
 
         # get reward map for each objectives and goals
-        self.reward_graphs = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
+
 
     # creates the assumed risk by applying a blurring to it
     def create_assumed_risk(self):
