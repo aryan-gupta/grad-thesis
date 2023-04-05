@@ -54,7 +54,7 @@ class Pathfinder:
         self.img_tmp_idx_phys = 0
 
 
-    def pathfind_ltl(self, start_task_node=None, final_task_node=None):
+    def pathfind_task(self, start_task_node=None, final_task_node=None):
         # set the start node as the start task node
         if start_task_node is None:
             start_task_node = self.task.task_bounds[0]
@@ -80,7 +80,7 @@ class Pathfinder:
 
             # risk_reward_img_cells_local, env_min = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
             # final_phys_loc = self.task.get_finish_location(env_min.cell_type, self.env.reward_graphs, self.current_ltl_state)
-            # target_phys_loc = self.env.pick_best_reward_location(reward_locations)
+            target_phys_loc = self.env.pick_best_reward_location(reward_locations, self.task)
 
             target_phys_loc = [(23, 70), (45, 10), (42, 61)][self.img_tmp_idx_ltl]
             # self.pathfind_phys(
@@ -100,7 +100,7 @@ class Pathfinder:
             self.img_tmp_idx_ltl += 1
 
 
-    def pathfind_phys(self, start_phys_loc=None, final_phys_loc=None):
+    def pathfind_env(self, start_phys_loc=None, final_phys_loc=None):
         if final_phys_loc == None:
             pass
 
@@ -171,9 +171,6 @@ class Pathfinder:
 
         # the loop to traverse the phys enviroment
         while self.current_phys_loc != final_phys_loc:
-            # add current node to path
-            self.total_shortest_path.insert(0, self.current_phys_loc)
-
             # update risk map everytime we move
             self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(self.assumed_risk_image_filled, self.env.r.raw_risk_image, self.current_phys_loc, main.CELLS_SIZE, main.VIEW_CELLS_SIZE, main.UPDATE_WEIGHT)
 
@@ -206,6 +203,9 @@ class Pathfinder:
                 current_planned_path = current_planned_path[0:idx]
                 current_planned_path = current_planned_path + shortest_path_astar_target
                 if show: print(len(current_planned_path))
+
+            # add current node to path
+            self.total_shortest_path.insert(0, self.current_phys_loc)
 
             # get the next location in the shortest path
             self.current_phys_loc = dijkstra.get_next_cell_shortest_path(current_planned_path, self.current_phys_loc)
