@@ -1,0 +1,53 @@
+
+
+algo
+
+
+main():
+    read environment
+    read tasks
+
+    process env
+    process tasks
+
+    pathfind(env, tasks)
+
+    output final image
+
+let task : task graph
+let env : environment graph
+let reward_locations : set of coordinates
+let target_phys_loc : coordinate
+let current_phys_loc : coordinate
+
+pathfind_task():
+    while current_ltl_state != accepting_ltl_state:
+        reward_locations = get_target_locations(task, current_ltl_state, env)
+        target_phys_loc = pick_best_location_heuristic(env, reward_locations)
+
+        pathfind_phys(current_phys_loc, target_phys_loc, reward_locations)
+
+        current_ltl_state = get_next_state(current_ltl_state, current_phys_loc)
+
+let path : array of coordinates
+let assumed_risk : bitmap of assumed_risk
+let raw_risk_image : bitmap of actual risk
+let current_phys_loc : coordinate
+let delta_metrics : changes made after moving
+
+pathfind_env():
+    while current_phys_loc != target_phys_loc:
+        delta_metrics = fill_assumed_risk_image(current_phys_loc, assumed_risk, raw_risk_image)
+
+        env = update_env_metrics(current_phys_loc, delta_metrics)
+
+        if delta_metrics > 10:
+            dijkstra.astar()
+        else:
+            get_astar_target()
+            dijkstra.partial_astar()
+
+            combine_paths()
+
+        path.append(current_phys_loc)
+        current_phys_loc = move()
