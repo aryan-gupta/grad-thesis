@@ -18,6 +18,11 @@ class Task:
     # creates the task heuristic for the agent to use. is part of
     # pre processing
     def create_task_heuristic(self):
+        self.create_node_distance_heuristic()
+        self.create_euclidean_heuristic()
+
+
+    def create_node_distance_heuristic(self):
         # ltw[start][finish] = weight
         # ltl_transiton_weights = {{}}
 
@@ -57,6 +62,36 @@ class Task:
         #     ltl_heuristic_aps[aps[key]] = self.ltl_heuristic[key]
 
         # print(ltl_heuristic_aps)
+
+
+    def create_euclidean_heuristic(self):
+        self.paths = []
+        self.__create_euclidean_heuristic_recurse([], self.task_bounds[0], main.START_CELL_CHAR.lower(), 0)
+
+
+    def __create_euclidean_heuristic_recurse(self, path, node, target, depth):
+        path.append((node, target))
+
+        if depth > 5 or node == self.task_bounds[1]:
+            self.paths.append(path)
+            return
+
+
+        next_nodes = self.ltl_state_diag[node]
+        for n in next_nodes:
+            if n == node: continue # skip self loops
+
+            ap = next_nodes[n] # get ap to satisfy
+            ap = ap.split('&') # split into indivisual targets
+            ap = [ x for x in ap if '!' not in x] # remove not targets
+            if len(ap) > 1: continue # skip targets with multiple aps to satisfy
+
+            next_target = ap[0]
+
+            # print(target, next_target)
+            # dist = euclidean(target, )
+
+            self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
 
 
     # parse an ltl HOA formatted file

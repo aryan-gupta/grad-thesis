@@ -2,6 +2,7 @@ import random
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 import main
 import risk
@@ -282,6 +283,91 @@ class Enviroment(EnviromentCreator):
     # @TODO move img_cells to this function so that the profiler doesnt have to run it during the timing
     def create_cell_image(r, g, b):
         pass
+
+
+    def pick_best_target_location(self, reward_locations, task, ltl_state, phys_loc):
+        # print("======================")
+        def find(cell_type, char):
+            for ycell in range(len(cell_type)):
+                for xcell in range(len(cell_type[ycell])):
+                        if cell_type[ycell][xcell] == char:
+                            return (ycell, xcell)
+            return (None, None)
+
+        # figure out the euclidean distances of each path
+        dist = []
+
+        for path in task.paths:
+            euclidean_distance = 0
+            for idx in range(len(path) - 1):
+                node, target = path[idx]
+                nnode, ntarget = path[idx + 1]
+
+                y, x = find(self.cell_type, target.upper())
+                ny, nx = find(self.cell_type, ntarget.upper())
+
+                dx = x - nx
+                dy = y - ny
+                distance = math.sqrt((dx**2) + (dy**2))
+
+                euclidean_distance += distance
+            dist.append(euclidean_distance)
+
+        # for idx in range(len(task.paths)):
+        #     print(dist[idx])
+        #     print(task.paths[idx])
+
+        # figure out which one is the smallest
+        min_idx = 0
+        for idx in range(len(dist)):
+            if dist[idx] < dist[min_idx]:
+                min_idx = idx
+
+        # print(task.paths[min_idx])
+
+        # gigure out where in the path we are
+        target = None
+        for idx in range(len(task.paths[min_idx])):
+            s, _ = task.paths[min_idx][idx]
+            if s == ltl_state:
+                _, target = task.paths[min_idx][idx + 1]
+
+        # print(ltl_state)
+        # print(target)
+
+        # figure out which location to go to next
+        target_loc = (0, 0)
+        min_dist = float("inf")
+        for xcell, ycell in reward_locations:
+            if self.cell_type[ycell][xcell] == target.upper():
+
+                dx = xcell - phys_loc[0]
+                dy = ycell - phys_loc[1]
+                distance = math.sqrt((dx**2) + (dy**2))
+
+                if distance < min_dist:
+                    target_loc = (xcell, ycell)
+                    min_dist = distance
+
+        # print(target_loc)
+        # print(distance)
+        # print(self.cell_type[target_loc[1]][target_loc[0]])
+
+        # print("-----------------------")
+
+        return target_loc
+
+        # target_phys_loc = [(23, 70), (45, 10), (42, 61)][self.img_tmp_idx_ltl]
+        if (23, 70) in reward_locations:
+            print("1")
+            return (23, 70)
+        elif (45, 10) in reward_locations:
+            print("2")
+            return (45, 10)
+        elif (42, 61) in reward_locations:
+            print("3")
+            return (42, 61)
+
 
 
 # creates and saves a random environment

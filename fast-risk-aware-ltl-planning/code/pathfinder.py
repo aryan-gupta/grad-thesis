@@ -75,14 +75,12 @@ class Pathfinder:
             # get reward locations
             # @TODO move self.env.reward_graphs to task class
 
-            # current_ltl_state_reward_graph = self.task.get_reward_img_state(self.current_ltl_state, self.env.reward_graphs)
-            reward_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_locations)
+            # locate all the potential reward locations
+            target_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_locations)
 
-            # risk_reward_img_cells_local, env_min = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
-            # final_phys_loc = self.task.get_finish_location(env_min.cell_type, self.env.reward_graphs, self.current_ltl_state)
-            target_phys_loc = self.env.pick_best_reward_location(reward_locations, self.task)
+            # pick best one based off of task heuristic
+            target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
 
-            target_phys_loc = [(23, 70), (45, 10), (42, 61)][self.img_tmp_idx_ltl]
             # self.pathfind_phys(
             #     start_phys_loc=self.current_phys_loc,
             #     final_phys_loc=target_phys_loc

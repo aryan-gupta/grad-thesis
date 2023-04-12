@@ -101,7 +101,8 @@ def main():
     # e.r.raw_risk_image = e.r.assumed_risk_image
 
     p = pathfinder.Pathfinder(e, t)
-    p.pathfind_until_task()
+    # p.pathfind_until_task()
+    p.pathfind_task()
 
     # draw the path on img_cell to show the end user
     e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
