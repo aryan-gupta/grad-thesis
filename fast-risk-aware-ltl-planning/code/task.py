@@ -142,6 +142,7 @@ class Task:
 
         return potential_reward_location
 
+
     # get the reward image based off the possible transitions from the current state
     def get_reward_img_state(self, current_state, reward_graphs):
         # get the image for each transition from the current state
