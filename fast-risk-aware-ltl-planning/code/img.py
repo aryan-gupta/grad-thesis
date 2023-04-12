@@ -180,7 +180,7 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
             for row_num in range(len(cell_type[col_num])):
 
                 if goal == cell_type[col_num][row_num]:
-                    goal_locations.append((col_num, row_num))
+                    goal_locations.append((row_num, col_num))
 
                     for px_y in range(col_num * CELLS_SIZE, (col_num+1) * CELLS_SIZE):
                         for px_x in range(row_num * CELLS_SIZE, (row_num+1) * CELLS_SIZE):
