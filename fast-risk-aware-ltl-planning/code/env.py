@@ -268,9 +268,9 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
-        img_cells, cell_type, cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, main.CELLS_SIZE, show=False)
+        img_cells, cell_type, cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)
 
-        return img_cells, get_minimal_env(cell_type, cell_cost)
+        return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
