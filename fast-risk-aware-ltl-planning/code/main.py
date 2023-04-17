@@ -102,7 +102,6 @@ def main():
     if PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
 
     p = pathfinder.Pathfinder(e, t)
-    # p.pathfind_until_task()
     p.pathfind_task()
 
     # draw the path on img_cell to show the end user

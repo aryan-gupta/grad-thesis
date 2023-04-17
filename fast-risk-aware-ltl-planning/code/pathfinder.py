@@ -114,46 +114,6 @@ class Pathfinder:
         while self.current_phys_loc != final_phys_loc:
             pass
 
-
-    # pathfinds on the LTL automata
-    # until the set target task node is reached. If no task node is passed
-    # then it assumes the accepting state of the LTL task
-    def pathfind_until_task(self, final_task_node=None):
-        # self.pathfind_ltl(); return
-
-        # set the final node as the final task node
-        if final_task_node is None:
-            final_task_node = self.task.task_bounds[1]
-
-        # reset the counter:
-        self.img_tmp_idx_ltl = 0
-
-        # the loop to traverse the LTL formula
-        while self.current_ltl_state != final_task_node:
-            # get reward map of current LTL state
-            current_ltl_state_reward_graph = self.task.get_reward_img_state(self.current_ltl_state, self.env.reward_graphs)
-
-            # reward_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_locations)
-
-            # tmp = set()
-            # for loc in reward_locations:
-            #     tmp.add(self.env.cell_type[loc[0]][loc[1]])
-
-            # print(tmp)
-            # exit()
-
-            # calaculate final location
-            risk_reward_img_cells_local, env_min = self.env.create_cells(current_ltl_state_reward_graph, self.assumed_risk_image_filled)
-            final_phys_loc = self.task.get_finish_location(env_min.cell_type, self.env.reward_graphs, self.current_ltl_state)
-            print(final_phys_loc)
-
-            self.pathfind_until_final_loc(final_phys_loc, risk_reward_img_cells_local, env_min)
-
-            # find next state that we should go to and setup next interation
-            self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
-            self.img_tmp_idx_ltl += 1
-
-
     # pathfinds from the physical environment
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
