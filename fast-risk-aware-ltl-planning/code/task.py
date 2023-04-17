@@ -9,8 +9,18 @@ import main
 
 # stores an LTL task
 class Task:
-    def __init__(self, filename):
-        self.parse_ltl_hoa(filename)
+    def __init__(self, filename=None, ltl_task=None):
+        # use spot to convert ltl task string into a graph
+        if ltl_task is not None:
+            pass # @TODO
+        # use an HOA file. HOA files can be created here: https://spot.lre.epita.fr/app/
+        elif filename is not None:
+            self.parse_ltl_hoa(filename)
+        else:
+            raise Exception("Task not specified. Please use HOA file or pass an LTL task string into Task class")
+
+        # create our basic LTL heuristic model
+        self.create_task_heuristic()
 
 
     # @TODO use markov desicison process table instead of dictionary

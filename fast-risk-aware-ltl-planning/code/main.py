@@ -91,9 +91,6 @@ def main():
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
 
-    # create our basic LTL heuristic model
-    t.create_task_heuristic()
-
     # pathfind without any risk
     # e.r.assumed_risk_image = e.r.raw_risk_image
 
