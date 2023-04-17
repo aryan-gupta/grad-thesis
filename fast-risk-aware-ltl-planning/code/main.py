@@ -34,6 +34,7 @@ map_w = 576
 # directory the progress images, images can then be combined with
 # `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
 output_images_dir = '../../../tmp'
+tmp_raw_env_save_file = f"{output_images_dir}/raw_env.png"
 
 # location of where the final image should go. This image has all
 # the cells, uncovered risk, assumed risk (if any), path that the
@@ -49,8 +50,11 @@ ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
 # - PNG (to prevent JPEG aliasing and artifacts)
 enviroment_file = '../maps/002.png'
 
-# CHAR REPRESENTATIONS
+CREATE_NEW_ENVIRONMENT = False
+PATHFIND_NO_ASSUMED_RISK = False
+PATHFIND_IGNORE_RISK_UPDATES = False
 
+# CHAR REPRESENTATIONS
 # char representation of a hazard cell or wall cell
 HAZARD_CELL_CHAR = 'X'
 
@@ -78,13 +82,13 @@ def main():
     # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(1)
 
-    # read in and process image
-    # e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
-    # e.save_env(tmp_raw_env_save_file)
-
-    # e = e.preprocess()
-    # if you want to use your own image, CAUB (comment above, uncomment below), and change the filename parameter
-    e = env.Enviroment(filename=enviroment_file)
+    e = None
+    if CREATE_NEW_ENVIRONMENT:
+        e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
+        e.save_env(tmp_raw_env_save_file)
+        e = e.preprocess()
+    else:
+        e = env.Enviroment(filename=enviroment_file)
 
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
@@ -92,10 +96,10 @@ def main():
     t = task.Task(ltl_hoa_file)
 
     # pathfind without any risk
-    # e.r.assumed_risk_image = e.r.raw_risk_image
+    if PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
 
     # pathfinding on assumed risk without updating
-    # e.r.raw_risk_image = e.r.assumed_risk_image
+    if PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
 
     p = pathfinder.Pathfinder(e, t)
     # p.pathfind_until_task()
