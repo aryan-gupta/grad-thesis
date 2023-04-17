@@ -9,7 +9,7 @@ import main
 
 # stores an LTL task
 class Task:
-    def __init__(self, filename=None, ltl_task=None):
+    def __init__(self, filename=None, ltl_task=None, env=None):
         # use spot to convert ltl task string into a graph
         if ltl_task is not None:
             pass # @TODO
@@ -20,15 +20,8 @@ class Task:
             raise Exception("Task not specified. Please use HOA file or pass an LTL task string into Task class")
 
         # create our basic LTL heuristic model
-        self.create_task_heuristic()
-
-
-    # @TODO use markov desicison process table instead of dictionary
-    # creates the task heuristic for the agent to use. is part of
-    # pre processing
-    def create_task_heuristic(self):
         self.create_node_distance_heuristic()
-        self.create_euclidean_heuristic()
+        self.create_euclidean_heuristic(env)
 
 
     # runs a search algorithm on the task graph
@@ -81,9 +74,10 @@ class Task:
     # extracts all paths from the start node to the accepting state
     # node. Then uses those paths to determine the total euclidean
     # distance of that path. See presentation in git repo for more info
-    def create_euclidean_heuristic(self):
+    def create_euclidean_heuristic(self, env=None):
         self.paths = []
         self.__create_euclidean_heuristic_recurse([], self.task_bounds[0], main.START_CELL_CHAR.lower(), 0)
+        if env != None: self.update_euclidean_heuristic_w_env(env)
 
 
     # a recursive helper function for create_euclidean_heuristic function
@@ -114,12 +108,11 @@ class Task:
             if len(ap) > 1: continue # skip targets with multiple aps to satisfy
 
             next_target = ap[0]
-
-            # print(target, next_target)
-            # dist = euclidean(target, )
-
             self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
 
+
+    def update_euclidean_heuristic_w_env(self, env):
+        pass
 
     # parse an ltl HOA formatted file
     def parse_ltl_hoa(self, filename, show=False):
