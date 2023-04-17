@@ -14,7 +14,6 @@ class Task:
 
 
     # @TODO use markov desicison process table instead of dictionary
-    # @TODO move the euclidean task heuristic from DJK module to here
     # creates the task heuristic for the agent to use. is part of
     # pre processing
     def create_task_heuristic(self):
@@ -22,6 +21,10 @@ class Task:
         self.create_euclidean_heuristic()
 
 
+    # runs a search algorithm on the task graph
+    # labels each node with the shortest path to the accepting state
+    # this allows the algorithm to know which next nodes leads to the
+    # accepting state the quickest
     def create_node_distance_heuristic(self):
         # ltw[start][finish] = weight
         # ltl_transiton_weights = {{}}
@@ -64,19 +67,33 @@ class Task:
         # print(ltl_heuristic_aps)
 
 
+    # runs a search algorithm on the task graph
+    # extracts all paths from the start node to the accepting state
+    # node. Then uses those paths to determine the total euclidean
+    # distance of that path. See presentation in git repo for more info
     def create_euclidean_heuristic(self):
         self.paths = []
         self.__create_euclidean_heuristic_recurse([], self.task_bounds[0], main.START_CELL_CHAR.lower(), 0)
 
 
+    # a recursive helper function for create_euclidean_heuristic function
     def __create_euclidean_heuristic_recurse(self, path, node, target, depth):
+        # append the current node into the current path
         path.append((node, target))
 
+        # base condition
+        # if we are 5 layers deep, exit it would take too long to calculate
+        # also if we are at the accepting state then add the current path
+        # into the paths. This path will be used later to calculate the
+        # euclidean distances for each possible path
         if depth > 5 or node == self.task_bounds[1]:
             self.paths.append(path)
             return
 
 
+        # rerun this recursive algo for each path in the task graph
+        # skipping self loops, !targets, and multiple ap targets
+        # @TODO figure out how to handle not loops
         next_nodes = self.ltl_state_diag[node]
         for n in next_nodes:
             if n == node: continue # skip self loops
@@ -150,6 +167,7 @@ class Task:
         return True
 
 
+    # returns the next target locations
     def get_reward_locations(self, current_state, reward_locations):
         potential_reward_location = set([])
 
