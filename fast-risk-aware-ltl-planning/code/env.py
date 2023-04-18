@@ -291,56 +291,21 @@ class Enviroment(EnviromentCreator):
 
 
     def pick_best_target_location(self, reward_locations, task, ltl_state, phys_loc):
-        # print("======================")
-        def find(cell_type, char):
-            for ycell in range(len(cell_type)):
-                for xcell in range(len(cell_type[ycell])):
-                        if cell_type[ycell][xcell] == char:
-                            return (ycell, xcell)
-            return (None, None)
-
-        # figure out the euclidean distances of each path
-        dist = []
-
-        for path in task.paths:
-            euclidean_distance = 0
-            for idx in range(len(path) - 1):
-                node, target = path[idx]
-                nnode, ntarget = path[idx + 1]
-
-                y, x = find(self.cell_type, target.upper())
-                ny, nx = find(self.cell_type, ntarget.upper())
-
-                dx = x - nx
-                dy = y - ny
-                distance = math.sqrt((dx**2) + (dy**2))
-
-                euclidean_distance += distance
-            dist.append(euclidean_distance)
-
-        # for idx in range(len(task.paths)):
-        #     print(dist[idx])
-        #     print(task.paths[idx])
-
         # figure out which one is the smallest
+        # @TODO
         min_idx = 0
-        for idx in range(len(dist)):
-            if dist[idx] < dist[min_idx]:
-                min_idx = idx
 
-        # print(task.paths[min_idx])
-
-        # gigure out where in the path we are
+        # figure out where in the path we are and get the next target
         target = None
-        for idx in range(len(task.paths[min_idx])):
-            s, _ = task.paths[min_idx][idx]
+        for idx in range(len(task.euclidean_heuristic[min_idx][1])):
+            s, _ = task.euclidean_heuristic[min_idx][1][idx]
             if s == ltl_state:
-                _, target = task.paths[min_idx][idx + 1]
-
-        # print(ltl_state)
-        # print(target)
+                _, target = task.euclidean_heuristic[min_idx][1][idx + 1]
 
         # figure out which location to go to next
+        # checks if
+        # - location is the target we found out in previous step
+        # - location is the closest cell to us euclidean dist wise
         target_loc = (0, 0)
         min_dist = float("inf")
         for xcell, ycell in reward_locations:
@@ -353,12 +318,6 @@ class Enviroment(EnviromentCreator):
                 if distance < min_dist:
                     target_loc = (xcell, ycell)
                     min_dist = distance
-
-        # print(target_loc)
-        # print(distance)
-        # print(self.cell_type[target_loc[1]][target_loc[0]])
-
-        # print("-----------------------")
 
         return target_loc
 

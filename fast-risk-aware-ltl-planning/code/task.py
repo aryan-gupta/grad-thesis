@@ -114,7 +114,38 @@ class Task:
 
 
     def update_euclidean_heuristic_w_env(self, env):
-        pass
+        self.euclidean_heuristic = []
+
+
+        def find(cell_type, char):
+            for ycell in range(len(cell_type)):
+                for xcell in range(len(cell_type[ycell])):
+                        if cell_type[ycell][xcell] == char:
+                            return (ycell, xcell)
+            return (None, None)
+
+                # figure out the euclidean distances of each path
+
+        for path in self.paths:
+            euclidean_distance = 0
+            for idx in range(len(path) - 1):
+                node, target = path[idx]
+                nnode, ntarget = path[idx + 1]
+
+                y, x = find(env.cell_type, target.upper())
+                ny, nx = find(env.cell_type, ntarget.upper())
+
+                dx = x - nx
+                dy = y - ny
+                distance = math.sqrt((dx**2) + (dy**2))
+
+                euclidean_distance += distance
+            self.euclidean_heuristic.append((euclidean_distance, path))
+
+        self.euclidean_heuristic.sort(key=lambda a: a[0])
+
+        print(self.euclidean_heuristic)
+        # exit()
 
     # parse an ltl HOA formatted file
     def parse_ltl_hoa(self, filename, show=False):
