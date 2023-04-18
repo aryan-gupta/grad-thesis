@@ -107,6 +107,8 @@ def main():
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)
 
+    t.create_task_heuristic(e)
+
     p = pathfinder.Pathfinder(e, t)
 
     end_preprocessing = timer() ### TIMER

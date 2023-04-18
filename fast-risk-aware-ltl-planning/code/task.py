@@ -9,7 +9,7 @@ import main
 
 # stores an LTL task
 class Task:
-    def __init__(self, filename=None, ltl_task=None, env=None):
+    def __init__(self, filename=None, ltl_task=None):
         # use spot to convert ltl task string into a graph
         if ltl_task is not None:
             pass # @TODO
@@ -19,6 +19,8 @@ class Task:
         else:
             raise Exception("Task not specified. Please use HOA file or pass an LTL task string into Task class")
 
+
+    def create_task_heuristic(self, env=None):
         # create our basic LTL heuristic model
         self.create_node_distance_heuristic()
         self.create_euclidean_heuristic(env)
