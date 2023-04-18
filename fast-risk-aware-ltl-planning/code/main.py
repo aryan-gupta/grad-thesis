@@ -5,6 +5,7 @@ import math
 import bisect
 import PIL as pil
 
+from timeit import default_timer as timer
 
 import img
 import cell
@@ -79,6 +80,8 @@ CHAR_COLOR_MAP = {
 }
 
 def main():
+    start_preprocessing = timer() ### TIMER
+
     # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(1)
 
@@ -105,10 +108,34 @@ def main():
     t = task.Task(ltl_hoa_file)
 
     p = pathfinder.Pathfinder(e, t)
+
+    end_preprocessing = timer() ### TIMER
+
+    start_processing = timer() ### TIMER
+
     p.pathfind_task()
+
+    end_processing = timer() ### TIMER
+
+    start_postprocessing = timer() ### TIMER
 
     # draw the path on img_cell to show the end user
     e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
+
+    end_postprocessing = timer() ### TIMER
+
+
+    elapsed_preprocessing = end_preprocessing - start_preprocessing
+    print(f"Pre -Processing took { elapsed_preprocessing } seconds")
+
+    elapsed_processing = end_processing - start_processing
+    print(f"    -Processing took { elapsed_processing } seconds")
+
+    elapsed_postprocessing = end_postprocessing - start_postprocessing
+    print(f"Post-Processing took { elapsed_postprocessing } seconds")
+
+    elapsed = end_postprocessing - start_preprocessing
+    print(f"All -Processing took { elapsed } seconds")
 
 if __name__ == "__main__":
     main()
