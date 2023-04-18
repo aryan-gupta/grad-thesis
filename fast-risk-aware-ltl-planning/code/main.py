@@ -102,7 +102,7 @@ def main():
     if PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
 
     # create the cells needed
-    e.create_cells_internal(e.r.assumed_risk_image)
+    e.create_cells_ar(e.r.assumed_risk_image)
 
     # get the task details using LTL
     t = task.Task(ltl_hoa_file)

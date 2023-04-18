@@ -253,6 +253,9 @@ class Enviroment(EnviromentCreator):
 
         return env_min
 
+
+    # returns a minimal environment with the assumed risk.
+    # this is a replacement for the static get_minimal_env method
     def get_ar_minimal_env(self):
         env_min = EnviromentMinimal()
         env_min.cell_type = self.ar_cell_type
@@ -272,7 +275,8 @@ class Enviroment(EnviromentCreator):
         return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
 
-    def create_cells_internal(self, assumed_risk_image):
+    # create cells using the assumed risk image
+    def create_cells_ar(self, assumed_risk_image):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
@@ -289,7 +293,8 @@ class Enviroment(EnviromentCreator):
     def create_cell_image(r, g, b):
         pass
 
-
+    # choses the next best location based off of the environment and task heuristic
+    # @TODO move this to the pathfinder class
     def pick_best_target_location(self, reward_locations, task, ltl_state, phys_loc):
         # figure out which one is the smallest
         # @TODO
@@ -320,7 +325,6 @@ class Enviroment(EnviromentCreator):
                     min_dist = distance
 
         return target_loc
-
 
 
 # creates and saves a random environment

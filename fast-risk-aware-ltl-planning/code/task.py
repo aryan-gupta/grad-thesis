@@ -20,6 +20,7 @@ class Task:
             raise Exception("Task not specified. Please use HOA file or pass an LTL task string into Task class")
 
 
+    # creates the task heuristics
     def create_task_heuristic(self, env=None):
         # create our basic LTL heuristic model
         self.create_node_distance_heuristic()
@@ -113,6 +114,7 @@ class Task:
             self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
 
 
+    # calculates the euclidean distance of each path in the task automata
     def update_euclidean_heuristic_w_env(self, env):
         self.euclidean_heuristic = []
 
@@ -146,6 +148,7 @@ class Task:
 
         print(self.euclidean_heuristic)
         # exit()
+
 
     # parse an ltl HOA formatted file
     def parse_ltl_hoa(self, filename, show=False):
