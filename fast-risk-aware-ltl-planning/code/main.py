@@ -92,14 +92,17 @@ def main():
 
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
-    # get the task details using LTL
-    t = task.Task(ltl_hoa_file)
-
     # pathfind without any risk
     if PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
 
     # pathfinding on assumed risk without updating
     if PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
+
+    # create the cells needed
+    e.create_cells_internal(e.r.assumed_risk_image)
+
+    # get the task details using LTL
+    t = task.Task(ltl_hoa_file)
 
     p = pathfinder.Pathfinder(e, t)
     p.pathfind_task()

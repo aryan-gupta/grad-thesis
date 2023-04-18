@@ -66,9 +66,6 @@ class Pathfinder:
         # reset the counter:
         self.img_tmp_idx_ltl = 0
 
-        # create the cells needed
-        img_cells, env_min = self.env.create_cells_internal(self.assumed_risk_image_filled)
-
         # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
         while self.current_ltl_state != final_task_node:
@@ -89,8 +86,8 @@ class Pathfinder:
             print(target_phys_loc)
             self.pathfind_until_final_loc(
                 target_phys_loc,
-                img_cells,
-                env_min
+                self.env.ar_img_cells,
+                self.env.get_ar_minimal_env()
             )
 
             # find next state that we should go to and setup next interation

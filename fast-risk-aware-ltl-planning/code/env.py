@@ -253,6 +253,12 @@ class Enviroment(EnviromentCreator):
 
         return env_min
 
+    def get_ar_minimal_env(self):
+        env_min = EnviromentMinimal()
+        env_min.cell_type = self.ar_cell_type
+        env_min.cell_cost = self.ar_cell_cost
+
+        return env_min
 
     # create the cells on the environment
     # @TODO modify this function so its only run once in pathfinder, rather than everytime a LTL path jump takes place
@@ -269,9 +275,7 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
-        img_cells, cell_type, cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)
-
-        return img_cells, self.get_minimal_env(cell_type, cell_cost)
+        self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):
