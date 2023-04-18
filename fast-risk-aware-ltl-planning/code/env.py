@@ -362,17 +362,6 @@ class Enviroment(EnviromentCreator):
 
         return target_loc
 
-        # target_phys_loc = [(23, 70), (45, 10), (42, 61)][self.img_tmp_idx_ltl]
-        if (23, 70) in reward_locations:
-            print("1")
-            return (23, 70)
-        elif (45, 10) in reward_locations:
-            print("2")
-            return (45, 10)
-        elif (42, 61) in reward_locations:
-            print("3")
-            return (42, 61)
-
 
 
 # creates and saves a random environment
