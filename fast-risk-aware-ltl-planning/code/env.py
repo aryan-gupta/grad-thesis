@@ -262,7 +262,8 @@ class Enviroment(EnviromentCreator):
 
     # create the cells on the environment
     # @TODO modify this function so its only run once in pathfinder, rather than everytime a LTL path jump takes place
-    def create_cells(self, ltl_reward_map, assumed_risk_image):
+    # @TODO deprecated
+    def dep_create_cells(self, ltl_reward_map, assumed_risk_image):
         empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
