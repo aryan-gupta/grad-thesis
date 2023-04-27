@@ -79,9 +79,8 @@ CHAR_COLOR_MAP = {
      25 : 'H'
 }
 
-def main():
-    start_preprocessing = timer() ### TIMER
 
+def preprocessor():
     # since the seed is 0, the env will always be the same, helps when debugging
     random.seed(1)
 
@@ -111,20 +110,24 @@ def main():
 
     p = pathfinder.Pathfinder(e, t)
 
-    end_preprocessing = timer() ### TIMER
+    return e, t, p
 
-    start_processing = timer() ### TIMER
 
+def main():
+    start_preprocessing = timer()
+    # preprocess all necessary data
+    e, t, p = preprocessor()
+    end_preprocessing = timer()
+
+    start_processing = timer()
+    # run the pathfinding algorithm
     p.pathfind_task()
+    end_processing = timer()
 
-    end_processing = timer() ### TIMER
-
-    start_postprocessing = timer() ### TIMER
-
+    start_postprocessing = timer()
     # draw the path on img_cell to show the end user
     e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
-
-    end_postprocessing = timer() ### TIMER
+    end_postprocessing = timer()
 
 
     elapsed_preprocessing = end_preprocessing - start_preprocessing
