@@ -40,11 +40,29 @@ class WindEnvironmentCreator:
             for xcell in range(len(self.U[ycell])):
                 self.cell_wind[ycell].append((self.U[ycell][xcell], self.V[ycell][xcell]))
 
+        self.convert_cell_cost()
+
+    def convert_cell_cost(self):
+        self.cell_cost = []
+
+        for ycell in range(len(self.U)):
+            self.cell_cost.append([])
+            for xcell in range(len(self.U[ycell])):
+                x, y = self.cell_wind[ycell][xcell]
+                cost = math.sqrt( x**2 + y**2 )
+                self.cell_cost[ycell].append(cost)
+
     def show_env(self):
         plt.quiver(self.X, self.Y, self.U, self.V)
         plt.show()
+        # self.__show_env_cell_wind_conv()
 
     def __show_env_cell_wind_conv(self):
+        nparray = np.array(self.cell_cost)
+        # https://stackoverflow.com/questions/42776583
+        plt.imshow(nparray, origin='lower')
+        # plt.show()
+
         U = []
         V = []
         for ycell in range(len(self.cell_wind)):
