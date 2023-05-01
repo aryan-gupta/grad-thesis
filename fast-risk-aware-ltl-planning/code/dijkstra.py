@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import bisect
 
+import main
 
 # returns the cost function
 # the cost function returns the correct cost function for the cell_cost data structure
@@ -50,16 +51,16 @@ def create_astar_partial_hfunc(next_phys_loc):
 
 # runs the a* algo with the points[1] being a partial target and the hfunc uses next_phys_loc as
 # the euclidean distance heuristic
-def astar_algo_partial_target(cell_type, points, next_phys_loc, cell_cost, CELLS_SIZE):
+def astar_algo_partial_target(cell_type, points, next_phys_loc, cell_cost):
     astar_algo_hfunc = create_astar_partial_hfunc(next_phys_loc)
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, astar_algo_hfunc)
 
 
 # this is only here for legacy reasons, will be removed later
 # img_cells used to be a parameter as it was used to create a video
 # now this feature is done by calling function
-def astar_algo(cell_type, points, cell_cost, CELLS_SIZE):
+def astar_algo(cell_type, points, cell_cost):
     # for the a* algo, the heuristic function is the euclidean distance
     # from the current pos to the final pos
     def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction):
@@ -69,11 +70,11 @@ def astar_algo(cell_type, points, cell_cost, CELLS_SIZE):
         return 0.0005 * euclidean_distance
 
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, astar_algo_hfunc)
 
 
 # runs the astar algo using the optimizer
-def astar_opt(cell_type, points, cell_cost, CELLS_SIZE, optimizer):
+def astar_opt(cell_type, points, cell_cost, optimizer):
     def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction, optimizer=optimizer):
         if not optimizer.is_valid_direction(current_phys_loc, direction):
             return float("inf")
@@ -87,7 +88,7 @@ def astar_opt(cell_type, points, cell_cost, CELLS_SIZE, optimizer):
         return 0.0005 * euclidean_distance
 
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, astar_algo_hfunc)
 
 
 # for djk's algo, the heuristic function always return 0 since we dont use
@@ -98,15 +99,15 @@ def dj_algo_default_hfunc(*args, **kwargs):
 
 # to prevent breaking changes, this helper function will fix legacy
 # functions that call djk algo without an hfunc
-def dj_algo(cell_type, points, cell_cost, CELLS_SIZE):
+def dj_algo(cell_type, points, cell_cost):
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, dj_algo_default_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, dj_algo_default_hfunc)
 
 
 # Runs a dijkstra's algorithm on cell_type from the start and end locations
 # from points.
 # @TODO remove commented out video creator code
-def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
+def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
     # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
@@ -138,8 +139,8 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
         # mark node as visited
         visited_nodes[y][x] = True
 
-        half_cell = math.ceil((CELLS_SIZE/2))
-        center = (x*CELLS_SIZE+half_cell, y*CELLS_SIZE+half_cell)
+        half_cell = math.ceil((main.CELLS_SIZE/2))
+        center = (x*main.CELLS_SIZE+half_cell, y*main.CELLS_SIZE+half_cell)
         # visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 1)
         # plt.imshow(visited_image)
         # plt.show()
@@ -195,8 +196,8 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
     current_node = finish
     while current_node != start:
         # write the current back trace state into the video
-        half_cell = math.ceil((CELLS_SIZE/2))
-        center = (current_node[0]*CELLS_SIZE+half_cell, current_node[1]*CELLS_SIZE+half_cell)
+        half_cell = math.ceil((main.CELLS_SIZE/2))
+        center = (current_node[0]*main.CELLS_SIZE+half_cell, current_node[1]*main.CELLS_SIZE+half_cell)
         # visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 1)
         # for i in range(3):
         #     video_out.write(visited_image)
