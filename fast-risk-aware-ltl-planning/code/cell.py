@@ -27,6 +27,9 @@ def make_interpolater(left_min, left_max, right_min, right_max):
 
 
 # Creates the cells based off an risk/reward image based off of the CELLS_SIZE
+# create cells on @r img_cells, extract cell_type s, and cell_cost s using
+# ltl_target_image to __, risk_image to __, and img_cells to __
+# we want to use the function name, input and output parameters. each input and output
 def create_cells(ltl_target_image, risk_image, img_cells, show=False):
     # get image size
     map_h, map_w = ltl_target_image.shape

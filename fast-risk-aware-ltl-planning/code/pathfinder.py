@@ -78,7 +78,7 @@ class Pathfinder:
             # pick best one based off of task heuristic
             target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
 
-            # self.pathfind_phys(
+            # self.pathfind_env(
             #     start_phys_loc=self.current_phys_loc,
             #     final_phys_loc=target_phys_loc
             # )
