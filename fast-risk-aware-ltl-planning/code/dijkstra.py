@@ -50,16 +50,16 @@ def create_astar_partial_hfunc(next_phys_loc):
 
 # runs the a* algo with the points[1] being a partial target and the hfunc uses next_phys_loc as
 # the euclidean distance heuristic
-def astar_algo_partial_target(img_cells, cell_type, points, next_phys_loc, cell_cost, CELLS_SIZE):
+def astar_algo_partial_target(cell_type, points, next_phys_loc, cell_cost, CELLS_SIZE):
     astar_algo_hfunc = create_astar_partial_hfunc(next_phys_loc)
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
 
 # this is only here for legacy reasons, will be removed later
 # img_cells used to be a parameter as it was used to create a video
 # now this feature is done by calling function
-def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
+def astar_algo(cell_type, points, cell_cost, CELLS_SIZE):
     # for the a* algo, the heuristic function is the euclidean distance
     # from the current pos to the final pos
     def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction):
@@ -69,11 +69,11 @@ def astar_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
         return 0.0005 * euclidean_distance
 
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
 
 # runs the astar algo using the optimizer
-def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
+def astar_opt(cell_type, points, cell_cost, CELLS_SIZE, optimizer):
     def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction, optimizer=optimizer):
         if not optimizer.is_valid_direction(current_phys_loc, direction):
             return float("inf")
@@ -87,7 +87,7 @@ def astar_opt(img_cells, cell_type, points, cell_cost, CELLS_SIZE, optimizer):
         return 0.0005 * euclidean_distance
 
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, astar_algo_hfunc)
 
 
 # for djk's algo, the heuristic function always return 0 since we dont use
@@ -98,21 +98,20 @@ def dj_algo_default_hfunc(*args, **kwargs):
 
 # to prevent breaking changes, this helper function will fix legacy
 # functions that call djk algo without an hfunc
-def dj_algo(img_cells, cell_type, points, cell_cost, CELLS_SIZE):
+def dj_algo(cell_type, points, cell_cost, CELLS_SIZE):
     cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, dj_algo_default_hfunc)
+    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, dj_algo_default_hfunc)
 
 
 # Runs a dijkstra's algorithm on cell_type from the start and end locations
-# from points. The img_cells are used to make the video
-# @TODO remove img_cells parameter
-def dj_algo_cfunc_hfunc(img_cells, cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
+# from points.
+# @TODO remove commented out video creator code
+def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, CELLS_SIZE, hfunc):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
     # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
 
     start, finish = points
-    map_w, map_h = (img_cells.shape[1], img_cells.shape[0])
 
     # Dijkstras algo
     # When I wrote this code, only god and I knew how it works. Now, only god knows

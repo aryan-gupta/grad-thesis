@@ -142,7 +142,7 @@ class Pathfinder:
                 if show: print("full astar replanning")
                 opt = optimizer.Optimizer(env_min, self.task)
                 opt.set_task_state(0, self.current_ltl_state)
-                current_planned_path = dijkstra.astar_algo(risk_reward_img_cells_local, env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost, main.CELLS_SIZE)
+                current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost, main.CELLS_SIZE)
             elif amount_risk_updated > 0:
                 if show: print("part astar replanning")
 
@@ -152,7 +152,7 @@ class Pathfinder:
                 astar_target, idx = dijkstra.get_astar_target(self.current_phys_loc, current_planned_path, main.VIEW_CELLS_SIZE * 2)
 
                 # get new path from current loc to astar_target
-                shortest_path_astar_target = dijkstra.astar_algo_partial_target(risk_reward_img_cells_local, env_min.cell_type, (self.current_phys_loc, astar_target), final_phys_loc, env_min.cell_cost, main.CELLS_SIZE)
+                shortest_path_astar_target = dijkstra.astar_algo_partial_target(env_min.cell_type, (self.current_phys_loc, astar_target), final_phys_loc, env_min.cell_cost, main.CELLS_SIZE)
 
                 # splice our two shortest_paths together
                 current_planned_path = current_planned_path[0:idx]
