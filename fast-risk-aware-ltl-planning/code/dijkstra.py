@@ -117,12 +117,12 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     # Dijkstras algo
     # When I wrote this code, only god and I knew how it works. Now, only god knows
     queue = [] # queue is an array of (weight, (x, y))
-    visited_nodes = [ [False] * len(cell_type[0]) for _ in range(len(cell_type))] # create bool false array same size as cell_type
-    distances = [ [float("inf")] * len(cell_type[0]) for _ in range(len(cell_type))]
-    prev = [ [(0,0)] * len(cell_type[0]) for _ in range(len(cell_type))]
+    visited_nodes = set()
+    distances = {}
+    prev = {}
 
     queue.append((0,start))
-    distances[start[1]][start[0]] = 0
+    distances[(start[1], start[0])] = 0
 
     while len(queue) != 0:
         # get first element
@@ -135,9 +135,9 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
         dist = current[0]
 
         # if weve already been to this node, skip it
-        if (visited_nodes[y][x]): continue
+        if (y, x) in visited_nodes: continue
         # mark node as visited
-        visited_nodes[y][x] = True
+        visited_nodes.add((y, x))
 
         half_cell = math.ceil((main.CELLS_SIZE/2))
         center = (x*main.CELLS_SIZE+half_cell, y*main.CELLS_SIZE+half_cell)
@@ -151,33 +151,33 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
 
         # check each direction we can travel
         if y > 0: # UP
-            old_distance = distances[y - 1][x]
+            old_distance = distances.get((y - 1, x), float("inf"))
             new_distance = dist + cfunc((x, y), cell_cost, 0) + hfunc(current[1], finish, 0)
             if new_distance < old_distance:
-                distances[y - 1][x] = new_distance
-                prev[y - 1][x] = (x,y)
-                bisect.insort(queue, (distances[y - 1][x], (x,y-1)), key=lambda a: a[0])
+                distances[(y - 1, x)] = new_distance
+                prev[(y - 1, x)] = (x,y)
+                bisect.insort(queue, (new_distance, (x,y-1)), key=lambda a: a[0])
         if x > 0: # LEFT
-            old_distance = distances[y][x - 1]
+            old_distance = distances.get((y, x - 1), float("inf"))
             new_distance = dist + cfunc((x, y), cell_cost, 1) + hfunc(current[1], finish, 1)
             if new_distance < old_distance:
-                distances[y][x - 1] = new_distance
-                prev[y][x - 1] = (x,y)
-                bisect.insort(queue, (distances[y][x - 1], (x-1,y)), key=lambda a: a[0])
+                distances[(y, x - 1)] = new_distance
+                prev[(y, x - 1)] = (x,y)
+                bisect.insort(queue, (new_distance, (x-1,y)), key=lambda a: a[0])
         if x < (len(cell_type[0]) - 1): # RIGHT
-            old_distance = distances[y][x + 1]
+            old_distance = distances.get((y, x + 1), float("inf"))
             new_distance = dist + cfunc((x, y), cell_cost, 2) + hfunc(current[1], finish, 2)
             if new_distance < old_distance:
-                distances[y][x + 1] = new_distance
-                prev[y][x + 1] = (x,y)
-                bisect.insort(queue, (distances[y][x + 1], (x+1,y)), key=lambda a: a[0])
+                distances[(y, x + 1)] = new_distance
+                prev[(y, x + 1)] = (x,y)
+                bisect.insort(queue, (new_distance, (x+1,y)), key=lambda a: a[0])
         if y < (len(cell_type) - 1): # DOWN
-            old_distance = distances[y + 1][x]
+            old_distance = distances.get((y + 1, x), float("inf"))
             new_distance = dist + cfunc((x, y), cell_cost, 3) + hfunc(current[1], finish, 3)
             if new_distance < old_distance:
-                distances[y + 1][x] = new_distance
-                prev[y + 1][x] = (x,y)
-                bisect.insort(queue, (distances[y + 1][x], (x,y+1)), key=lambda a: a[0])
+                distances[(y + 1, x)] = new_distance
+                prev[(y + 1, x)] = (x,y)
+                bisect.insort(queue, (new_distance, (x,y+1)), key=lambda a: a[0])
 
         if current[1] == finish:
             break
@@ -203,7 +203,7 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
         #     video_out.write(visited_image)
 
         shortest_path.append(current_node)
-        current_node = prev[current_node[1]][current_node[0]]
+        current_node = prev[(current_node[1], current_node[0])]
     shortest_path.append(start)
 
     # pause for two seconds on the final frame
