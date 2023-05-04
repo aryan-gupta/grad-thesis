@@ -138,7 +138,7 @@ class Pathfinder:
 
             if show: print(amount_risk_updated)
 
-            if amount_risk_updated > 0:
+            if amount_risk_updated >= 0:
                 if show: print("full astar replanning")
                 opt = optimizer.Optimizer(env_min, self.task)
                 opt.set_task_state(0, self.current_ltl_state)
