@@ -65,7 +65,7 @@ class Task:
             # print(queue)
             distance += 1
 
-        print(self.ltl_heuristic)
+        # print(self.ltl_heuristic)
         # ltl_heuristic_aps = {}
         # for key in self.ltl_heuristic.keys():
         #     ltl_heuristic_aps[aps[key]] = self.ltl_heuristic[key]
@@ -146,7 +146,7 @@ class Task:
 
         self.euclidean_heuristic.sort(key=lambda a: a[0])
 
-        print(self.euclidean_heuristic)
+        # print(self.euclidean_heuristic)
         # exit()
 
 
