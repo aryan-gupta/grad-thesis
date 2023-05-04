@@ -216,6 +216,98 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     return shortest_path
 
 
+
+def dj_algo_et(e, t, epoints, tpoints):
+    # Start creating a video of the D's algo in working
+    # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
+    # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
+
+    env_start, env_finish = epoints
+    task_start, task_finish = tpoints
+
+    start_pnode  = ( env_start[1],  env_start[0],  task_start)
+    finish_pnode = (env_finish[1], env_finish[0], task_finish)
+
+    # Dijkstras algo
+    # When I wrote this code, only god and I knew how it works. Now, only god knows
+    queue = [] # queue is an array of (weight, (x, y, n))
+    visited_nodes = set()
+    distances = {}
+    prev = {}
+
+    queue.append((0, start_pnode))
+    distances[start_pnode] = 0
+
+    while len(queue) != 0:
+        # get first element
+        current = queue[0]
+        queue = queue[1:]
+
+        # unpack element
+        dist = current[0]
+        x, y, n = current[1]
+
+        # if weve already been to this node, skip it
+        if (y, x, n) in visited_nodes: continue
+        # mark node as visited
+        visited_nodes.add((y, x, n))
+
+        # check each LTL direction
+        # @TODO Improve this
+        next_ltl_state = t.get_optimization_state(e.ar_cell_type, n, (x, y))
+        if next_ltl_state != n:
+            distances[(y, x, next_ltl_state)] = new_distance
+            prev[(y, x, next_ltl_state)] = (x, y, n)
+            bisect.insort(queue, (new_distance, (x, y, next_ltl_state)), key=lambda a: a[0])
+
+        # check each direction we can travel
+        if y > 0: # UP
+            up = y - 1
+            old_distance = distances.get((up, x, n), float("inf"))
+            new_distance = dist + e.ar_cell_cost[up][x]
+            if new_distance < old_distance:
+                distances[(up, x, n)] = new_distance
+                prev[(up, x, n)] = (x, y, n)
+                bisect.insort(queue, (new_distance, (x, up, n)), key=lambda a: a[0])
+        if x > 0: # LEFT
+            left = x - 1
+            old_distance = distances.get((y, left, n), float("inf"))
+            new_distance = dist + e.ar_cell_cost[y][left]
+            if new_distance < old_distance:
+                distances[(y, left, n)] = new_distance
+                prev[(y, left, n)] = (x, y, n)
+                bisect.insort(queue, (new_distance, (left, y, n)), key=lambda a: a[0])
+        if x < (len(e.cell_type[0]) - 1): # RIGHT
+            right = x + 1
+            old_distance = distances.get((y, right, n), float("inf"))
+            new_distance = dist + e.ar_cell_cost[y][right]
+            if new_distance < old_distance:
+                distances[(y, right, n)] = new_distance
+                prev[(y, right, n)] = (x, y, n)
+                bisect.insort(queue, (new_distance, (right, y, n)), key=lambda a: a[0])
+        if y < (len(e.cell_type) - 1): # DOWN
+            down = y + 1
+            old_distance = distances.get((down, x, n), float("inf"))
+            new_distance = dist + e.ar_cell_cost[down][x]
+            if new_distance < old_distance:
+                distances[(down, x, n)] = new_distance
+                prev[(down, x, n)] = (x, y, n)
+                bisect.insort(queue, (new_distance, (x, down, n)), key=lambda a: a[0])
+
+        if current[1] == finish_pnode:
+            break
+
+    # calculate the shortest path and create a video while
+    shortest_path = []
+    current_node = finish_pnode
+    while current_node != start_pnode:
+        shortest_path.append(current_node)
+        current_node = prev[(current_node[1], current_node[0], current_node[2])]
+    shortest_path.append(start_pnode)
+
+    return shortest_path
+
+
 # Draws the shortest path for all LTL transitions
 def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, points, CELLS_SIZE):
     start, finish = points

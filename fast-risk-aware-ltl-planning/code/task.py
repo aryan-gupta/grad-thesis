@@ -280,6 +280,27 @@ class Task:
         return next_state
 
 
+    def get_optimization_state(self, cell_type, current_ltl_state, current_phys_loc):
+        next_state = None
+        for next_state in self.ltl_state_diag[current_ltl_state]:
+            current_cell_type = cell_type[current_phys_loc[1]][current_phys_loc[0]]
+            axioms = self.ltl_state_diag[current_ltl_state][next_state].upper()
+            axioms = axioms.split('&')
+
+            valid = True
+            for axiom in axioms:
+                if axiom[0] == '!':
+                    if axiom[1] in current_cell_type:
+                        valid = False
+                else:
+                    if axiom[0] not in current_cell_type:
+                        valid = False
+            # plt.imshow(this_state_reward_graph); plt.show()
+            if valid:
+                break
+
+        return next_state
+
     # gets the locations of the next physical locations that would cause
     # a LTL task jump
     def get_finish_location(self, cell_type, reward_graphs, current_ltl_state):

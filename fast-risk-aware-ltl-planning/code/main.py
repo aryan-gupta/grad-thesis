@@ -121,7 +121,9 @@ def main():
 
     start_processing = timer()
     # run the pathfinding algorithm
-    p.pathfind_task()
+    # p.pathfind_task()
+    dijkstra.dj_algo_et(e, t, e.mission_phys_bounds, t.task_bounds)
+    exit()
     end_processing = timer()
 
     start_postprocessing = timer()
