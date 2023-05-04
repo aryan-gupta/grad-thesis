@@ -301,11 +301,19 @@ def dj_algo_et(e, t, epoints, tpoints):
     shortest_path = []
     current_node = finish_pnode
     while current_node != start_pnode:
+        x, y, n = current_node
         shortest_path.append(current_node)
-        current_node = prev[(current_node[1], current_node[0], current_node[2])]
+        current_node = prev[(y, x, n)]
     shortest_path.append(start_pnode)
 
     return shortest_path
+
+
+def prune_product_automata_djk(path):
+    real_path = []
+    for e in path:
+        real_path.append((e[0], e[1]))
+    return real_path
 
 
 # Draws the shortest path for all LTL transitions
