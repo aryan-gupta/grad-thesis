@@ -225,8 +225,8 @@ def dj_algo_et(e, t, epoints, tpoints):
     env_start, env_finish = epoints
     task_start, task_finish = tpoints
 
-    start_pnode  = ( env_start[1],  env_start[0],  task_start)
-    finish_pnode = (env_finish[1], env_finish[0], task_finish)
+    start_pnode  = ( env_start[0],  env_start[1],  task_start)
+    finish_pnode = (env_finish[0], env_finish[1], task_finish)
 
     # Dijkstras algo
     # When I wrote this code, only god and I knew how it works. Now, only god knows
@@ -256,9 +256,9 @@ def dj_algo_et(e, t, epoints, tpoints):
         # @TODO Improve this
         next_ltl_state = t.get_optimization_state(e.ar_cell_type, n, (x, y))
         if next_ltl_state != n:
-            distances[(y, x, next_ltl_state)] = new_distance
+            distances[(y, x, next_ltl_state)] = dist
             prev[(y, x, next_ltl_state)] = (x, y, n)
-            bisect.insort(queue, (new_distance, (x, y, next_ltl_state)), key=lambda a: a[0])
+            bisect.insort(queue, (dist, (x, y, next_ltl_state)), key=lambda a: a[0])
 
         # check each direction we can travel
         if y > 0: # UP
