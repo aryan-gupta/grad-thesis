@@ -236,18 +236,24 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     env_start, env_finish = epoints
     task_start, task_finish = tpoints
 
-    start_pnode  = ( env_start[0],  env_start[1],  task_start)
-    finish_pnode = (env_finish[0], env_finish[1], task_finish)
+    start_pnode  = ( env_start[1],  env_start[0],  task_start)
+    finish_pnode = (env_finish[1], env_finish[0], task_finish)
 
     # Dijkstras algo
     # When I wrote this code, only god and I knew how it works. Now, only god knows
-    queue = [] # queue is an array of (weight, (x, y, n))
+    queue = [] # queue is an array of (weight, (y, x, n))
     visited_nodes = set() # set of { (y, x, n) }
     distances = {} # dict of { (y, x, n) : distance }
     prev = {} # dict of { (y, x, n) : (y, x, n) }
+
+
+    # THIS BUG HAS BEEN FIXED. but i am leaving this comment cuz its funny
+    # context: some places in my code, the vector is in format (y, x) and in other places its in
+    # format (x, y). yaaaaaa.....
     # if youre confused why sometimes y is the first element and sometimes x is. let me tell you.
     # im just an idiot who hates consistancy and Im sorry. maybe Ill fix this one day. In the mean time
-    # enjoy this: times this fact has caused a bug: 2
+    # enjoy this: times this fact has caused a bug: 3
+
 
     queue.append((0, start_pnode))
     distances[start_pnode] = 0
@@ -259,7 +265,7 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
 
         # unpack element
         dist = current[0]
-        x, y, n = current[1]
+        y, x, n = current[1]
 
         # if weve already been to this node, skip it
         if (y, x, n) in visited_nodes: continue
@@ -271,8 +277,8 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
         next_ltl_state = t.get_optimization_state(e.ar_cell_type, n, (x, y))
         if next_ltl_state != n:
             distances[(y, x, next_ltl_state)] = dist
-            prev[(y, x, next_ltl_state)] = (x, y, n)
-            bisect.insort(queue, (dist, (x, y, next_ltl_state)), key=lambda a: a[0])
+            prev[(y, x, next_ltl_state)] = (y, x, n)
+            bisect.insort(queue, (dist, (y, x, next_ltl_state)), key=lambda a: a[0])
 
         # check each direction we can travel
         if y > 0: # UP
@@ -281,32 +287,32 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
             new_distance = dist + cost_function(e, t, None, None, None, (up, x))
             if new_distance < old_distance:
                 distances[(up, x, n)] = new_distance
-                prev[(up, x, n)] = (x, y, n)
-                bisect.insort(queue, (new_distance, (x, up, n)), key=lambda a: a[0])
+                prev[(up, x, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (up, x, n)), key=lambda a: a[0])
         if x > 0: # LEFT
             left = x - 1
             old_distance = distances.get((y, left, n), float("inf"))
             new_distance = dist + cost_function(e, t, None, None, None, (y, left))
             if new_distance < old_distance:
                 distances[(y, left, n)] = new_distance
-                prev[(y, left, n)] = (x, y, n)
-                bisect.insort(queue, (new_distance, (left, y, n)), key=lambda a: a[0])
+                prev[(y, left, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (y, left, n)), key=lambda a: a[0])
         if x < (len(e.cell_type[0]) - 1): # RIGHT
             right = x + 1
             old_distance = distances.get((y, right, n), float("inf"))
             new_distance = dist + cost_function(e, t, None, None, None, (y, right))
             if new_distance < old_distance:
                 distances[(y, right, n)] = new_distance
-                prev[(y, right, n)] = (x, y, n)
-                bisect.insort(queue, (new_distance, (right, y, n)), key=lambda a: a[0])
+                prev[(y, right, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (y, right, n)), key=lambda a: a[0])
         if y < (len(e.cell_type) - 1): # DOWN
             down = y + 1
             old_distance = distances.get((down, x, n), float("inf"))
             new_distance = dist + cost_function(e, t, None, None, None, (down, x))
             if new_distance < old_distance:
                 distances[(down, x, n)] = new_distance
-                prev[(down, x, n)] = (x, y, n)
-                bisect.insort(queue, (new_distance, (x, down, n)), key=lambda a: a[0])
+                prev[(down, x, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (down, x, n)), key=lambda a: a[0])
 
         if current[1] == finish_pnode:
             break
@@ -315,10 +321,11 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     shortest_path = []
     current_node = finish_pnode
     while current_node != start_pnode:
-        x, y, n = current_node
         shortest_path.append(current_node)
-        current_node = prev[(y, x, n)]
+        current_node = prev[current_node]
     shortest_path.append(start_pnode)
+
+    # print(shortest_path)
 
     return shortest_path
 
@@ -326,7 +333,7 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
 def prune_product_automata_djk(path):
     real_path = []
     for e in path:
-        real_path.append((e[0], e[1]))
+        real_path.append((e[1], e[0]))
     return real_path
 
 
