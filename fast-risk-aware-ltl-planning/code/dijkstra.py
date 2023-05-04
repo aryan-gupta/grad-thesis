@@ -216,11 +216,22 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     return shortest_path
 
 
+def default_djk_cost_function(e, t, epoints=None, tpoints=None, cpoint=None, npoint=None):
+    env_start , env_finish  = (None, None) if epoints is None else epoints
+    task_start, task_finish = (None, None) if tpoints is None else tpoints
+    y         , x           = (None, None) if cpoint  is None else cpoint
+    yn        , xn          = (None, None) if npoint  is None else npoint
 
-def dj_algo_et(e, t, epoints, tpoints):
+    return e.ar_cell_cost[yn][xn]
+
+
+def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
     # video_out = cv2.VideoWriter('project_phys_only.mkv',cv2.VideoWriter_fourcc('M','P','4','V'), 15, (visited_image.shape[1], visited_image.shape[0]))
+
+    if cost_function == None:
+        cost_function = default_djk_cost_function
 
     env_start, env_finish = epoints
     task_start, task_finish = tpoints
@@ -231,9 +242,12 @@ def dj_algo_et(e, t, epoints, tpoints):
     # Dijkstras algo
     # When I wrote this code, only god and I knew how it works. Now, only god knows
     queue = [] # queue is an array of (weight, (x, y, n))
-    visited_nodes = set()
-    distances = {}
-    prev = {}
+    visited_nodes = set() # set of { (y, x, n) }
+    distances = {} # dict of { (y, x, n) : distance }
+    prev = {} # dict of { (y, x, n) : (y, x, n) }
+    # if youre confused why sometimes y is the first element and sometimes x is. let me tell you.
+    # im just an idiot who hates consistancy and Im sorry. maybe Ill fix this one day. In the mean time
+    # enjoy this: times this fact has caused a bug: 2
 
     queue.append((0, start_pnode))
     distances[start_pnode] = 0
@@ -264,7 +278,7 @@ def dj_algo_et(e, t, epoints, tpoints):
         if y > 0: # UP
             up = y - 1
             old_distance = distances.get((up, x, n), float("inf"))
-            new_distance = dist + e.ar_cell_cost[up][x]
+            new_distance = dist + cost_function(e, t, None, None, None, (up, x))
             if new_distance < old_distance:
                 distances[(up, x, n)] = new_distance
                 prev[(up, x, n)] = (x, y, n)
@@ -272,7 +286,7 @@ def dj_algo_et(e, t, epoints, tpoints):
         if x > 0: # LEFT
             left = x - 1
             old_distance = distances.get((y, left, n), float("inf"))
-            new_distance = dist + e.ar_cell_cost[y][left]
+            new_distance = dist + cost_function(e, t, None, None, None, (y, left))
             if new_distance < old_distance:
                 distances[(y, left, n)] = new_distance
                 prev[(y, left, n)] = (x, y, n)
@@ -280,7 +294,7 @@ def dj_algo_et(e, t, epoints, tpoints):
         if x < (len(e.cell_type[0]) - 1): # RIGHT
             right = x + 1
             old_distance = distances.get((y, right, n), float("inf"))
-            new_distance = dist + e.ar_cell_cost[y][right]
+            new_distance = dist + cost_function(e, t, None, None, None, (y, right))
             if new_distance < old_distance:
                 distances[(y, right, n)] = new_distance
                 prev[(y, right, n)] = (x, y, n)
@@ -288,7 +302,7 @@ def dj_algo_et(e, t, epoints, tpoints):
         if y < (len(e.cell_type) - 1): # DOWN
             down = y + 1
             old_distance = distances.get((down, x, n), float("inf"))
-            new_distance = dist + e.ar_cell_cost[down][x]
+            new_distance = dist + cost_function(e, t, None, None, None, (down, x))
             if new_distance < old_distance:
                 distances[(down, x, n)] = new_distance
                 prev[(down, x, n)] = (x, y, n)
