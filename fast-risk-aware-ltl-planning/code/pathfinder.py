@@ -124,6 +124,8 @@ class Pathfinder:
         # reset the counter:
         self.img_tmp_idx_phys = 0
 
+        early_ltl_path_jump = False
+
         # the loop to traverse the phys enviroment
         while self.current_phys_loc != final_phys_loc:
             # update risk map everytime we move
@@ -142,7 +144,14 @@ class Pathfinder:
                 if show: print("full astar replanning")
                 opt = optimizer.Optimizer(env_min, self.task)
                 opt.set_task_state(0, self.current_ltl_state)
-                current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
+                if main.PATHFIND_ALGO_FRALTLP:
+                    current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
+                elif main.PATHFIND_ALGO_PRODUCT_AUTOMATA:
+                    # @TODO remove self.task.task_bounds[1] and replace it with final_task_node
+                    tmp_path = dijkstra.dj_algo_et(self.env, self.task, (self.current_phys_loc, final_phys_loc), (self.current_ltl_state, self.task.task_bounds[1]), dijkstra.default_djk_cost_function)
+                    if tmp_path[-2][2] != self.current_ltl_state:
+                        early_ltl_path_jump = True
+                    current_planned_path = dijkstra.prune_product_automata_djk(tmp_path)
             elif amount_risk_updated > 0:
                 if show: print("part astar replanning")
 
@@ -161,6 +170,8 @@ class Pathfinder:
 
             # add current node to path
             self.total_shortest_path.insert(0, self.current_phys_loc)
+
+            if early_ltl_path_jump: break
 
             # get the next location in the shortest path
             self.current_phys_loc = dijkstra.get_next_cell_shortest_path(current_planned_path, self.current_phys_loc)

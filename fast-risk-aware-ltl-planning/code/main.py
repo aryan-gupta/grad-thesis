@@ -52,8 +52,11 @@ ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
 enviroment_file = '../maps/002.png'
 
 CREATE_NEW_ENVIRONMENT = False
-PATHFIND_NO_ASSUMED_RISK = False
+PATHFIND_NO_ASSUMED_RISK = True
 PATHFIND_IGNORE_RISK_UPDATES = False
+
+PATHFIND_ALGO_PRODUCT_AUTOMATA = True
+PATHFIND_ALGO_FRALTLP = False
 
 # CHAR REPRESENTATIONS
 # char representation of a hazard cell or wall cell
@@ -121,16 +124,16 @@ def main():
 
     start_processing = timer()
     # run the pathfinding algorithm
-    # p.pathfind_task()
-    dijkstra.dj_algo_et(e, t, e.mission_phys_bounds, t.task_bounds)
-    exit()
+    p.pathfind_task()
     end_processing = timer()
 
     start_postprocessing = timer()
     # draw the path on img_cell to show the end user
-    e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
+    e.create_final_image(final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
     end_postprocessing = timer()
 
+    print(p.get_total_shortest_path())
+    print(len(p.get_total_shortest_path()))
 
     elapsed_preprocessing = end_preprocessing - start_preprocessing
     print(f"Pre -Processing took { elapsed_preprocessing } seconds")
@@ -144,5 +147,14 @@ def main():
     elapsed = end_postprocessing - start_preprocessing
     print(f"All -Processing took { elapsed } seconds")
 
+    return elapsed_processing
+
 if __name__ == "__main__":
-    main()
+    sum = 0
+    num = 10
+
+    for i in range(num):
+        sum = sum + main()
+
+    avg = sum / num
+    print(f"Avg -Processing took { avg } seconds")
