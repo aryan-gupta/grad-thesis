@@ -1,3 +1,4 @@
+import numpy as np
 
 import img
 
@@ -10,3 +11,7 @@ class Risk:
     def create_assumed_risk(self):
         # create blurred risk image
         self.assumed_risk_image = img.create_risk_img(self.raw_risk_image, 16, show=False)
+
+    def create_empty_assumed_risk(self):
+        h, w = self.raw_risk_image.shape
+        self.assumed_risk_image = np.zeros((h, w), np.uint8)
