@@ -15,6 +15,7 @@ import env
 import random
 import optimizer
 import pathfinder
+import windenv
 
 # GLOBAL VARS
 # stores the size of each cell or square in the environment
@@ -149,7 +150,24 @@ def main():
 
     return elapsed_processing
 
+
+def wind_main():
+    # since the seed is 0, the env will always be the same, helps when debugging
+    random.seed(1)
+    e = windenv.WindEnvironmentCreator(targets=4)
+    e.create_cells_ar()
+    t = task.Task(ltl_hoa_file)
+    t.create_task_heuristic(e)
+    p = pathfinder.Pathfinder(e, t)
+
+    p.pathfind_task()
+    e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
+
+
 if __name__ == "__main__":
+    # wind_main()
+    # return
+
     sum = 0
     num = 10
 
