@@ -56,8 +56,8 @@ CREATE_NEW_ENVIRONMENT = False
 PATHFIND_NO_ASSUMED_RISK = True
 PATHFIND_IGNORE_RISK_UPDATES = False
 
-PATHFIND_ALGO_PRODUCT_AUTOMATA = True
-PATHFIND_ALGO_FRALTLP = False
+PATHFIND_ALGO_PRODUCT_AUTOMATA = False
+PATHFIND_ALGO_FRALTLP = True
 
 # CHAR REPRESENTATIONS
 # char representation of a hazard cell or wall cell
@@ -161,15 +161,14 @@ def wind_main():
     p = pathfinder.Pathfinder(e, t)
 
     p.pathfind_task()
-    e.create_final_image(final_image, p.get_filled_assumed_risk(), p.get_total_shortest_path())
 
 
 if __name__ == "__main__":
     # wind_main()
-    # return
+    # exit()
 
     sum = 0
-    num = 10
+    num = 1 # 10
 
     for i in range(num):
         sum = sum + main()
