@@ -4,7 +4,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
-import main
+import global_vars as gv
 import risk
 import img
 import cell
@@ -20,7 +20,7 @@ class WindEnvironmentCreator:
     def __init__(self, targets=2):
         self.create_random(targets)
         self.create_risk()
-        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, main.CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE, show=False)
 
         empty_channel = np.zeros(self.r.assumed_risk_image.shape, np.uint8)
         image = cv2.merge([self.raw_reward_image, self.r.assumed_risk_image, empty_channel])
@@ -35,7 +35,7 @@ class WindEnvironmentCreator:
         npa = np.array(self.cell_cost)
         # plt.imshow(npa, origin='lower')
         # plt.show()
-        raw_risk_image = cv2.resize(npa, dsize=(0, 0), fx=main.CELLS_SIZE, fy=main.CELLS_SIZE, interpolation=cv2.INTER_AREA)
+        raw_risk_image = cv2.resize(npa, dsize=(0, 0), fx=gv.CELLS_SIZE, fy=gv.CELLS_SIZE, interpolation=cv2.INTER_AREA)
         # plt.imshow(raw_risk_image, origin='lower')
         # plt.show()
         # exit()
@@ -54,11 +54,11 @@ class WindEnvironmentCreator:
 
     # def create_reward(self):
     #     npa = np.array(self.cell_type)
-    #     rewards = set(main.CHAR_COLOR_MAP.values())
+    #     rewards = set(gv.CHAR_COLOR_MAP.values())
     #     for y in range(len(npa)):
     #         for x in range(len(npa[y])):
     #             if npa[y][x] in rewards:
-    #                 raw_reward_image_pre = main.CHAR_COLOR_MAP[npa[y][x]]
+    #                 raw_reward_image_pre = gv.CHAR_COLOR_MAP[npa[y][x]]
     #             else:
 
     # returns a minimal environment with the assumed risk.
@@ -109,9 +109,9 @@ class WindEnvironmentCreator:
                 border = border or (xcell == len(self.U[ycell]) - 1)
 
                 if border:
-                    self.cell_type[ycell].append(main.HAZARD_CELL_CHAR)
+                    self.cell_type[ycell].append(gv.HAZARD_CELL_CHAR)
                 else:
-                    self.cell_type[ycell].append(main.EMPTY_CELL_CHAR)
+                    self.cell_type[ycell].append(gv.EMPTY_CELL_CHAR)
 
 
     def __try_draw_cell(self, points, color, size):
@@ -119,9 +119,9 @@ class WindEnvironmentCreator:
 
         if y >= self.cell_height: return False
         if x >= self.cell_width: return False
-        if self.cell_type[y][x] == main.HAZARD_CELL_CHAR: return False
+        if self.cell_type[y][x] == gv.HAZARD_CELL_CHAR: return False
 
-        self.cell_type[y][x] = main.CHAR_COLOR_MAP[color]
+        self.cell_type[y][x] = gv.CHAR_COLOR_MAP[color]
         # self.processed_img = cv2.rectangle(self.processed_img, (x,y), (x + size,y + size), (color,0,0), -1)
 
         return True
@@ -148,17 +148,17 @@ class WindEnvironmentCreator:
 
                 cell_drawn = self.__try_draw_cell((x, y), color, 16)
 
-            if main.CHAR_COLOR_MAP[color] == main.START_CELL_CHAR:
+            if gv.CHAR_COLOR_MAP[color] == gv.START_CELL_CHAR:
                 start = (x, y)
 
-            if main.CHAR_COLOR_MAP[color] == main.END_CELL_CHAR:
+            if gv.CHAR_COLOR_MAP[color] == gv.END_CELL_CHAR:
                 finish = (x, y)
 
             raw_reward_image_pre[y][x] = color
 
             color -= 25
 
-        self.raw_reward_image = cv2.resize(raw_reward_image_pre, dsize=(0, 0), fx=main.CELLS_SIZE, fy=main.CELLS_SIZE, interpolation=cv2.INTER_AREA)
+        self.raw_reward_image = cv2.resize(raw_reward_image_pre, dsize=(0, 0), fx=gv.CELLS_SIZE, fy=gv.CELLS_SIZE, interpolation=cv2.INTER_AREA)
         self.mission_phys_bounds = (start, finish)
 
 

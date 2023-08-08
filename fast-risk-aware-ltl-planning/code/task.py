@@ -1,11 +1,10 @@
-import main
 import numpy as np
 import cv2
 import math
 import sys
 import matplotlib.pyplot as plt
 
-import main
+import global_vars as gv
 
 # stores an LTL task
 class Task:
@@ -79,7 +78,7 @@ class Task:
     # distance of that path. See presentation in git repo for more info
     def create_euclidean_heuristic(self, env=None):
         self.paths = []
-        self.__create_euclidean_heuristic_recurse([], self.task_bounds[0], main.START_CELL_CHAR.lower(), 0)
+        self.__create_euclidean_heuristic_recurse([], self.task_bounds[0], gv.START_CELL_CHAR.lower(), 0)
         if env != None: self.update_euclidean_heuristic_w_env(env)
 
 
@@ -238,7 +237,7 @@ class Task:
     # get the reward image based off the possible transitions from the current state
     def get_reward_img_state(self, current_state, reward_graphs):
         # get the image for each transition from the current state
-        map_h, map_w = (main.map_h, main.map_w)
+        map_h, map_w = (gv.map_h, gv.map_w)
         ltl_reward_graph = np.zeros((map_h, map_w, 1), dtype = "uint8")
         for next_state in self.ltl_state_diag[current_state].keys():
             this_state_reward_graph = np.full((map_h, map_w, 1), 255, dtype = "uint8")
@@ -335,24 +334,26 @@ class Task:
         # return the location of that axiom using T and reward graphs
         for row in range(len(cell_type)):
             for col in range(len(cell_type[row])):
-                y = row * main.CELLS_SIZE + (main.CELLS_SIZE//2)
-                x = col * main.CELLS_SIZE + (main.CELLS_SIZE//2)
+                y = row * gv.CELLS_SIZE + (gv.CELLS_SIZE//2)
+                x = col * gv.CELLS_SIZE + (gv.CELLS_SIZE//2)
 
                 pixel_valid = reward_graphs[axiom][y][x] != 0
-                if cell_type[row][col] == main.LTL_TARGET_CELL_CHAR and pixel_valid:
+                if cell_type[row][col] == gv.LTL_TARGET_CELL_CHAR and pixel_valid:
                     return (col, row)
 
+    def switch_tasks():
+        pass
 
 # get the axiom the current physical state is activating
 def get_current_phys_state_type(reward_graphs, current_phys_loc):
     for axiom in reward_graphs.keys():
-        y = current_phys_loc[1] * main.CELLS_SIZE
-        x = current_phys_loc[0] * main.CELLS_SIZE
+        y = current_phys_loc[1] * gv.CELLS_SIZE
+        x = current_phys_loc[0] * gv.CELLS_SIZE
 
-        for u in range(y, y + main.CELLS_SIZE, 1):
-            for v in range(x, x + main.CELLS_SIZE, 1):
+        for u in range(y, y + gv.CELLS_SIZE, 1):
+            for v in range(x, x + gv.CELLS_SIZE, 1):
                 if reward_graphs[axiom][u,v]:
                     return axiom
 
     print("Illegal, didnt want to throw")
-    return main.LTL_TARGET_CELL_CHAR
+    return gv.LTL_TARGET_CELL_CHAR

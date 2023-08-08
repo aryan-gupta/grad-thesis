@@ -7,7 +7,7 @@ import PIL as pil
 from enum import Enum
 
 
-import main
+import global_vars as gv
 import img
 import cell
 import task
@@ -129,7 +129,7 @@ class Pathfinder:
         # the loop to traverse the phys enviroment
         while self.current_phys_loc != final_phys_loc:
             # update risk map everytime we move
-            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(self.assumed_risk_image_filled, self.env.r.raw_risk_image, self.current_phys_loc, main.CELLS_SIZE, main.VIEW_CELLS_SIZE, main.UPDATE_WEIGHT)
+            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(self.assumed_risk_image_filled, self.env.r.raw_risk_image, self.current_phys_loc, gv.CELLS_SIZE, gv.VIEW_CELLS_SIZE, gv.UPDATE_WEIGHT)
 
             # the temp target for partial astar algorithm
             astar_target = None
@@ -144,9 +144,9 @@ class Pathfinder:
                 if show: print("full astar replanning")
                 opt = optimizer.Optimizer(env_min, self.task)
                 opt.set_task_state(0, self.current_ltl_state)
-                if main.PATHFIND_ALGO_FRALTLP:
+                if gv.PATHFIND_ALGO_FRALTLP:
                     current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
-                elif main.PATHFIND_ALGO_PRODUCT_AUTOMATA:
+                elif gv.PATHFIND_ALGO_PRODUCT_AUTOMATA:
                     # @TODO remove self.task.task_bounds[1] and replace it with final_task_node
                     tmp_path = dijkstra.dj_algo_et(self.env, self.task, (self.current_phys_loc, final_phys_loc), (self.current_ltl_state, self.task.task_bounds[1]), dijkstra.default_djk_cost_function)
                     if tmp_path[-2][2] != self.current_ltl_state:
@@ -158,7 +158,7 @@ class Pathfinder:
                 # get astar's target cell
                 # this target cell will be somewhere on the current_planned_path line
                 # idx is the index of the astar_target cell
-                astar_target, idx = dijkstra.get_astar_target(self.current_phys_loc, current_planned_path, main.VIEW_CELLS_SIZE * 2)
+                astar_target, idx = dijkstra.get_astar_target(self.current_phys_loc, current_planned_path, gv.VIEW_CELLS_SIZE * 2)
 
                 # get new path from current loc to astar_target
                 shortest_path_astar_target = dijkstra.astar_algo_partial_target(env_min.cell_type, (self.current_phys_loc, astar_target), final_phys_loc, env_min.cell_cost)
@@ -189,17 +189,17 @@ class Pathfinder:
 
         # draw our taken path and future path on an image
         dj_path_image_local = risk_reward_img_cells_local.copy()
-        dijkstra.draw_path_global(self.total_shortest_path, dj_path_image_local, (self.total_shortest_path[-1], self.total_shortest_path[0]), main.CELLS_SIZE)
-        dijkstra.draw_path_global(current_planned_path, dj_path_image_local, (self.current_phys_loc, final_phys_loc), main.CELLS_SIZE)
+        dijkstra.draw_path_global(self.total_shortest_path, dj_path_image_local, (self.total_shortest_path[-1], self.total_shortest_path[0]), gv.CELLS_SIZE)
+        dijkstra.draw_path_global(current_planned_path, dj_path_image_local, (self.current_phys_loc, final_phys_loc), gv.CELLS_SIZE)
 
         # draw the agent as a circle
-        half_cell = math.ceil((main.CELLS_SIZE/2))
-        center = (self.current_phys_loc[0]*main.CELLS_SIZE+half_cell, self.current_phys_loc[1]*main.CELLS_SIZE+half_cell)
+        half_cell = math.ceil((gv.CELLS_SIZE/2))
+        center = (self.current_phys_loc[0]*gv.CELLS_SIZE+half_cell, self.current_phys_loc[1]*gv.CELLS_SIZE+half_cell)
         dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
         # draw the partial target is there is one
         if astar_target != None:
-            center = (astar_target[0]*main.CELLS_SIZE+half_cell, astar_target[1]*main.CELLS_SIZE+half_cell)
+            center = (astar_target[0]*gv.CELLS_SIZE+half_cell, astar_target[1]*gv.CELLS_SIZE+half_cell)
             dj_path_image_local = cv2.circle(dj_path_image_local, center, 4, (255, 255, 255), 1)
 
             # reset out astar_target so if we fully plan next loop, the circle doesnt get added
@@ -213,7 +213,7 @@ class Pathfinder:
 
 
         if self.output is OutputType.DISK:
-            cv2.imwrite(f"{ main.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+            cv2.imwrite(f"{ gv.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
 
 
     # returns the shortest path the algo has determined

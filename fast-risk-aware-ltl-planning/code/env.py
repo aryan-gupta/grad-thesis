@@ -4,14 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-import main
+import global_vars as gv
 import risk
 import img
 import cell
 import dijkstra
 from vector2 import vector2
-
-CELLS_SIZE = 8 # 32 pixels
 
 TEMP_XTRA_TARGETS = [ vector2(5, 8), vector2(15, 3) ]
 
@@ -192,8 +190,8 @@ class Enviroment(EnviromentCreator):
 
         self.height, self.width, _ = self.processed_img.shape
 
-        assert self.height == main.map_h, f"Image height not same as main.map_h"
-        assert self.width == main.map_w, f"Image height not same as main.map_h"
+        assert self.height == gv.map_h, f"Image height not same as gv.map_h"
+        assert self.width == gv.map_w, f"Image height not same as gv.map_h"
 
 
     # splits the images into the RGB channels
@@ -211,7 +209,7 @@ class Enviroment(EnviromentCreator):
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
 
         # get reward map for each objectives and goals
-        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE, show=False)
 
 
     # creates the assumed risk by applying a blurring to it
@@ -238,7 +236,7 @@ class Enviroment(EnviromentCreator):
         dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, show=False)
 
         # draw the path on img_cell
-        dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, CELLS_SIZE)
+        dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, gv.CELLS_SIZE)
 
         cv2.imwrite(filename, cv2.cvtColor(dj_path_image, cv2.COLOR_RGB2BGR))
 
@@ -267,7 +265,7 @@ class Enviroment(EnviromentCreator):
     # @TODO modify this function so its only run once in pathfinder, rather than everytime a LTL path jump takes place
     # @TODO deprecated
     def dep_create_cells(self, ltl_reward_map, assumed_risk_image):
-        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
+        empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
         img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, show=False)
@@ -277,7 +275,7 @@ class Enviroment(EnviromentCreator):
 
     # create cells using the assumed risk image
     def create_cells_ar(self, assumed_risk_image):
-        empty_channel = np.zeros((main.map_h, main.map_w), np.uint8)
+        empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
         self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)

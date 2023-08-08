@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 
 import cell
-import main
+import global_vars as gv
 
 # read in a image
 def read_image(filename, show=False):
@@ -174,7 +174,7 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
     # keep a log of the cells that have that goal
     for goal in cell.get_cell_types(cell_type):
         goal_locations = []
-        empty_image = np.zeros((main.map_h, main.map_w, 1), dtype = "uint8")
+        empty_image = np.zeros((gv.map_h, gv.map_w, 1), dtype = "uint8")
 
         for col_num in range(len(cell_type)):
             for row_num in range(len(cell_type[col_num])):
@@ -297,13 +297,13 @@ def update_local_risk_image(risk_image_local, raw_risk_image, current_phys_loc, 
 # same size as the param channel
 def save_channel_image(name, r=None, g=None, b=None):
     if r is None:
-        r = np.zeros((main.map_h, main.map_w), np.uint8)
+        r = np.zeros((gv.map_h, gv.map_w), np.uint8)
 
     if g is None:
-        g = np.zeros((main.map_h, main.map_w), np.uint8)
+        g = np.zeros((gv.map_h, gv.map_w), np.uint8)
 
     if b is None:
-        b = np.zeros((main.map_h, main.map_w), np.uint8)
+        b = np.zeros((gv.map_h, gv.map_w), np.uint8)
 
     img = cv2.merge([r, g, b])
     cv2.imwrite(name, img)

@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 
 import img
-import main
+import global_vars as gv
 
 # I honestly thought there was a built in map function, but I guess Im wrong
 # https://stackoverflow.com/questions/1969240
@@ -44,13 +44,13 @@ def create_cells(ltl_target_image, risk_image, img_cells, show=False):
     xcell = 0
     ycell = 0
     max_cost = -1
-    for y in range(0, map_h, main.CELLS_SIZE):
+    for y in range(0, map_h, gv.CELLS_SIZE):
         cell_type.append([])
         cell_cost.append([])
         xcell = 0
 
-        for x in range(0, map_w, main.CELLS_SIZE):
-            cell_type[ycell].append(main.EMPTY_CELL_CHAR)
+        for x in range(0, map_w, gv.CELLS_SIZE):
+            cell_type[ycell].append(gv.EMPTY_CELL_CHAR)
             cell_cost[ycell].append(0.0)
 
             cell_known, cell_sum = update_a_cell((xcell, ycell), ltl_target_image, cell_type, cell_cost, img_cells, risk_image)
@@ -108,11 +108,11 @@ def get_start_finish_locations(cell_type):
     finish = ()
     for y in range(len(cell_type)):
         for x in range(len(cell_type[0])):
-            if cell_type[y][x] == main.START_CELL_CHAR:
+            if cell_type[y][x] == gv.START_CELL_CHAR:
                 start = (x, y)
-            if cell_type[y][x] == main.END_CELL_CHAR:
+            if cell_type[y][x] == gv.END_CELL_CHAR:
                 finish = (x, y)
-            if cell_type[y][x] == main.LTL_TARGET_CELL_CHAR:
+            if cell_type[y][x] == gv.LTL_TARGET_CELL_CHAR:
                 finish = (x, y)
 
     # print(start)
@@ -131,7 +131,7 @@ def get_cell_types(cell_type):
     #             # print(cell_type[col_num][row_num])
     #             types.append(cell_type[col_num][row_num])
     # https://stackoverflow.com/questions/16228248
-    return list(main.CHAR_COLOR_MAP.values())
+    return list(gv.CHAR_COLOR_MAP.values())
 
 
 # handles an unknown cell during the cell creation or cell updating period
@@ -143,7 +143,7 @@ def handle_unknown_cell(points, cell_loc, img_cells, cell_sum, cell_cost):
     image_value_to_cost_value = make_interpolater(0, 255, 0, 1.0)
 
     # draw rectangles
-    cost = cell_sum / (main.CELLS_SIZE**2)
+    cost = cell_sum / (gv.CELLS_SIZE**2)
     # print(xcell, "--", ycell)
     cell_cost[ycell][xcell] = image_value_to_cost_value(cost)
     # print(f"{x}-{y} :: {cost}")
@@ -152,9 +152,9 @@ def handle_unknown_cell(points, cell_loc, img_cells, cell_sum, cell_cost):
     #     cell_cost[ycell][xcell] = 0.9999999
 
     if cost == 0:
-        img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (50,50,50), 1)
+        img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (50,50,50), 1)
     else:
-        img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (cost,0,cost), 1)
+        img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (cost,0,cost), 1)
 
     return cost
 
@@ -164,8 +164,8 @@ def handle_unknown_cell(points, cell_loc, img_cells, cell_sum, cell_cost):
 # if the variables input are already created, its overwriting the values/updating the cell
 def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, risk_image):
     xcell, ycell = cell_loc
-    y = ycell * main.CELLS_SIZE
-    x = xcell * main.CELLS_SIZE
+    y = ycell * gv.CELLS_SIZE
+    x = xcell * gv.CELLS_SIZE
 
     # get image size
     assert ltl_target_image.shape == risk_image.shape, f"{ltl_target_image.shape} == {risk_image.shape}"
@@ -175,10 +175,10 @@ def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, r
     cell_known = False
     cell_sum = 0
     cell_pxl_count = 0
-    for u in range(y, y + main.CELLS_SIZE, 1):
+    for u in range(y, y + gv.CELLS_SIZE, 1):
         if u >= map_h:
             break
-        for v in range(x, x + main.CELLS_SIZE, 1):
+        for v in range(x, x + gv.CELLS_SIZE, 1):
             if v >= map_w:
                 break
 
@@ -220,30 +220,30 @@ def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, r
 
             if g == 255: # Hazard Cells
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (0,255,0), 1)
-                cell_type[ycell][xcell] = main.HAZARD_CELL_CHAR
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (0,255,0), 1)
+                cell_type[ycell][xcell] = gv.HAZARD_CELL_CHAR
                 break
             if r == 250: # LTL Current Target
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (250,0,0), 1)
-                cell_type[ycell][xcell] = main.LTL_TARGET_CELL_CHAR
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (250,0,0), 1)
+                cell_type[ycell][xcell] = gv.LTL_TARGET_CELL_CHAR
                 break
             if r == 225: # Mission Start Cell
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (225,0,0), 1)
-                cell_type[ycell][xcell] = main.START_CELL_CHAR
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (225,0,0), 1)
+                cell_type[ycell][xcell] = gv.START_CELL_CHAR
                 break
             if r == 200: # Mission Finish Cell
                 cell_known = True
-                img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (200,0,0), 1)
-                cell_type[ycell][xcell] = main.END_CELL_CHAR
+                img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (200,0,0), 1)
+                cell_type[ycell][xcell] = gv.END_CELL_CHAR
                 break
 
-            for color in main.CHAR_COLOR_MAP.keys():
+            for color in gv.CHAR_COLOR_MAP.keys():
                 if r == color: # K Target
                     cell_known = True
-                    img_cells = cv2.rectangle(img_cells, (x,y), (x + main.CELLS_SIZE - 1,y + main.CELLS_SIZE - 1), (color,0,0), 1)
-                    cell_type[ycell][xcell] = main.CHAR_COLOR_MAP[color]
+                    img_cells = cv2.rectangle(img_cells, (x,y), (x + gv.CELLS_SIZE - 1,y + gv.CELLS_SIZE - 1), (color,0,0), 1)
+                    cell_type[ycell][xcell] = gv.CHAR_COLOR_MAP[color]
                     break
 
             if cell_known:
@@ -251,7 +251,7 @@ def update_a_cell(cell_loc, ltl_target_image, cell_type, cell_cost, img_cells, r
 
         # Exit loop if we know the cell type, if its a hazard cell mark it as 1.0 cost
         if cell_known:
-            if cell_type[ycell][xcell] == main.HAZARD_CELL_CHAR:
+            if cell_type[ycell][xcell] == gv.HAZARD_CELL_CHAR:
                 cell_cost[ycell][xcell] = float("inf")
             else:
                 cell_cost[ycell][xcell] = 0.0
@@ -273,8 +273,8 @@ def update_cells(cells_updated, ltl_target_image, risk_reward_cell_type, risk_re
     # use this info to update the cell type map of the area
     max_cost = -1
     for (xcell, ycell) in cells_updated:
-        x = xcell * main.CELLS_SIZE
-        y = ycell * main.CELLS_SIZE
+        x = xcell * gv.CELLS_SIZE
+        y = ycell * gv.CELLS_SIZE
 
         cell_known, cell_sum = update_a_cell((xcell, ycell), ltl_target_image, risk_reward_cell_type, risk_reward_cell_cost, img_cells, assumed_risk_image_filled)
 
@@ -283,6 +283,6 @@ def update_cells(cells_updated, ltl_target_image, risk_reward_cell_type, risk_re
         if not cell_known: handle_unknown_cell((x, y), (xcell, ycell), img_cells, cell_sum, risk_reward_cell_cost)
 
         # only copy the cells that have changed
-        img.copy_pixels_cells_img((xcell, ycell), risk_reward_img_cells, img_cells, current_phys_loc, main.CELLS_SIZE)
+        img.copy_pixels_cells_img((xcell, ycell), risk_reward_img_cells, img_cells, current_phys_loc, gv.CELLS_SIZE)
 
     return risk_reward_img_cells, risk_reward_cell_type, risk_reward_cell_cost

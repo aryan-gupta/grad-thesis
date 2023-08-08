@@ -7,6 +7,7 @@ import PIL as pil
 
 from timeit import default_timer as timer
 
+import global_vars as gv
 import img
 import cell
 import task
@@ -17,98 +18,28 @@ import optimizer
 import pathfinder
 import windenv
 
-# GLOBAL VARS
-# stores the size of each cell or square in the environment
-CELLS_SIZE = 8 # 32 pixels
-
-# stores the agent's viewing distance. As the agent moves around,
-# it can see \p VIEW_CELLS_SIZE distance away in each direction.
-# the viewing circle diameter is `2*VIEW_CELLS_SIZE`
-VIEW_CELLS_SIZE = 8
-
-# [deprecated], will be removed in a future commit
-UPDATE_WEIGHT = 0 #5
-
-# final image dimensions (must be divisiable by CELLS_SIZE)
-map_h = 640
-map_w = 576
-
-# directory the progress images, images can then be combined with
-# `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
-output_images_dir = '../../../tmp'
-tmp_raw_env_save_file = f"{output_images_dir}/raw_env.png"
-
-# location of where the final image should go. This image has all
-# the cells, uncovered risk, assumed risk (if any), path that the
-# agent traveled, and LTL targets
-final_image_fspath = f"{ output_images_dir }/!picfinal.png"
-
-# input for the LTL hoa file, @TODO will become a array to support
-# multiple HOA files
-ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
-
-# the environment file the agent is in. This file must be a
-# - RGB (R - LTL Targets, G - Environment Risk, B - Unused)
-# - PNG (to prevent JPEG aliasing and artifacts)
-enviroment_file = '../maps/002.png'
-
-CREATE_NEW_ENVIRONMENT = False
-PATHFIND_NO_ASSUMED_RISK = True
-PATHFIND_IGNORE_RISK_UPDATES = False
-
-PATHFIND_ALGO_PRODUCT_AUTOMATA = False
-PATHFIND_ALGO_FRALTLP = True
-
-# CHAR REPRESENTATIONS
-# char representation of a hazard cell or wall cell
-HAZARD_CELL_CHAR = 'X'
-
-# char representation of a empty traversable cell
-EMPTY_CELL_CHAR = '#'
-
-# chars representing the different targets
-START_CELL_CHAR = 'A'
-LTL_TARGET_CELL_CHAR = 'Y'
-END_CELL_CHAR = 'Z'
-CHAR_COLOR_MAP = {
-    250 : LTL_TARGET_CELL_CHAR,
-    225 : START_CELL_CHAR,
-    200 : END_CELL_CHAR,
-    175 : 'B',
-    150 : 'C',
-    125 : 'D',
-    100 : 'E',
-     75 : 'F',
-     50 : 'G',
-     25 : 'H'
-}
-
-
 def preprocessor():
-    # since the seed is 0, the env will always be the same, helps when debugging
-    random.seed(1)
-
     e = None
-    if CREATE_NEW_ENVIRONMENT:
-        e = env.EnviromentCreator(targets=6, size=(map_h,map_w), validate=False)
-        e.save_env(tmp_raw_env_save_file)
+    if gv.CREATE_NEW_ENVIRONMENT:
+        e = env.EnviromentCreator(targets=6, size=(gv.map_h,gv.map_w), validate=False)
+        e.save_env(gv.tmp_raw_env_save_file)
         e = e.preprocess()
     else:
-        e = env.Enviroment(filename=enviroment_file)
+        e = env.Enviroment(filename=gv.enviroment_file)
 
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
     # pathfind without any risk
-    if PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
+    if gv.PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
 
     # pathfinding on assumed risk without updating
-    if PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
+    if gv.PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
 
     # create the cells needed
     e.create_cells_ar(e.r.assumed_risk_image)
 
     # get the task details using LTL
-    t = task.Task(ltl_hoa_file)
+    t = task.Task(gv.ltl_hoa_file)
 
     t.create_task_heuristic(e)
 
@@ -118,6 +49,13 @@ def preprocessor():
 
 
 def main():
+    start_housekeeping = timer()
+
+    # since the seed is 0, the env will always be the same, helps when debugging
+    random.seed(gv.SEED)
+
+    end_housekeeping = timer()
+
     start_preprocessing = timer()
     # preprocess all necessary data
     e, t, p = preprocessor()
@@ -130,11 +68,14 @@ def main():
 
     start_postprocessing = timer()
     # draw the path on img_cell to show the end user
-    e.create_final_image(final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
+    e.create_final_image(gv.final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
     end_postprocessing = timer()
 
     print(p.get_total_shortest_path())
     print(len(p.get_total_shortest_path()))
+
+    elapsed_housekeeping = end_housekeeping - start_housekeeping
+    print(f"Housekeeping    took { elapsed_housekeeping } seconds")
 
     elapsed_preprocessing = end_preprocessing - start_preprocessing
     print(f"Pre -Processing took { elapsed_preprocessing } seconds")

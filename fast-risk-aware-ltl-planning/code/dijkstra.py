@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import bisect
 
-import main
+import global_vars as gv
 
 # returns the cost function
 # the cost function returns the correct cost function for the cell_cost data structure
@@ -139,8 +139,8 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
         # mark node as visited
         visited_nodes.add((y, x))
 
-        half_cell = math.ceil((main.CELLS_SIZE/2))
-        center = (x*main.CELLS_SIZE+half_cell, y*main.CELLS_SIZE+half_cell)
+        half_cell = math.ceil((gv.CELLS_SIZE/2))
+        center = (x*gv.CELLS_SIZE+half_cell, y*gv.CELLS_SIZE+half_cell)
         # visited_image = cv2.circle(visited_image, center, 4, (0, 255, 255), 1)
         # plt.imshow(visited_image)
         # plt.show()
@@ -196,8 +196,8 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     current_node = finish
     while current_node != start:
         # write the current back trace state into the video
-        half_cell = math.ceil((main.CELLS_SIZE/2))
-        center = (current_node[0]*main.CELLS_SIZE+half_cell, current_node[1]*main.CELLS_SIZE+half_cell)
+        half_cell = math.ceil((gv.CELLS_SIZE/2))
+        center = (current_node[0]*gv.CELLS_SIZE+half_cell, current_node[1]*gv.CELLS_SIZE+half_cell)
         # visited_image = cv2.circle(visited_image, center, 4, (255, 255, 255), 1)
         # for i in range(3):
         #     video_out.write(visited_image)
