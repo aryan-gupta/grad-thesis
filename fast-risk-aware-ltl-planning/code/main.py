@@ -20,26 +20,36 @@ import optimizer
 import pathfinder
 import windenv
 
+# preprocessor
 def preprocessor():
     e = None
+    # SETTING: if we are creating an environment from scratch:
+    # create a basic environment with 6 targets (1 start, 1 end, and 4 target cells)
+    # save a copy of the environment
+    # preprocess the environment
     if gv.CREATE_NEW_ENVIRONMENT:
         e = env.EnviromentCreator(targets=6, size=(gv.map_h,gv.map_w), validate=False)
         e.save_env(gv.tmp_raw_env_save_file)
         e = e.preprocess()
+    # SETTING: if we are using a preexisting environment, simply load it.
+    # no pre processing is needed as the format is already processed
     else:
         e = env.Enviroment(filename=gv.enviroment_file)
 
+    # save the risk image if we need it
     # img.save_channel_image("../maps/assumed_risk.png", g=e.r.assumed_risk_image)
 
-    # pathfind without any risk
+    # SETTING: pathfind without any risk
     if gv.PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
 
-    # pathfinding on assumed risk without updating
+    # SETTING: pathfinding on assumed risk without updating
     if gv.PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
 
+    # process the image and create the needed cells
     # create the cells needed
     e.create_cells_ar(e.r.assumed_risk_image)
 
+    # load the LTL files into the mission array
     # get the task details using LTL
     t = task.Task(gv.ltl_hoa_file)
 
@@ -73,6 +83,7 @@ def parse_args():
     # parser.add_argument('--', help='Output location for intermediary items')
 
     return parser.parse_args()
+
 
 def apply_args(args):
     # a simple function that returns the default if the test value is None

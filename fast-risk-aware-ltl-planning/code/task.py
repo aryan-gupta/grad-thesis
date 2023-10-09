@@ -344,6 +344,7 @@ class Task:
     def switch_tasks():
         pass
 
+
 # get the axiom the current physical state is activating
 def get_current_phys_state_type(reward_graphs, current_phys_loc):
     for axiom in reward_graphs.keys():

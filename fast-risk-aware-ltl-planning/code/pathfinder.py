@@ -54,6 +54,7 @@ class Pathfinder:
         self.img_tmp_idx_phys = 0
 
 
+    # pathfinds on LTL space
     def pathfind_task(self, start_task_node=None, final_task_node=None):
         # set the start node as the start task node
         if start_task_node is None:

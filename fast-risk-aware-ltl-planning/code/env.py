@@ -20,7 +20,7 @@ class EnviromentCreator:
             pass
         self.xtra_targets = TEMP_XTRA_TARGETS
 
-
+    # create a random environment
     def create_random(self, targets, size):
         # self.width, self.height = size
         self.height, self.width = size
@@ -36,12 +36,16 @@ class EnviromentCreator:
         return self.verify_valid_env()
 
     # https://stackoverflow.com/questions/4047935/
+    # preprocess should technically be called promote() since it promotes
+    # this class from an EnvironmentCreator parent class to the Environment
+    # child class
     def preprocess(self):
         self.__class__ = Enviroment
         self.__init__(filename=None)
         return self
 
-
+    # adds circular risk. only large and medium circles are added here and smaller
+    # more granular risk/circles are added in later
     def __add_circular_risk(self):
         # large circles
         for i in range(int(random.randrange(0, 10))):
@@ -65,6 +69,8 @@ class EnviromentCreator:
             self.processed_img = cv2.circle(self.processed_img, (x, y), circle_size, (0, 255, 0), -1)
 
 
+    # trys to draw a LTL target. It makes sure that the resulting target/rectangle will not intersect
+    # with a risk circle
     def __try_draw_cell(self, points, color, size):
         x, y = points
 
@@ -82,6 +88,7 @@ class EnviromentCreator:
         return True
 
 
+    # draws all the LTL targets in the respective colors and keeps a record of the LTL targets drawn
     def __add_ltl_targets(self):
         # ltl_target_colors_red = {
         #     'target' : 250,
@@ -101,7 +108,8 @@ class EnviromentCreator:
 
             color -= 25
 
-
+    # tries to draw a small risk circle. makes sure that the circle doesnt intersect with an
+    # already drawn LTL target/square
     def __try_draw_circle(self):
         # determine size of circle
         circle_size = 4
@@ -115,6 +123,7 @@ class EnviromentCreator:
             for xp in range(x-circle_size, x+circle_size):
                 if xp >= self.width: return False
 
+                # if the smaller circle intersects with the red chanel dont draw this circle
                 if self.processed_img[yp, xp][0] != 0:
                     return False
 
@@ -124,6 +133,7 @@ class EnviromentCreator:
         return True
 
 
+    # draws multiple small risk circles
     def __add_small_circular_risk(self):
         # small circles
         for i in range(int(random.randrange(200, 300))):
@@ -132,15 +142,20 @@ class EnviromentCreator:
                 circle_drawn = self.__try_draw_circle()
 
 
+    # verifies that all LTL targets are reachable from all other LTL targets
+    # essentially tests if any of the LTL targets are "closed" off. For example
+    # an environment would not be valid if the LTL target is entirely surrounded
+    # by risk and no path to that target is available
+    # @TODO
     def verify_valid_env(self):
         return False
 
-
+    # shows the current environment to the user
     def show_env(self):
         plt.imshow(self.processed_img)
         plt.show()
 
-
+    # saves the environment to the local disk
     def save_env(self, filename):
         env_bgr = cv2.cvtColor(self.processed_img, cv2.COLOR_RGB2BGR)
         cv2.imwrite(filename, env_bgr)
@@ -195,6 +210,7 @@ class Enviroment(EnviromentCreator):
 
 
     # splits the images into the RGB channels
+    # the R channel is the reward and the G channel is the RISK
     def channel_split(self):
         self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
         self.r = risk.Risk(raw_risk_image)
