@@ -153,56 +153,33 @@
     A mission may require tasks to be added or removed while the agent is on the field or in the middle of completing one of the assigned tasks.
     %
     This project started off as a simple implementation of a path-finding and task completion algorithm using a product automata and transformed in to a heuristic approach to path-finding that allows for efficiently, live task switching, in unknown and partially known environments.
-
     % Proposed tools and solutions
-    This project proposes an modular algorithm that expands the product automata approach.
+    This project proposes an modular algorithm that expands the product automata approach. The product automata approach is described in Section \ref{}, but to summerize, the mission and environment is converted into a graph and the Cartesian product is constructed using the two graphs. Dijkstra's algorithm is applied to this larger graph to create a pathfinding algorithm with task support.
     %
-    The proposed algorithm calculates the best path utilizing the surrounding information rather than the information as a whole.
-    This allows the algorithm to run more efficiently and removed the necessity of computing information that is not needed in the current iteration or context.
+    In contast to the contemporary product automata approach, the proposed algorithm calculates the best path utilizing the surrounding information rather than the information as a whole. The Cartesian product is only created of the local neighborhood of vertices rather than of the whole environment and task graph. This allows the algorithm to run more efficiently and removed the necessity of computing information that is not needed in the current iteration or context.
     %
     A multilayered graph is a good analogy to explain the core of the algorithm. The product automata, the old method, flattens out the full graph and creates $M\times N$ vertices. However by utilizing a multi layered graph, the task graph and environment graph is kept sepertly and linked through specific key vertices. In other words the environment is "folded" into each edge of the LTL graph. A full description is explained in Section \ref{}.
     %
-    % Subsequently, this algorithm is harnessed for the purpose of simulating an agent's traversal within three distinct environmental contexts, each characterized by a diverse array of task types, denoted herein as `X'. The resultant outcomes are meticulously scrutinized in comparative fashion alongside alternative algorithmic configurations, thereby affording a comprehensive examination of the merits and demerits associated with each approach.
-
-    Furthermore, it is posited that the algorithm's utility can be further extended through the incorporating additional heuristics, these heuristics can be tailored to the specific context the agent may be in. In the context of multi-agent systems, the environment graph can be dynamically updated to encompass the actual physical paths traced by coexisting agents, thereby enhancing the graph with more detailed and contextually relevant metrics.
+    Subsequently, this algorithm is harnessed for the purpose of simulating an agent's traversal within three distinct environmental contexts, each characterized by a diverse array of task types. The resultant outcomes are discussed in comparative fashion alongside the product automata approach and other alternative configurations of the novel approach, thereby creating a comprehensive examination of the merits and demerits associated with each approach.
+    %
+    Furthermore, it is posited that the algorithm's utility can be further extended through the incorporating additional heuristics, these heuristics can be tailored to the specific context the agent may be in. In the context of multi-agent systems, the environment graph can be dynamically updated with rich metrics to encompass the actual physical paths traced by coexisting agents, thereby enhancing the graph with more detailed and contextually relevant metrics.
     %
     Additionally, artificial intelligence (AI) can be introduced to serve the purpose of translating human-readable task descriptions into Linear Temporal Logic (LTL) representations. Another use for an AI system is to replace the actual heuristic itself. By passing the environment thorough a computer vision based AI, the AI system can output a heuristic weight for each task graph edge.
     %
     % Lastly, the current pathplanning is done in 2 dimensions (x, y) and the agents height or distance from the ground is kept constant since the agent is assumed to be a ground robot. This algorithm can be extrapolated to the third dimension. This would require 3D cells and can simulate a drone
     %
-    It is important to acknowledge that several of these proposed enhancements remain subjects for the future and not in the scope of this thesis. These extensions are discussed in Section \ref{} and the Conclusion (Section \ref{})
-    %
-
+    It is important to acknowledge that several of these proposed enhancements remain subjects for the future and not in the scope of this thesis. These extensions are discussed in Section \ref{}.
     % Challenges
-    When creating the product automata example, many challenges arose. One of the main challenges was the inefficient use of computation. In an environment, much of the environment will not be traversed while completing the mission. This was a challenge to eliminate. To overcome this challenge, this algorithm was created. And while trying to implement partially known / unknown environments it was noted that a heuristic function must be inserted to better predict the trajectory it must take to find the shortest path. Two heuristic functions were designed. A node distance heuristic that calculates the ordering of tasks that leads to the shortest distance to the accepting state and a euclidean distance heuristic that calculates the weight of each task graph edge based off the euclidean distance of two targets. Both of these functions are discussed in greater detail in Section \ref{}.
-
-    \dm{Here is a revised version of the Challenges\\
-   Existing methods for ensuring assured autonomy in complex missions require the construction of a product automaton, the size of which grows exponentially with the size of the environment and the complexity of the task \cite{papers/books}.
-   %
-   This presents a significant scalability issue for real-world deployment. Moreover, these methods rely on the robot having perfect knowledge of the environment and perfect sensing capabilities, which are often impractical in many applications.
-   %
-   Most importantly, these methods are designed for static missions where task descriptions (or their sequence of completion) remain constant over time.
-   %
-   Incorporating new tasks (or omitting old ones) necessitates a complete reconstruction of the product automaton, which is impractical for real-time deployment due to the aforementioned scalability issue.
-
-   To overcome these challenges . . .
-
-    }
-
-
-
-
+    When creating the product automata example, many challenges arose. One of the main challenges was the inefficient use of computation. As the size of the environment, and complexity of the mission increase, the size of the Cartesian product of the two graphs also increase exponentially. This presents a significant scalability issue for real-world deployment. In an environment, much of the environment will not be traversed while completing the mission and was a challenge to eliminate. Moreover, these methods rely on the robot having perfect knowledge of the environment and perfect sensing capabilities, which are often impractical in many applications. Additionally perfect knowledge of the task is unknown, the mission may require the agent to switch tasks by a commanding station. Incorporating new tasks (or omitting old ones) necessitates a complete reconstruction of the product automaton, which is impractical for real-time deployment due to the aforementioned scalability issue. To overcome these challenges, this algorithm was created. And while trying to implement perfect knowledge challenge it was noted that a heuristic function must be inserted to better predict the trajectory for future tasks in the queue. Two heuristic functions were designed. A node distance heuristic that calculates the ordering of tasks that leads to the shortest distance to the accepting state and a euclidean distance heuristic that calculates the weight of each task graph edge based off the euclidean distance of two targets. Both of these functions are discussed in greater detail in Section \ref{}.
     % Literature Survey (several paragraphs 50-75 papers)
-
+    % @TODO
+    %
     % Thesis Contribution (couple paragraphs)
     The main contribution of this project is the introduction of a multilayered heuristic graph search algorithm. This builds on previous work of a product automata, risk aware planning. By using the new method, the algorithm can allow live task switching and partially known environments.
-
     % My contribution as it pertains to product automata / multilayered graph search
     In the product automata algorithm, a flattened graph is constructed using the task graph and the environment graph. This creates, in a worst scenario, MxN vertices, where M is the number of vertices in the task graph and N is the number of vertices in the environment graph. As the environment scales and/or task increases in complexity, so does the flattened graph. By utilizing a layered graph, no product automata is created holistically, but is created as needed while the agent is traversing through the environment. For example, if the agent has just finished task X and has decided that it needs to complete task Y next it will only use the graph for LTL vertices X-Y and the environment and construct the product automata of XY<cross>Env. The task may have 10 or 500 other tasks and vertices, but since these vertices does not impact the current trajectory, the Cartesian product of those vertices do not need to be computed.
-
     % My contribution as it pertains to unknown environments / heuristical functions and risk
     When introducing partially known or unknown environment, a challenge arises where no information is known for any of the future nodes of the task graph. Since the environment is unknown or only partially known, an accurate judgement of which edges on the graph is the best is not well known. This issue also arises in the product automata case. My proposed solution for this is to construct a heuristic that summarizes the lower environment graph and uses that as a additional weight for the task graph. The two proposed heuristic is the node distance heuristic that calculates the shortest path from the current node to the accepting state node and uses that as the weight for each node. And a euclidean distance heuristic that calculates the euclidean distance between the two task axioms and uses that the weight for the edges. In addition, in partially known or unknown environment, the risk can be changing or updated each cycle of the algorithm. For example, a warhead shell could have caused a change in the environment that is not currently known to the agent. As the agent nears the site of the shell crater, the agent will update its internal environment map and utilize the new environment map to calculate a new trajectory. Since a full product automata will not have to be created (only the local area is updated in the multilayered graph), the algorithm is more computationally efficient.
-
     % My contributions as it pertains to live task switching
     Since the algorithm does not need to calculate the product automata, and computes it on the fly, the switching of tasks is very cheap. The tasks can be added, removed, and LIFO'd in various ways. When a new task is added, it is overlaid on top of the multilayered graph and incorporated into the overall structure (but now with more layers). Removal of a layer is the same as removing a task from the mission. A separate structure can be used to LIFO multiple tasks, this can be used as a rudimentary priority queue.
 
@@ -318,9 +295,9 @@
         Other rich metrics can be attached to both the vertices and edges of the graph and can be used to create a more efficient path finding algorithm. These metrics are discussed later in this paper.
     % Graph Theory
 
-    \section{Product Automata}
+    \section{Cartesian Product}
         The typical algorithm for a LTL based path finding is to convert the LTL into an automaton. The environment is split into cells and converted into a graph. Each cell has 8 edges. 4 for each cardinal direction out of the cell and 4 more for directions into the cell. Both of these objects are graphs so a product of these two can create a larger graph with all the potential states and transitions. A Dijkstra's algorithm can be used on this larger graph to find the path through the environment while completing the LTL task.
-    % Product Automata
+    % Cartesian Product @TODO change to this
 
 % PRELIMINARIES
 
@@ -540,10 +517,10 @@
 
         % By using the basic task discussed in the preliminaries. We can see that the algorithm was able to create the proper path from A to C to B to Z.
 
-        % \begin{figure}[h]
-        % \includegraphics[width=\textwidth]{hospital-final-path}
-        % \centering
-        % \end{figure}
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{hospital}
+            \centering
+        \end{figure}
 
         % In a more complicated LTL task: $Fz \& (!z U c) \& (!z U e) \& G(d -> X(e \& !d)) \& (!e U d) \& G(b -> X(c \& !b)) \& (!c U b)$. This LTL formula has three important parts. Traversing to E must be preceded by D, traversing to C must be proceeded by B, and C and E must be completed before traveling to the final Z location. As you can see, the algorithm is able to compute a path without much of an issue.
 
@@ -559,34 +536,98 @@
         As the agent traverses through the environment, the agent can update its own internal data structures with the information collected through its on-board sensors. This will update the risk from a partially known state to a fully known state. Partial replanning is also used in this example to test its efficacy. A task switch is also tested in this example to show the quick replanning of the agent with a new mission.
         %
         \begin{figure}[h]
-        \includegraphics[width=\textwidth]{military-partial-ba}
-        \centering
+            \includegraphics[width=\textwidth]{military}
+            \centering
         \end{figure}
 
-        \begin{figure}[h]
-        \includegraphics[width=\textwidth]{military-final-path}
-        \centering
-        \end{figure}
+        % \begin{figure}[h]
+        % \includegraphics[width=\textwidth]{military-partial-ba}
+        % \centering
+        % \end{figure}
+
+        % \begin{figure}[h]
+        % \includegraphics[width=\textwidth]{military-final-path}
+        % \centering
+        % \end{figure}
     % Military
 
     \section{Space}
         For the last environment, a lunar surface is used. An actual lunar map is downloaded and used to create the risk landscape and the agent is then tasked with compleating two missions. This example serves the purpose of showing a more practical example with a real lunar environment.
-        % @TODO INSERT IMAGE HERE
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{space}
+            \centering
+        \end{figure}
     % Space
 
     \section{Mission A}
         The first example mission for the agent is a simple A-spitBC-D task. The task offers a fork in the task that allows the agent to choose between paths. The mission serves the purpose of showcasing the euclidean distance heuristic. The agent will choose the path that minimizes the euclidean distance for the path. The LTL equation is written in equation \ref{}. and the resultant graph is shown in Figure \ref{}. Since the output of the Spot library contains many superflous edges, a cleaned up graph is pictured in Figure \ref{}. Please note that this is not the graph the agent will be working with. The algoirithm uses the full output of the library and this image serves the purpose of highlighting the two distinct paths the agent can take.
-        % @TODO insert equation here
-        % @TODO insert full graph here
-        % @TODO insert pruned graph here
+
+        \begin{equation}
+            Fd & (!d U c) & (!d U b)
+        \end{equation}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-a}
+            \centering
+        \end{figure}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-a-pruned}
+            \centering
+        \end{figure}
     % basic
 
     \section{Mission B}
         The second example mission is a more complicated A-splitBD-longBC-shortD-E task. The agent will be subject to the same fork as the previous simple example, however one fork will have a larger node distance than the other. This serves the purpose of testing the node distance heuristic. The agent will choose the shorter D path rather than the longer BC path. Note that the BC path may be taken in the case that BC path has a shorter euclidean distance than the D path. The euclidean distance heuristic takes precident over this node distance heuristic. Similarly to the simple example, equation \ref{} is the LTL equation for this task, Figure \ref{} shows the full graph, and Figure \ref{} shows a simplified graph.
+
+        \begin{equation}
+            Fz & (!z U (c | d)) & (!c U b) & G(!b | X(!b & c))
+        \end{equation}
+
+        % z <- c <- b
+        %   <- d
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-b}
+            \centering
+        \end{figure}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-b-pruned}
+            \centering
+        \end{figure}
     % complex
 
     \section{Mission C}
         The last example mission exemplifies a task switch scenario. A task is given to the agent and at some arbitrary time step, the agent recives a signal to switch tasks and the new task is loaded. Just like the previous two sections, equation \ref{} and \ref{} are the two LTL equations for this mission, Figure \ref{} and \ref{} shows the full graph, and Figure \ref{} and \ref{} shows a simplified graph.
+
+        \begin{equation}
+            Fd & (!d U c) & (!d U b)
+        \end{equation}
+
+        \begin{equation}
+            Fd & (!d U c) & (!d U b)
+        \end{equation}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-c-one}
+            \centering
+        \end{figure}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-c-two}
+            \centering
+        \end{figure}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-c-one-pruned}
+            \centering
+        \end{figure}
+
+        \begin{figure}[h]
+            \includegraphics[width=\textwidth]{mission-c-two-pruned}
+            \centering
+        \end{figure}
     % basic --switch--> basic
 
 % EXAMPLES
@@ -617,23 +658,36 @@
 
 
 \chapter{DISCUSSION}
-    % In the current age, attributing intelligence to computer systems is increasing in a accelerating rate. Algorithms like Large Language Models (LLN) have shown to exhibit human-like intelligence like humanity has never before. In a broad sense intelligence in navigation can be simplified into optimising a closed path between two points that satisfies certain conditions. In human evolution, theories have been made into how the hippocampal region of the brain first started out as a biological analogy to SLAM in robotics, this feature was generalized to include social tree mapping when humans evolved to communicate and live in larger social groups. Recent theories suggest that hippocampal activities may help in higher order problem solving and cognition. In many cases nature has paved way for engineering design. Similarly to how hippocamus place cells function to create a conscious and subconscious representation of where an agent is and planning future paths, this project gears to create a framework on how to better solve pathfinding problems. @TODO make this sound more relavent
+    % In the current age, attributing intelligence to computer systems is increasing in a accelerating rate. Algorithms like Large Language Models (LLN) have shown to exhibit human-like intelligence like humanity has never before. In a broad sense intelligence in goal oriented navigation can be simplified into optimising a closed path between two points that satisfies certain conditions or goals. Attempting to mimic human-like intelligence in computer systems has been the holy grail of AI and computer algorithms since the age of Alan Turing.
 
-    In previous works, these conditions were expanded into a bucci automate and then used graph theory to expand the set of all possible states the agent can be in. A major drawback of this process is that many states that the agent cannot access are also considered by the algorithm that is used. In this paper, by calculating the states live, while the agent is acting on the environment, the agent is able to update its state, pathfind in this space and avoid bad states in a faster and efficient manner.
+    In the contemporary era, the ascription of intelligence to computer systems is escalating at an accelerating pace. Algorithms like Large Language Models (LLN) have demonstrated a form of intelligence akin to that of humans, an unprecedented achievement. In a broad context, intelligence in goal-oriented navigation can be distilled to optimizing a closed path between two points that satisfies specific conditions or goals. The pursuit of replicating human-like intelligence in computer systems has been the longstanding aspiration of AI and computer algorithms, dating back to the era of Alan Turing.
 
-    By considering two spaces. One for the abstract representation of the LTL states and another space of environmental states. The goal of the agent is to complete the LTL task by entering the accepting state of the automata. Thus, in a hierarchical view, the LTL task is superior to the environmental space. This allows the agent to mainly focus on completing and path finding through this higher-level abstract LTL space and rely on other path finding algorithms such as DJK, A* or partial A* for the environmental path finding.
+    % In human evolution, theories have been made into how the hippocampal region of the brain first started out as a biological analogy to SLAM in robotics, this feature was generalized to include social tree mapping when humans evolved to communicate and live in larger social groups. Recent theories suggest that hippocampal activities may help in higher order problem solving and cognition. In many cases nature has paved way for engineering design. Similarly to how hippocamus place cells function to create a conscious and subconscious representation of where an agent is and planning future paths, this project gears to create a framework on how to better solve pathfinding problems. @TODO make this sound more relavent
 
-    - intelligence systems / goal oriented bahavior and planning
-    - mimic of these behaviors in automatic digital systems
-    - use cases
-    - interpretation of results
-    - implecation of results
-    - limitations
-        - heuristic approach
-        - new avenues in environment
-        - performance over complexity/speed
+    In the evolutionary context of humans, theories have explored how the hippocampal region of the brain initially served as a biological analogy to SLAM in robotics. Over time, this feature evolved to encompass social tree mapping as humans communicated and formed larger social groups. Contemporary theories propose that hippocampal activities contribute to higher-order problem-solving and cognition. Nature has often paved the way for engineering design, similar to how hippocampus place cells function to create conscious and subconscious representations of an agent's location and plan future paths. By analogizing neurons as cells and the feedforward signals of the neurons as "layers", this project aims to establish a framework for more effectively addressing pathfinding problems in light of these insights. Please note that the overall function of the hippocampus is still debated and is only used as an inspiration for this algoirithm.
 
-    - future work
+    % In previous works, this "intelligence" was imbuded into systems via Cartesian products in graph theory to expand the set of all possible states the agent can be in and using Dijkstra's to pathfind between the two locations of interest. A major drawback of this process is that many states that the agent cannot access are also considered, an inefficient use of computing power. In this paper, by calculating these states live, while the agent is acting on the environment, the agent is able to update its state, pathfind in this space dynamically and avoid bad states in a faster and efficient manner while allowing for modular behavior.
+
+    In prior research, this "intelligence" was instilled into systems through Cartesian products in graph theory, expanding the set of all possible states the agent could occupy, and using Dijkstra's algorithm to navigate between the two locations of interest. However, a significant drawback of this approach is the inclusion of many states that the agent cannot access, leading to an inefficient utilization of computing power. This paper introduces a novel approach by calculating these states dynamically as the agent interacts with the environment. This enables the agent to update its state live, dynamically pathfind in this space, and avoid irrelevant states in a faster and more efficient manner, while maintaining the flexibility for modular behavior.
+
+    % By considering the task space and environment spaces as seperte, a more efficient algoirithm can be achieved. These two spaces, one for the abstract representation of the task states and another space of environmental states are used independently. The goal of the agent is to complete the LTL task by entering the accepting state of the automata. Thus, in a hierarchical view, the LTL task is superior to the environmental space. This allows the agent to mainly focus on completing and path finding through this higher-level abstract LTL space and rely on other path finding algorithms such as DJK, A* or partial A* for the environmental path finding.
+
+    By treating task space and environment spaces separately, a more efficient algorithm can be devised. The two spaces, one representing the abstract task states and the other the environmental states, are utilized independently. The agent's goal is to complete the LTL task by reaching the accepting state of the automata. From a hierarchical perspective, the LTL task takes precedence over the environmental space. This strategic approach allows the agent to primarily focus on completing and pathfinding through the higher-level abstract LTL space, while relying on other pathfinding algorithms such as Dijkstra (DJK), A*, or partial A* for environmental pathfinding.
+
+    % This algorithm can be used in many pathfinding cases, such as the three examples described in Section \ref{}. In a hospital example, the agent can symbolize a delivery robot that must transport medication or other tools to different rooms. For example, a robot can take a drugs that a patient must rutinely take, say every afternoon to those patients freeing up the nurse or doctor for more important, less tedius work. The robot can always have buttons if the patient needs human care. Some risks in this environment can be the movement of people such as doctors and patients but also spills by a nurse or other robot. The agent must dynamically update its internal structures and replan a path that avoids spills and other messes. Another use case for this algorithm is a defense example. The battlefield is a dangerous environment and sending human lives to do tasks may not be ideal. By sending out an robotic agent, human lives can be spared in case of an ambush or military fire or bombardment. Some example tasks can be intelligence work, such as talking images of enemy downed craft, tanks or planes, delivering artilliry or resources to bases and troops and more. Lastly, a space example is a more noble example used in this paper. In the story of a lunar base, a scientist may want to collect samples from various areas. Instead of dressing up for an expidition, the agent can be tasked to collect these samples leaving the personel for better use of their time such as running experiments and such. This combines the difficult terrains of the military example and the freeing up human resources of the hospital example.
+
+
+    This algorithm exhibits versatile applicability in diverse pathfinding scenarios, as exemplified in the three cases detailed in Section \ref{}. One illustrative context involves a hospital scenario, where the agent represents a delivery robot tasked with transporting medications or tools to different rooms. For instance, the robot can efficiently handle routine medication deliveries, thereby alleviating the nurse or doctor from mundane tasks and enabling them to focus on more critical responsibilities. The robot is equipped with buttons to facilitate human intervention when necessary. Potential risks in this environment include the movement of individuals such as doctors and patients, as well as the possibility of spills by medical staff or other robots. To navigate such dynamic challenges, the agent adeptly updates its internal structures and dynamically plans alternative paths to avoid potential hazards. Another pertinent application of this algorithm lies in a defense scenario, where the inherent dangers of a battlefield render the deployment of human lives for various tasks suboptimal. Employing a robotic agent in this context serves to safeguard human lives during unexpected events like ambushes, military fires, or bombardments. Examples of tasks for such an agent encompass intelligence operations, such as capturing images of downed enemy craft, tanks, or planes, as well as delivering artillery or resources to bases and troops. Lastly, a space-related scenario is explored as a noble application in this study. Consider a lunar base where a scientist aims to collect samples from diverse areas. Instead of gearing up for an expedition, the agent is assigned the task of collecting samples, thus optimizing human resources for more intellectually demanding activities, such as running experiments. This scenario combines the challenging terrains of the military context with the resource optimization observed in the hospital example.
+    % @TODO talk about EXAMPLES here
+    % Interpretation and implecations of results
+    %
+    There are a few limitations of this approach that must be discussed. A heuristic approach to pathfinding my lead to a non-optimal path. However, this is considered an acceptable limitation as by sacrificing the optiomality, the agent can live task switch and work on unknown environments. The sacrifice of performance over the complexity and speed is necessary in this algoirithm but can be minimized with better heuristic function better tuned to the environment. Another limitation with this algoirithm is inherent in the "inner loop" of the algorithm. While the agent is pathfinding through the environment, the agent has but one goal that the "outer loop" has decided. If the agent uncovers a shortcut that would make sense to a human observer to switch from its current target to the other target, the agent would not "see" this seperate optimal path and would be too fixated on the original target. An if condition can be made in the "inner loop" to break out of this fixation if another optimal case is seen, however this was out of the scope of this paper and was not implemented.
+    %
+    In future work, multi agent systems can be introduced. In this case, a warehouse example can be added to demonstrate many agents with dynamic tasks. Additionally, in a multi-agent defense or space example, an agent that has already pathplanned from one target to another can embed their path into the environment as a rich metrics to signal to future agents a clean path for them to follow. Agents that need a very low risk path can follow this path as it is known to be safe and agents that dont need a low risk path can increase their "adventurness" and find alternate paths in case the original path become riskier or the alternate path is found to be safer than the original path. The usefulness of embedding rich metrics scale as more agents are in the system.
+    %
+    By incorporating addition heuristic functions such as an computer vision AI can also improve the accuracy of the path. By passing the environment image into an AI with two points showing the start and end areas and asking the AI for a heuristic value that shows the predicted length the agent will have to travel can also be used as a weight for the task graph. This is an extension of the euclidean distance heuristic. Additionally, a function can be used to calculate a path between every permutation and combination of targets and be kept in a lookup table. This table can be used to estimate and weight each edge in the task graph.
+    %
+    Lastly, an Large Language Model AI (LLM) can be used to convert human verbage into an LTL equation. This allows a non-technical user to program in tasks and allow the LLM to create the LTL task, and Spot library to create the graph. At the writing of this paper, ChatGPT3.5 does seem to understand the concept of LTL and gives replies, however the accuracy of the LTL equations are not satisfactory for use. As LLMs increase in accuracy, this may be an avenue for future development.
 
 % DISCUSSION
 
