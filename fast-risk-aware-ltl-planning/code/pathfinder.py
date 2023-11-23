@@ -214,7 +214,9 @@ class Pathfinder:
 
 
         if self.output is OutputType.DISK:
-            cv2.imwrite(f"{ gv.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+            r, g, b = cv2.split(dj_path_image_local)
+            dj_path_image_local_recolor = cv2.merge([g, r, b])
+            cv2.imwrite(f"{ gv.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local_recolor, cv2.COLOR_RGB2BGR) )
 
 
     # returns the shortest path the algo has determined

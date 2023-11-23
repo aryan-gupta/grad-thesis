@@ -251,6 +251,9 @@ class Enviroment(EnviromentCreator):
         # create our img_cell
         dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, show=False)
 
+        r, g, b = cv2.split(dj_path_image)
+        dj_path_image = cv2.merge([g, r, b])
+
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, gv.CELLS_SIZE)
 
