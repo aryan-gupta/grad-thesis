@@ -161,6 +161,7 @@ def create_risk_img(img, risk_size, show=False):
 
 
 # creates all the reward images for each axiom
+# @TODO move to task/mission class
 def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
     if show: plt.imshow(img); plt.show()
 
@@ -202,7 +203,7 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
     return reward_graphs, reward_locations
 
 
-# copy pixels from src to dest pixel by pixel
+# copy pixels from src to dest cell by cell
 # this implies the robot "seeing" the enviroment
 def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIEW_CELLS_SIZE, xop, yop):
     map_h = dest.shape[0]
@@ -251,7 +252,7 @@ def copy_pixels_risk(dest, src, current_phys_loc, cells_updated, CELLS_SIZE, VIE
     return total_diff
 
 
-# copy pixels from src to dest cell by cell
+# copy pixels from src to dest pixel by pixel. In one cell
 # dest and src are rgb pixels
 def copy_pixels_cells_img(cell_loc, dest, src, current_phys_loc, CELLS_SIZE):
     xcell, ycell = cell_loc

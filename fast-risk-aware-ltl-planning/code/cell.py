@@ -103,7 +103,7 @@ def create_cells(ltl_target_image, risk_image, img_cells, show=False):
 
 # Get the start and finish locations of the enviroment using the cell types
 def get_start_finish_locations(cell_type):
-    # find the start node
+    # loops thorugh the 2D cell_type array to find the CELL_CHARS for start and finish
     start = ()
     finish = ()
     for y in range(len(cell_type)):

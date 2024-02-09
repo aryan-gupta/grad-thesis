@@ -6,6 +6,13 @@ import bisect
 
 import global_vars as gv
 
+# there are two functional objects here:
+# cost function - the cost it takes to move from one node to another
+# heuritic function - orders the best current path for the A* version of the DJK algo
+
+# WANT:
+# ONE pathfind function that takes in a modifier (cfunc and hfunc combined)
+
 # returns the cost function
 # the cost function returns the correct cost function for the cell_cost data structure
 # this can be checked by testing if x/y elements is an array, because if it isnt, its
@@ -107,6 +114,7 @@ def dj_algo(cell_type, points, cell_cost):
 # Runs a dijkstra's algorithm on cell_type from the start and end locations
 # from points.
 # @TODO remove commented out video creator code
+# @TODO deprecate this unfavor of other function
 def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
@@ -225,6 +233,7 @@ def default_djk_cost_function(e, t, epoints=None, tpoints=None, cpoint=None, npo
     return e.ar_cell_cost[yn][xn]
 
 
+# DJK's algorithm
 def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
@@ -330,6 +339,9 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     return shortest_path
 
 
+# removes the LTL component of the product automata djk path
+# so only the real path (env path) is left
+# @TODO duplicate nodes need to be removed??
 def prune_product_automata_djk(path):
     real_path = []
     for e in path:
@@ -365,7 +377,8 @@ def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, poin
     # plt.show()
 
 
-# Draws the path for one transition
+# Draws the path from points[start] to points[finish] using the shortest_path
+# @TODO remove CELLS_SIZE
 def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
     start, finish = points
 

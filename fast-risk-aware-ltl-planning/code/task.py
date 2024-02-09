@@ -30,6 +30,7 @@ class Task:
     # labels each node with the shortest path to the accepting state
     # this allows the algorithm to know which next nodes leads to the
     # accepting state the quickest
+    # @TODO this is just djk'a algo, use that
     def create_node_distance_heuristic(self):
         # ltw[start][finish] = weight
         # ltl_transiton_weights = {{}}
@@ -198,7 +199,7 @@ class Task:
         self.task_bounds = (start_state, final_state)
 
 
-    # @TODO
+    # @TODO <-------
     # checks if the axiom allows any jump to the next LTL state from the
     # \p current_ltl_state
     def check_valid_jump(self, current_ltl_state, axiom):
