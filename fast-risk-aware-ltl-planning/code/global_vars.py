@@ -27,9 +27,8 @@ tmp_raw_env_save_file = f"{output_images_dir}/raw_env.png"
 # agent traveled, and LTL targets
 final_image_fspath = f"{ output_images_dir }/!picfinal.png"
 
-# input for the LTL hoa file, @TODO will become a array to support
-# multiple HOA files
-ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
+# input for the LTL hoa file
+ltl_hoa_file =   '../tasks/basic-ab.hoa.txt' # @TODO deprecate this
 ltl_hoa_files = ['../tasks/basic-ab.hoa.txt']
 
 # the environment file the agent is in. This file must be a
