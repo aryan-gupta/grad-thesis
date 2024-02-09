@@ -47,10 +47,8 @@ class Pathfinder:
         # how to show the results
         self.output = OutputType.DISK
 
-        #  the index for ltl steps for the image output
+        #  the index for ltl steps for the image name in output
         self.img_tmp_idx_ltl = 0
-
-        # the index for phys steps for the image output
         self.img_tmp_idx_phys = 0
 
 

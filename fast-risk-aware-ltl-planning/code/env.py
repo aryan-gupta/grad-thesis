@@ -97,6 +97,7 @@ class EnviromentCreator:
         # }
 
         color = 225
+        self.ltl_task_coord = []
         for i in range(self.num_targets):
             cell_drawn = False
 
@@ -105,6 +106,7 @@ class EnviromentCreator:
                 y = random.randrange(0, self.height)
 
                 cell_drawn = self.__try_draw_cell((x, y), color, 16)
+                if cell_drawn: self.ltl_task_coord.append((x,y)) # convert this to vector2
 
             color -= 25
 
