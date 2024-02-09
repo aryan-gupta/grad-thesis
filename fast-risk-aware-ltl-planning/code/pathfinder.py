@@ -14,7 +14,6 @@ import task
 import dijkstra
 import env
 import random
-import optimizer
 
 # This simple enum tells how to output the intermediary images
 class OutputType(Enum):
@@ -27,12 +26,12 @@ class OutputType(Enum):
 # This class holds information about one single pathfinding instance
 # this class holds the high level algorithm for this paper
 class Pathfinder:
-    def __init__(self, e, t):
+    def __init__(self, e, m):
         self.env = e
-        self.task = t
+        self.mission = m
 
         # get the start conditions
-        self.current_ltl_state = self.task.task_bounds[0]
+        self.current_ltl_state = self.mission.task_bounds[0]
         self.current_phys_loc = self.env.mission_phys_bounds[0]
 
         # the shortest path of the entire mission
@@ -67,7 +66,8 @@ class Pathfinder:
 
         # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
-        while self.current_ltl_state != final_task_node:
+        # while self.current_ltl_state != final_task_node:
+        while not self.mission.accepting_state(current_ltl_state): # @TODO
             # get reward locations
             # @TODO move self.env.reward_graphs to task class
 
@@ -141,8 +141,6 @@ class Pathfinder:
 
             if amount_risk_updated >= 0:
                 if show: print("full astar replanning")
-                opt = optimizer.Optimizer(env_min, self.task)
-                opt.set_task_state(0, self.current_ltl_state)
                 if gv.PATHFIND_ALGO_FRALTLP:
                     current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
                 elif gv.PATHFIND_ALGO_PRODUCT_AUTOMATA:

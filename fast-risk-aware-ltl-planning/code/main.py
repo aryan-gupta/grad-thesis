@@ -16,7 +16,6 @@ import task
 import dijkstra
 import env
 import random
-import optimizer
 import pathfinder
 import windenv
 
@@ -51,13 +50,19 @@ def preprocessor():
 
     # load the LTL files into the mission array
     # get the task details using LTL
-    t = task.Task(gv.ltl_hoa_file)
+    m = []
+    for filename in gv.ltl_hoa_files:
+        t = task.Task(filename)
+        t.create_task_heuristic(e)
+        m.append(t)
 
-    t.create_task_heuristic(e)
+    # t = task.Task(gv.ltl_hoa_file)
+    # t.create_task_heuristic(e)
 
-    p = pathfinder.Pathfinder(e, t)
+    # create the pathfinder object to run our algorithm
+    p = pathfinder.Pathfinder(e, m)
 
-    return e, t, p
+    return e, m, p
 
 
 def parse_args():
@@ -137,7 +142,7 @@ def main():
 
     start_preprocessing = timer()
     # preprocess all necessary data
-    e, t, p = preprocessor()
+    e, m, p = preprocessor()
     end_preprocessing = timer()
 
     start_processing = timer()
@@ -152,6 +157,10 @@ def main():
 
     print(p.get_total_shortest_path())
     print(len(p.get_total_shortest_path()))
+
+    print(vars(e))
+    print(vars(m))
+    print(vars(p))
 
     elapsed_housekeeping = end_housekeeping - start_housekeeping
     print(f"Housekeeping    took { elapsed_housekeeping } seconds")
