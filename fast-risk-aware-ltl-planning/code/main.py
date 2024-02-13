@@ -89,6 +89,17 @@ def parse_args():
 
     return parser.parse_args()
 
+# https://stackoverflow.com/questions/3085382
+def dequote(s):
+    """
+    If a string has single or double quotes around it, remove them.
+    Make sure the pair of quotes match.
+    If a matching pair of quotes is not found,
+    or there are less than 2 characters, return the string unchanged.
+    """
+    if (len(s) >= 2 and s[0] == s[-1]) and s.startswith(("'", '"')):
+        return s[1:-1]
+    return s
 
 def apply_args(args):
     # a simple function that returns the default if the test value is None
@@ -113,6 +124,7 @@ def apply_args(args):
     gv.CREATE_NEW_ENVIRONMENT = default_if_none(args.new_env, gv.CREATE_NEW_ENVIRONMENT)
 
     gv.enviroment_file = default_if_none(args.env, gv.enviroment_file)
+    gv.enviroment_file = dequote(gv.enviroment_file)
 
     # @TODO swap the before if and after else statement, read this carefully for logic issue
     # _                               = True if args.no_risk         is None else False
@@ -122,8 +134,12 @@ def apply_args(args):
 
     # @TODO convert this variable to an array and fix tasks to it can input multiple tasks
     gv.ltl_hoa_files = default_if_none(args.task, gv.ltl_hoa_files)
+    for idx, element in enumerate(gv.ltl_hoa_files):
+        gv.ltl_hoa_files[idx] = dequote(element)
     # gv.ltl_hoa_file  = default_if_none(args.task[0], gv.ltl_hoa_file)
     gv.ltl_hoa_file  = gv.ltl_hoa_file if args.task is None else args.task[0]
+    gv.ltl_hoa_file = dequote(gv.ltl_hoa_file)
+
 
     # @TODO FIX THIS
     # if output is true then
