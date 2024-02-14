@@ -95,22 +95,23 @@ def parse_args():
 
     return parser.parse_args()
 
-# https://stackoverflow.com/questions/3085382
-def dequote(s):
-    """
-    If a string has single or double quotes around it, remove them.
-    Make sure the pair of quotes match.
-    If a matching pair of quotes is not found,
-    or there are less than 2 characters, return the string unchanged.
-    """
-    if (len(s) >= 2 and s[0] == s[-1]) and s.startswith(("'", '"')):
-        return s[1:-1]
-    return s
 
 
 # process the args given by the user. This takes the args and maps them from the lib vars
 # of this program
 def apply_args(args):
+    # https://stackoverflow.com/questions/3085382
+    def dequote(s):
+        """
+        If a string has single or double quotes around it, remove them.
+        Make sure the pair of quotes match.
+        If a matching pair of quotes is not found,
+        or there are less than 2 characters, return the string unchanged.
+        """
+        if (len(s) >= 2 and s[0] == s[-1]) and s.startswith(("'", '"')):
+            return s[1:-1]
+        return s
+
     # a simple function that returns the default if the test value is None
     # some arguments will not be present in the command line arguments and in that case the default must be used
     # Im pretty sure argparse has a feature that does this automatically but I already wrote this code so a future
