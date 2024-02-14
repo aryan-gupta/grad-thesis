@@ -19,7 +19,10 @@ import random
 import pathfinder
 import windenv
 
-# preprocessor
+
+# preprocessor. This loads and preprocesses the environment,
+# sets up the tasks and mission params, and creates the Pathfinder
+# object
 def preprocessor():
     e = None
     # SETTING: if we are creating an environment from scratch:
@@ -48,7 +51,7 @@ def preprocessor():
     # create the cells needed
     e.create_cells_ar(e.r.assumed_risk_image)
 
-    # load the LTL files into the mission array
+    # load the LTL files into the mission class
     # get the task details using LTL
     m = task.Mission([], [], float("inf"))
     for filename in gv.ltl_hoa_files:
@@ -56,6 +59,8 @@ def preprocessor():
         t.create_task_heuristic(e)
         m.tasks.append(t)
 
+    # if we are only using one task file use this
+    # @DEPRECATED
     # t = task.Task(gv.ltl_hoa_file)
     # t.create_task_heuristic(e)
 
@@ -65,6 +70,7 @@ def preprocessor():
     return e, m, p
 
 
+# parse the args that the user passes. The processing of these args are done later
 def parse_args():
     # https://stackoverflow.com/questions/20063/
     parser = argparse.ArgumentParser(description='Fask Risk Aware LTL Planning')
@@ -101,6 +107,9 @@ def dequote(s):
         return s[1:-1]
     return s
 
+
+# process the args given by the user. This takes the args and maps them from the lib vars
+# of this program
 def apply_args(args):
     # a simple function that returns the default if the test value is None
     # some arguments will not be present in the command line arguments and in that case the default must be used
