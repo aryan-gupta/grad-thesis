@@ -12,8 +12,9 @@ ARGS='
 --output "../../../tmp"
 '
 
+cd 'code'
 exec $PYTHON $EXE $ARGS
-
+cd '..'
 
 # (46, 10)
 # (24, 69)
