@@ -30,7 +30,7 @@ def make_interpolater(left_min, left_max, right_min, right_max):
 # create cells on @r img_cells, extract cell_type s, and cell_cost s using
 # ltl_target_image to __, risk_image to __, and img_cells to __
 # we want to use the function name, input and output parameters. each input and output
-def create_cells(ltl_target_image, risk_image, img_cells, show=False):
+def create_cells(ltl_target_image, risk_image, img_cells):
     # get image size
     map_h, map_w = ltl_target_image.shape
 
@@ -66,7 +66,7 @@ def create_cells(ltl_target_image, risk_image, img_cells, show=False):
             xcell += 1
         ycell += 1
 
-    if show:
+    if gv.DEBUG >= 2:
         # Print the different colors in the image
         print(colors)
         print()

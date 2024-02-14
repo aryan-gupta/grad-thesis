@@ -247,7 +247,7 @@ class Task:
 
 
     # parse an ltl HOA formatted file
-    def parse_ltl_hoa(self, filename, show=False):
+    def parse_ltl_hoa(self, filename):
         # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
         self.ltl_state_diag = {}
         self.aps = []
@@ -287,7 +287,7 @@ class Task:
             self.ltl_state_diag[state] = next_state_dict
             next_state_dict = {}
 
-        if show:
+        if gv.DEBUG >= 3:
             print(self.ltl_state_diag)
             print(start_state)
             print(final_state)

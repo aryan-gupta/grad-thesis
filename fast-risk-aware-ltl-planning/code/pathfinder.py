@@ -111,8 +111,6 @@ class Pathfinder:
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
     def pathfind_until_final_loc(self, final_phys_loc, risk_reward_img_cells_local, env_min):
-        show = False
-
         # This is needed so we can do partial replans
         current_planned_path = []
 
@@ -133,10 +131,10 @@ class Pathfinder:
             # these are the same calls as full_replan except update_cells instead of create_cells
             risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, self.env.raw_reward_image, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
 
-            if show: print(amount_risk_updated)
+            if gv.DEBUG >= 3: print(amount_risk_updated)
 
             if amount_risk_updated >= 0:
-                if show: print("full astar replanning")
+                if gv.DEBUG >= 3: print("full astar replanning")
                 if gv.PATHFIND_ALGO_FRALTLP:
                     current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
                 elif gv.PATHFIND_ALGO_PRODUCT_AUTOMATA:
@@ -146,7 +144,7 @@ class Pathfinder:
                         early_ltl_path_jump = True
                     current_planned_path = dijkstra.prune_product_automata_djk(tmp_path)
             elif amount_risk_updated > 0:
-                if show: print("part astar replanning")
+                if gv.DEBUG >= 3: print("part astar replanning")
 
                 # get astar's target cell
                 # this target cell will be somewhere on the current_planned_path line
@@ -159,7 +157,7 @@ class Pathfinder:
                 # splice our two shortest_paths together
                 current_planned_path = current_planned_path[0:idx]
                 current_planned_path = current_planned_path + shortest_path_astar_target
-                if show: print(len(current_planned_path))
+                if gv.DEBUG >= 3: print(len(current_planned_path))
 
             # add current node to path
             self.total_shortest_path.insert(0, self.current_phys_loc)

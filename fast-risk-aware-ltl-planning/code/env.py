@@ -221,13 +221,13 @@ class Enviroment(EnviromentCreator):
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
 
         # get reward map for each objectives and goals
-        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE)
 
 
     # creates the assumed risk by applying a blurring to it
@@ -251,7 +251,7 @@ class Enviroment(EnviromentCreator):
         image = cv2.merge([self.raw_reward_image,combined_risk_image,blue_channel])
 
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, show=False)
+        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image)
 
         r, g, b = cv2.split(dj_path_image)
         dj_path_image = cv2.merge([g, r, b])
@@ -289,7 +289,7 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
-        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, show=False)
+        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image)
 
         return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
@@ -299,7 +299,7 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
-        self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)
+        self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image)
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):

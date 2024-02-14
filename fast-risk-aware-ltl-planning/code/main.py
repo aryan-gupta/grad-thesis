@@ -181,12 +181,12 @@ def main():
     e.create_final_image(gv.final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
     end_postprocessing = timer()
 
-    print(p.get_total_shortest_path())
-    print(len(p.get_total_shortest_path()))
+    if gv.DEBUG >= 3: print(p.get_total_shortest_path())
+    if gv.DEBUG >= 3: print(len(p.get_total_shortest_path()))
 
-    print(vars(e))
-    print(vars(m))
-    print(vars(p))
+    if gv.DEBUG >= 3: print(vars(e))
+    if gv.DEBUG >= 3: print(vars(m))
+    if gv.DEBUG >= 3: print(vars(p))
 
     elapsed_housekeeping = end_housekeeping - start_housekeeping
     print(f"Housekeeping    took { elapsed_housekeeping } seconds")

@@ -1,4 +1,10 @@
 
+# debug var
+# 0 - nodebug
+# 1 - basic output
+# 2 -
+DEBUG = 0
+
 # GLOBAL VARS
 SEED = 1
 

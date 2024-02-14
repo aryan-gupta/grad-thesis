@@ -7,14 +7,14 @@ import cell
 import global_vars as gv
 
 # read in a image
-def read_image(filename, show=False):
+def read_image(filename):
     img = cv2.imread(filename)
-    if show: plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)); plt.show()
     return img
 
 
 # perspective warp an image
-def perspective_warp(img, points, map_w, map_h, show=False):
+def perspective_warp(img, points, map_w, map_h):
     # These 4 points are used to perspective correct the image
     # they represent the 4 corners of the map
     # used code from here as reference: https://stackoverflow.com/questions/22656698
@@ -27,7 +27,7 @@ def perspective_warp(img, points, map_w, map_h, show=False):
     wpcc_img = cv2.warpPerspective(img, transmtx, (map_w, map_h)) # processed
 
     # Show the perspective corrected image
-    if show: plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB)); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(cv2.cvtColor(wpcc_img, cv2.COLOR_BGR2RGB)); plt.show()
 
     return wpcc_img
 
@@ -36,13 +36,13 @@ def perspective_warp(img, points, map_w, map_h, show=False):
 # this is more complicated than just RGB channel splitting. The
 # function uses HSV to find the hue and sat values that are in
 # the appropriate bounds
-def color_segment_image(img, show=False):
+def color_segment_image(img):
     # Split the image into the seperate HSV vhannels
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     hue_channel, sat_channel, _ = cv2.split(img)
 
-    if show: plt.imshow(hue_channel); plt.show()
-    if show: plt.imshow(sat_channel); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(hue_channel); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(sat_channel); plt.show()
 
     # Extract the bright colors from the image
     # the useful values are in the Hue and Saturation channel
@@ -65,10 +65,10 @@ def color_segment_image(img, show=False):
     blue_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 100, 110), cv2.inRange(sat_channel, 100, 255))
     yellow_channel = cv2.bitwise_and(cv2.inRange(hue_channel, 20, 30), cv2.inRange(sat_channel, 100, 255))
 
-    if show: plt.imshow(red_channel, cmap='gray'); plt.show()
-    if show: plt.imshow(green_channel, cmap='gray'); plt.show()
-    if show: plt.imshow(blue_channel, cmap='gray'); plt.show()
-    if show: plt.imshow(yellow_channel, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(red_channel, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(green_channel, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(blue_channel, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(yellow_channel, cmap='gray'); plt.show()
 
     return (red_channel, green_channel, blue_channel, yellow_channel)
 
@@ -77,7 +77,7 @@ def color_segment_image(img, show=False):
 # essentially does the opposite of color_segment_image. However,
 # since color_segment_image is a lossy algorithm, running it then
 # running merge_colors will result in a different but clean image
-def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=False):
+def merge_colors(red_channel, green_channel, blue_channel, yellow_channel):
 
     # We want to convert the different color channels into an RGB image and since yellow is Red and Green
     # we want add the yellow channel into the red and green channels
@@ -92,14 +92,14 @@ def merge_colors(red_channel, green_channel, blue_channel, yellow_channel, show=
 
     # Merge the channels into one RGB image
     processed_img = cv2.merge([red_channel,green_channel,blue_channel])
-    if show: plt.imshow(processed_img); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(processed_img); plt.show()
 
     return processed_img
 
 
 # applys the edge gaussian blur to a risk image
 # @TODO move this to the risk module
-def apply_edge_blur(img, reward_size, show=False):
+def apply_edge_blur(img, reward_size):
     map_h, map_w = img.shape
     # goal_reward_image = cv2.bitwise_or(goal_reward_image, orig_goal_reward_image)
 
@@ -130,13 +130,13 @@ def apply_edge_blur(img, reward_size, show=False):
         # plt.imshow(new_img, cmap='gray'); plt.show()
 
     img = cv2.normalize(new_img, None, 255, 0, norm_type = cv2.NORM_MINMAX)
-    if show: plt.imshow(img, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(img, cmap='gray'); plt.show()
     return img
 
 
 # applys the edge gaussian blur to a risk image
 # @TODO move this to the risk module
-def create_risk_img(img, risk_size, show=False):
+def create_risk_img(img, risk_size):
     # Wall risk image
     dilate_factor = 1
     dilate_kernel = np.ones((risk_size//dilate_factor,risk_size//dilate_factor), np.uint8)
@@ -144,7 +144,7 @@ def create_risk_img(img, risk_size, show=False):
     wall_risk_image = cv2.dilate(img, dilate_kernel, 0)
     wall_risk_image = cv2.GaussianBlur(wall_risk_image, (gaussian_kernel_size, gaussian_kernel_size), 0)
     wall_risk_image = cv2.bitwise_or(wall_risk_image, img)
-    if show: plt.imshow(wall_risk_image, cmap='gray'); plt.show()
+    if gv.DEBUG >= 3: plt.imshow(wall_risk_image, cmap='gray'); plt.show()
 
     risk_image = wall_risk_image
 
@@ -162,8 +162,8 @@ def create_risk_img(img, risk_size, show=False):
 
 # creates all the reward images for each axiom
 # @TODO move to task/mission class
-def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
-    if show: plt.imshow(img); plt.show()
+def get_reward_images(cell_type, img, CELLS_SIZE):
+    if gv.DEBUG >= 3: plt.imshow(img); plt.show()
 
     reward_graphs = {}
     reward_locations = {}
@@ -193,9 +193,9 @@ def get_reward_images(cell_type, img, CELLS_SIZE, show=False):
         reward_graphs[goal] = empty_image
         reward_locations[goal] = goal_locations
 
-        if show: print(goal)
-        if show: plt.imshow(empty_image); plt.show()
-        if show:
+        if gv.DEBUG >= 3: print(goal)
+        if gv.DEBUG >= 3: plt.imshow(empty_image); plt.show()
+        if gv.DEBUG >= 3:
             for loc in reward_locations[goal]:
                 print(loc)
                 print(cell_type[loc[0]][loc[1]])
