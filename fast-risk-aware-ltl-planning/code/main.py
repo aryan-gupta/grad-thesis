@@ -50,11 +50,11 @@ def preprocessor():
 
     # load the LTL files into the mission array
     # get the task details using LTL
-    m = []
+    m = task.Mission([], [], float("inf"))
     for filename in gv.ltl_hoa_files:
         t = task.Task(filename)
         t.create_task_heuristic(e)
-        m.append(t)
+        m.tasks.append(t)
 
     # t = task.Task(gv.ltl_hoa_file)
     # t.create_task_heuristic(e)

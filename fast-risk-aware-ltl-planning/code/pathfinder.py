@@ -31,7 +31,9 @@ class Pathfinder:
         self.mission = m
 
         # get the start conditions
-        self.current_ltl_state = self.mission.task_bounds[0]
+        # @TODO make mission class have this variable ready to go, this shouldnt work
+        self.task = self.mission.tasks[0]
+        self.current_ltl_state = self.task.task_bounds[0]
         self.current_phys_loc = self.env.mission_phys_bounds[0]
 
         # the shortest path of the entire mission
@@ -50,6 +52,8 @@ class Pathfinder:
         self.img_tmp_idx_ltl = 0
         self.img_tmp_idx_phys = 0
 
+        self.task_switch_curr_idx = 0
+        self.task_switch_idx = self.mission.task_switch_idx
 
     # pathfinds on LTL space
     def pathfind_task(self, start_task_node=None, final_task_node=None):
@@ -66,8 +70,8 @@ class Pathfinder:
 
         # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
-        # while self.current_ltl_state != final_task_node:
-        while not self.mission.accepting_state(current_ltl_state): # @TODO
+        while self.current_ltl_state != final_task_node:
+        # while not self.mission.accepting_state(current_ltl_state): # @TODO
             # get reward locations
             # @TODO move self.env.reward_graphs to task class
 
@@ -89,26 +93,18 @@ class Pathfinder:
                 self.env.get_ar_minimal_env()
             )
 
+            # task switching if its time
+            # if self.task_switch_curr_idx == self.task_switch_idx:
+            #     self.mission.switch_tasks()
+            #     start_task_node = self.task.task_bounds[0]
+            #     final_task_node = self.task.task_bounds[1]
+            #     self.current_ltl_state = start_task_node
+            # self.task_switch_curr_idx += 1
+
             # find next state that we should go to and setup next interation
             self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
             self.img_tmp_idx_ltl += 1
 
-
-    def pathfind_env(self, start_phys_loc=None, final_phys_loc=None):
-        if final_phys_loc == None:
-            pass
-
-        if start_phys_loc == None:
-            start_phys_loc = self.current_phys_loc
-
-        # This is needed so we can do partial replans
-        current_planned_path = []
-
-        # reset the counter:
-        self.img_tmp_idx_phys = 0
-
-        while self.current_phys_loc != final_phys_loc:
-            pass
 
     # pathfinds from the physical environment
     # starts from the \param self.current_phys_loc to the final_phys_loc
@@ -176,6 +172,7 @@ class Pathfinder:
 
             # increment our image file counter
             self.img_tmp_idx_phys += 1
+            self.task_switch_curr_idx += 1
 
 
     # outputs the current state of the pathfinding class

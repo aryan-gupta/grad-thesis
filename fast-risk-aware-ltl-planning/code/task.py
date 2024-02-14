@@ -12,7 +12,7 @@ class Mission:
         self.tasks = pretasks # tasks to compleate
         self.posttasks = posttasks # tasks to switch to when finished
         self.switched = False
-        self.task_switch = task_switch
+        self.task_switch_idx = task_switch
 
     def accepting_state(states):
         assert len(states) == len(self.tasks), f"state array & task list dim mismatch"

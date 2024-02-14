@@ -79,25 +79,6 @@ def astar_algo(cell_type, points, cell_cost):
     cfunc = get_cfunc(cell_cost)
     return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, astar_algo_hfunc)
 
-
-# runs the astar algo using the optimizer
-def astar_opt(cell_type, points, cell_cost, optimizer):
-    def astar_algo_hfunc(current_phys_loc, next_phy_loc, direction, optimizer=optimizer):
-        if not optimizer.is_valid_direction(current_phys_loc, direction):
-            return float("inf")
-
-        if optimizer.is_direction_forbidden_by_task(current_phys_loc, direction):
-            return float("inf")
-
-        dx = current_phys_loc[0] - next_phy_loc[0]
-        dy = current_phys_loc[1] - next_phy_loc[1]
-        euclidean_distance = math.sqrt((dx**2) + (dy**2))
-        return 0.0005 * euclidean_distance
-
-    cfunc = get_cfunc(cell_cost)
-    return dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, astar_algo_hfunc)
-
-
 # for djk's algo, the heuristic function always return 0 since we dont use
 # a heuristic
 def dj_algo_default_hfunc(*args, **kwargs):
@@ -289,6 +270,20 @@ def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
             prev[(y, x, next_ltl_state)] = (y, x, n)
             bisect.insort(queue, (dist, (y, x, next_ltl_state)), key=lambda a: a[0])
 
+
+        # for dy, dx in [ (y-1, x), (y, x-1), (y+1, x), (y, x+1) ]:
+        #     # bounds check
+        #     if (dy < 0) or (dy > (len(e.cell_type) - 1)) or (dx < 0) or (dx > (len(e.cell_type[0]) - 1)):
+        #         continue
+
+        #     # djk core
+        #     old_distance = distances.get((dy, dx, n), float("inf"))
+        #     new_distance = dist + cost_function(e, t, None, None, None, (dy, dx))
+        #     if new_distance < old_distance:
+        #         distances[(dy, dx, n)] = new_distance
+        #         prev[(dy, dx, n)] = (y, x, n)
+        #         bisect.insort(queue, (new_distance, (dy, dx, n)), key=lambda a: a[0])
+
         # check each direction we can travel
         if y > 0: # UP
             up = y - 1
@@ -350,31 +345,32 @@ def prune_product_automata_djk(path):
 
 
 # Draws the shortest path for all LTL transitions
-def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, points, CELLS_SIZE):
-    start, finish = points
+# @DEPRECATED
+    # def draw_shortest_path(shortest_path, risk_reward_img_cells, reward_graphs, points, CELLS_SIZE):
+    #     start, finish = points
 
-    # draw the shortest path
-    map_w, map_h = (risk_reward_img_cells.shape[1], risk_reward_img_cells.shape[0])
-    empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
-    img_plain_djk = risk_reward_img_cells.copy()
-    img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs[cell.START_CELL_CHAR]]))
-    print(cell.START_CELL_CHAR)
-    for i in range(len(shortest_path)):
-        half_cell = math.ceil((CELLS_SIZE/2))
+    #     # draw the shortest path
+    #     map_w, map_h = (risk_reward_img_cells.shape[1], risk_reward_img_cells.shape[0])
+    #     empty_image = np.zeros((map_h, map_w, 1), dtype = "uint8")
+    #     img_plain_djk = risk_reward_img_cells.copy()
+    #     img_plain_djk = cv2.add(img_plain_djk, cv2.merge([empty_image, empty_image, reward_graphs[cell.START_CELL_CHAR]]))
+    #     print(cell.START_CELL_CHAR)
+    #     for i in range(len(shortest_path)):
+    #         half_cell = math.ceil((CELLS_SIZE/2))
 
-        if shortest_path[i] == start: break
+    #         if shortest_path[i] == start: break
 
-        node = shortest_path[i]
-        next_node = shortest_path[i+1]
+    #         node = shortest_path[i]
+    #         next_node = shortest_path[i+1]
 
-        center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
-        next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
+    #         center = (node[0]*CELLS_SIZE+half_cell, node[1]*CELLS_SIZE+half_cell)
+    #         next_center = (next_node[0]*CELLS_SIZE+half_cell, next_node[1]*CELLS_SIZE+half_cell)
 
-        img_plain_djk = cv2.line(img_plain_djk, center, next_center, (0,255,255), 1)
+    #         img_plain_djk = cv2.line(img_plain_djk, center, next_center, (0,255,255), 1)
 
-    # Show the path found image from D's algo
-    # plt.imshow(img_plain_djk)
-    # plt.show()
+    #     # Show the path found image from D's algo
+    #     # plt.imshow(img_plain_djk)
+    #     # plt.show()
 
 
 # Draws the path from points[start] to points[finish] using the shortest_path
@@ -400,8 +396,8 @@ def draw_path_global(shortest_path, img_cells, points, CELLS_SIZE):
 def get_next_cell_shortest_path(shortest_path, current_phys_loc):
     if current_phys_loc == shortest_path[0]:
         return current_phys_loc
-    for i in range(len(shortest_path)):
-        if current_phys_loc == shortest_path[i]:
+    for i, loc in enumerate(shortest_path):
+        if current_phys_loc == loc:
             return shortest_path[i - 1]
 
 
