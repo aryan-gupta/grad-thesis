@@ -70,8 +70,8 @@ class Pathfinder:
 
         # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
-        while self.current_ltl_state != final_task_node:
-        # while not self.mission.accepting_state(current_ltl_state): # @TODO
+        # @TODO move the MissionState variable outside this loop
+        while not self.mission.accepting_state(task.Mission.MissionState(ltl=[ self.current_ltl_state ])): # @TODO
             # get reward locations
             # @TODO move self.env.reward_graphs to task class
 

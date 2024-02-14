@@ -6,18 +6,6 @@ import matplotlib.pyplot as plt
 
 import global_vars as gv
 
-
-class Mission:
-    def __init__(self, pretasks, posttasks, task_switch):
-        self.tasks = pretasks # tasks to compleate
-        self.posttasks = posttasks # tasks to switch to when finished
-        self.switched = False
-        self.task_switch_idx = task_switch
-
-    def accepting_state(states):
-        assert len(states) == len(self.tasks), f"state array & task list dim mismatch"
-        for idx in range(len(states)): pass
-
 # # This class checks weather a environment move by the agent
 # # is valid against the LTL task. Prunes the search tree so
 # # the astar/djk algo completes quicker
@@ -32,6 +20,24 @@ class Mission:
 #         self.tasks.append(t)
 #         self.task_state.append(t.task_bounds[0])
 
+class Mission:
+    class MissionState:
+        def __init__(self, ltl):
+            self.ltl_state = ltl
+            self.env_state_x = 0
+            self.env_state_y = 0
+
+    def __init__(self, pretasks, posttasks, task_switch):
+        self.tasks = pretasks # tasks to compleate
+        self.posttasks = posttasks # tasks to switch to when finished
+        self.switched = False
+        self.task_switch_idx = task_switch
+
+    def accepting_state(self, state):
+        accept = True
+        for idx, ele in enumerate(state.ltl_state):
+            accept &= (self.tasks[idx].task_bounds[1] == ele)
+        return accept
 
     # adds a task into the list of tasks the agent must follow
     def add_task(self, t):
