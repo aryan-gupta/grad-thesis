@@ -81,17 +81,12 @@ class Pathfinder:
             # pick best one based off of task heuristic
             target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
 
-            # self.pathfind_env(
-            #     start_phys_loc=self.current_phys_loc,
-            #     final_phys_loc=target_phys_loc
-            # )
+            self.pathfind_env(
+                start_phys_loc=self.current_phys_loc,
+                final_phys_loc=target_phys_loc
+            )
 
             print(target_phys_loc)
-            self.pathfind_until_final_loc(
-                target_phys_loc,
-                self.env.ar_img_cells,
-                self.env.get_ar_minimal_env()
-            )
 
             # task switching if its time
             # if self.task_switch_curr_idx == self.task_switch_idx:
@@ -110,7 +105,9 @@ class Pathfinder:
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
-    def pathfind_until_final_loc(self, final_phys_loc, risk_reward_img_cells_local, env_min):
+    def pathfind_env(self, start_phys_loc, final_phys_loc):
+        risk_reward_img_cells_local = self.env.ar_img_cells
+        env_min = self.env.get_ar_minimal_env()
         # This is needed so we can do partial replans
         current_planned_path = []
 
