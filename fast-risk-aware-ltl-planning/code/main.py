@@ -30,12 +30,15 @@ def preprocessor():
     # save a copy of the environment
     # preprocess the environment
     if gv.CREATE_NEW_ENVIRONMENT:
+        if gv.DEBUG >= 4: print(f"Creating new environment")
+
         e = env.EnviromentCreator(targets=6, size=(gv.map_h,gv.map_w), validate=False)
         e.save_env(gv.tmp_raw_env_save_file)
         e = e.preprocess()
     # SETTING: if we are using a preexisting environment, simply load it.
     # no pre processing is needed as the format is already processed
     else:
+        if gv.DEBUG >= 4: print(f"Loading environment")
         e = env.Enviroment(filename=gv.enviroment_file)
 
     # save the risk image if we need it
@@ -43,16 +46,20 @@ def preprocessor():
 
     # SETTING: pathfind without any risk
     if gv.PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
+    if gv.DEBUG >= 4: print(f"Set no-assumed-risk")
 
     # SETTING: pathfinding on assumed risk without updating
     if gv.PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
+    if gv.DEBUG >= 4: print(f"Set no-risk-updates")
 
     # process the image and create the needed cells
     # create the cells needed
+    if gv.DEBUG >= 4: print(f"Preprocessing environment")
     e.create_cells_ar(e.r.assumed_risk_image)
 
     # load the LTL files into the mission class
     # get the task details using LTL
+    if gv.DEBUG >= 4: print(f"Preprocessing tasks and mission")
     m = task.Mission([], [], float("inf"))
     for filename in gv.ltl_hoa_files:
         t = task.Task(filename)
@@ -65,6 +72,7 @@ def preprocessor():
     # t.create_task_heuristic(e)
 
     # create the pathfinder object to run our algorithm
+    if gv.DEBUG >= 4: print(f"Created pathfinder object")
     p = pathfinder.Pathfinder(e, m)
 
     return e, m, p
@@ -72,6 +80,7 @@ def preprocessor():
 
 # parse the args that the user passes. The processing of these args are done later
 def parse_args():
+    if gv.DEBUG >= 3: print("Parsing Args")
     # https://stackoverflow.com/questions/20063/
     parser = argparse.ArgumentParser(description='Fask Risk Aware LTL Planning')
 
@@ -96,10 +105,11 @@ def parse_args():
     return parser.parse_args()
 
 
-
 # process the args given by the user. This takes the args and maps them from the lib vars
 # of this program
 def apply_args(args):
+    if gv.DEBUG >= 3: print("Applying Args")
+
     # https://stackoverflow.com/questions/3085382
     def dequote(s):
         """
@@ -121,26 +131,34 @@ def apply_args(args):
 
     # set SEED to argument passed if available, keep it the same if user didnt pass one in
     gv.SEED = int(default_if_none(args.seed, gv.SEED))
-    #SEED = SEED if args.seed is None else args.seed
+    if gv.DEBUG >= 4: print(f"Applied Seed: { gv.SEED }")
 
     gv.CELLS_SIZE = int(default_if_none(args.cell_size, gv.CELLS_SIZE))
+    if gv.DEBUG >= 4: print(f"Applied Cell Size: { gv.CELLS_SIZE }")
 
     gv.VIEW_CELLS_SIZE = int(default_if_none(args.view_cell_size, gv.VIEW_CELLS_SIZE) )
+    if gv.DEBUG >= 4: print(f"Applied View Cell Distance: { gv.VIEW_CELLS_SIZE }")
 
     # global map_h,map_w
     gv.map_h = int(default_if_none(args.height, gv.map_h))
     gv.map_w = int(default_if_none(args.width, gv.map_w))
+    if gv.DEBUG >= 4: print(f"Applied Environment Size: w: { gv.map_w } h: { gv.map_h }")
 
     gv.CREATE_NEW_ENVIRONMENT = default_if_none(args.new_env, gv.CREATE_NEW_ENVIRONMENT)
+    if gv.DEBUG >= 4: print(f"Applied New Environment Creation Switch: { gv.CREATE_NEW_ENVIRONMENT }")
 
     gv.enviroment_file = default_if_none(args.env, gv.enviroment_file)
     gv.enviroment_file = dequote(gv.enviroment_file)
+    if gv.DEBUG >= 4: print(f"Applied Environment File: { gv.enviroment_file }")
 
     # @TODO swap the before if and after else statement, read this carefully for logic issue
     # _                               = True if args.no_risk         is None else False
     gv.PATHFIND_NO_ASSUMED_RISK     = default_if_none(args.no_assumed_risk, gv.PATHFIND_NO_ASSUMED_RISK)
     gv.PATHFIND_IGNORE_RISK_UPDATES = default_if_none(args.no_risk_updates, gv.PATHFIND_IGNORE_RISK_UPDATES)
     # _                               = True if args.assumed_risk_live is None else False
+    if gv.DEBUG >= 4: print(f"Applied Pathfinding Style Switches:")
+    if gv.DEBUG >= 4: print(f"\t\t no-assumed-risk: { gv.PATHFIND_NO_ASSUMED_RISK }")
+    if gv.DEBUG >= 4: print(f"\t\t no-risk-updates: { gv.PATHFIND_IGNORE_RISK_UPDATES }")
 
     # @TODO convert this variable to an array and fix tasks to it can input multiple tasks
     gv.ltl_hoa_files = default_if_none(args.task, gv.ltl_hoa_files)
@@ -149,6 +167,8 @@ def apply_args(args):
     # gv.ltl_hoa_file  = default_if_none(args.task[0], gv.ltl_hoa_file)
     gv.ltl_hoa_file  = gv.ltl_hoa_file if args.task is None else args.task[0]
     gv.ltl_hoa_file = dequote(gv.ltl_hoa_file)
+    if gv.DEBUG >= 4: print(f"Applied Task File: { gv.ltl_hoa_file }")
+    if gv.DEBUG >= 4: print(f"Applied Task File(s): { gv.ltl_hoa_files }")
 
 
     # @TODO FIX THIS

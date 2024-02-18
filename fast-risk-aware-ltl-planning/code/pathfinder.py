@@ -59,10 +59,12 @@ class Pathfinder:
     def pathfind_task(self, start_task_node=None, final_task_node=None):
         # set the start node as the start task node
         if start_task_node is None:
+            if gv.DEBUG >= 2: print(f"Start Task Node not found, using task.task_bounds[0]") # @TODO use mission to get this info
             start_task_node = self.task.task_bounds[0]
 
         # set the final node as the final task node
         if final_task_node is None:
+            if gv.DEBUG >= 2: print(f"Final Task Node not found, using task.task_bounds[1]") # @TODO use mission to get this info
             final_task_node = self.task.task_bounds[1]
 
         # reset the counter:
@@ -80,13 +82,12 @@ class Pathfinder:
 
             # pick best one based off of task heuristic
             target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
+            if gv.DEBUG >= 1: print(target_phys_loc)
 
             self.pathfind_env(
                 start_phys_loc=self.current_phys_loc,
                 final_phys_loc=target_phys_loc
             )
-
-            print(target_phys_loc)
 
             # task switching if its time
             # if self.task_switch_curr_idx == self.task_switch_idx:
@@ -105,41 +106,69 @@ class Pathfinder:
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
-    def pathfind_env(self, start_phys_loc, final_phys_loc):
+    def pathfind_env(self, start_phys_loc=None, final_phys_loc=None):
+        if start_phys_loc is None:
+            start_phys_loc = self.current_phys_loc,
+
+        if final_phys_loc is None:
+            raise Exception(msg="No final phys loc defined")
+
         risk_reward_img_cells_local = self.env.ar_img_cells
-        env_min = self.env.get_ar_minimal_env()
+        env_min = self.env.get_ar_minimal_env() # @TODO remove this
+
         # This is needed so we can do partial replans
         current_planned_path = []
 
         # reset the counter:
         self.img_tmp_idx_phys = 0
 
+        # if we ever find hint to a better path this will become true and we will return to the previous calling function
         early_ltl_path_jump = False
 
         # the loop to traverse the phys enviroment
+        # while we havent reached the final_phy_loc or we havent found a "early_ltl_path_jump"
         while self.current_phys_loc != final_phys_loc:
             # update risk map everytime we move
-            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(self.assumed_risk_image_filled, self.env.r.raw_risk_image, self.current_phys_loc, gv.CELLS_SIZE, gv.VIEW_CELLS_SIZE, gv.UPDATE_WEIGHT)
+            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(
+                self.assumed_risk_image_filled,
+                self.env.r.raw_risk_image,
+                self.current_phys_loc,
+                gv.CELLS_SIZE,
+                gv.VIEW_CELLS_SIZE,
+                gv.UPDATE_WEIGHT
+            )
+            if gv.DEBUG >= 3: print(amount_risk_updated)
 
-            # the temp target for partial astar algorithm
-            astar_target = None
-
+            # then update the internal representation of the environment
             # instead of recreating out required data structures, just update the ones we "saw"
             # these are the same calls as full_replan except update_cells instead of create_cells
-            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, self.env.raw_reward_image, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
+            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(
+                cells_updated,
+                self.env.raw_reward_image,
+                self.assumed_risk_image_filled,
+                env_min.cell_type,
+                env_min.cell_cost,
+                risk_reward_img_cells_local,
+                self.current_phys_loc
+            )
 
-            if gv.DEBUG >= 3: print(amount_risk_updated)
+            # the reason this is global is for debugging and outputting it after this
+            astar_target = None
 
             if amount_risk_updated >= 0:
                 if gv.DEBUG >= 3: print("full astar replanning")
+
                 if gv.PATHFIND_ALGO_FRALTLP:
                     current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
                 elif gv.PATHFIND_ALGO_PRODUCT_AUTOMATA:
                     # @TODO remove self.task.task_bounds[1] and replace it with final_task_node
                     tmp_path = dijkstra.dj_algo_et(self.env, self.task, (self.current_phys_loc, final_phys_loc), (self.current_ltl_state, self.task.task_bounds[1]), dijkstra.default_djk_cost_function)
+
                     if tmp_path[-2][2] != self.current_ltl_state:
                         early_ltl_path_jump = True
+
                     current_planned_path = dijkstra.prune_product_automata_djk(tmp_path)
+
             elif amount_risk_updated > 0:
                 if gv.DEBUG >= 3: print("part astar replanning")
 
@@ -159,6 +188,7 @@ class Pathfinder:
             # add current node to path
             self.total_shortest_path.insert(0, self.current_phys_loc)
 
+            # if we find another ltl task that we can shortcut to, switch to that one
             if early_ltl_path_jump: break
 
             # get the next location in the shortest path

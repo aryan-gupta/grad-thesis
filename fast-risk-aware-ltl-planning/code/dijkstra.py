@@ -42,6 +42,15 @@ def cell_cost_cfunc(points, cell_cost, direction):
             return cell_cost[y + 1][x]
 
 
+def default_djk_cost_function(e, t, epoints=None, tpoints=None, cpoint=None, npoint=None):
+    env_start , env_finish  = (None, None) if epoints is None else epoints
+    task_start, task_finish = (None, None) if tpoints is None else tpoints
+    y         , x           = (None, None) if cpoint  is None else cpoint
+    yn        , xn          = (None, None) if npoint  is None else npoint
+
+    return e.ar_cell_cost[yn][xn]
+
+
 # creates a function that uses the euclidean distance to the next_phys_loc
 # is used when doing a partial a* algo
 def create_astar_partial_hfunc(next_phys_loc):
@@ -205,16 +214,8 @@ def dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
     return shortest_path
 
 
-def default_djk_cost_function(e, t, epoints=None, tpoints=None, cpoint=None, npoint=None):
-    env_start , env_finish  = (None, None) if epoints is None else epoints
-    task_start, task_finish = (None, None) if tpoints is None else tpoints
-    y         , x           = (None, None) if cpoint  is None else cpoint
-    yn        , xn          = (None, None) if npoint  is None else npoint
-
-    return e.ar_cell_cost[yn][xn]
-
-
 # DJK's algorithm
+# @TODO figure out why this function is different from the function above this one
 def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
