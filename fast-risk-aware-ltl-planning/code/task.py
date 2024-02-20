@@ -6,19 +6,6 @@ import matplotlib.pyplot as plt
 
 import global_vars as gv
 
-# # This class checks weather a environment move by the agent
-# # is valid against the LTL task. Prunes the search tree so
-# # the astar/djk algo completes quicker
-# # @TODO deprecate this. the Mission can consume many of these
-# #       functions
-# class Optimizer:
-#     def __init__(self, e=None, t=None):
-#         self.tasks = []
-#         self.task_state = []
-#         self.env = e
-
-#         self.tasks.append(t)
-#         self.task_state.append(t.task_bounds[0])
 
 class Mission:
     class MissionState:

@@ -1,0 +1,113 @@
+def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
+
+    def default_djk_cost_function(e, t, epoints=None, tpoints=None, cpoint=None, npoint=None):
+        env_start , env_finish  = (None, None) if epoints is None else epoints
+        task_start, task_finish = (None, None) if tpoints is None else tpoints
+        y         , x           = (None, None) if cpoint  is None else cpoint
+        yn        , xn          = (None, None) if npoint  is None else npoint
+
+        return e.ar_cell_cost[yn][xn]
+
+    if cost_function == None:
+        cost_function = default_djk_cost_function
+
+    env_start, env_finish = epoints
+    task_start, task_finish = tpoints
+
+    start_pnode  = ( env_start[1],  env_start[0],  task_start)
+    finish_pnode = (env_finish[1], env_finish[0], task_finish)
+
+
+    queue = []
+    visited_nodes = set()
+    distances = {}
+    prev = {}
+
+
+    queue.append((0, start_pnode))
+    distances[start_pnode] = 0
+
+    while len(queue) != 0:
+        # get first element
+        current = queue[0]
+        queue = queue[1:]
+
+        # unpack element
+        dist = current[0]
+        y, x, n = current[1]
+
+        # if weve already been to this node, skip it
+        if (y, x, n) in visited_nodes: continue
+        # mark node as visited
+        visited_nodes.add((y, x, n))
+
+        # check each LTL direction
+        # @TODO Improve this
+        next_ltl_state = t.get_optimization_state(e.ar_cell_type, n, (x, y))
+        if next_ltl_state != n:
+            distances[(y, x, next_ltl_state)] = dist
+            prev[(y, x, next_ltl_state)] = (y, x, n)
+            bisect.insort(queue, (dist, (y, x, next_ltl_state)), key=lambda a: a[0])
+
+
+        # for dy, dx in [ (y-1, x), (y, x-1), (y+1, x), (y, x+1) ]:
+        #     # bounds check
+        #     if (dy < 0) or (dy > (len(e.cell_type) - 1)) or (dx < 0) or (dx > (len(e.cell_type[0]) - 1)):
+        #         continue
+
+        #     # djk core
+        #     old_distance = distances.get((dy, dx, n), float("inf"))
+        #     new_distance = dist + cost_function(e, t, None, None, None, (dy, dx))
+        #     if new_distance < old_distance:
+        #         distances[(dy, dx, n)] = new_distance
+        #         prev[(dy, dx, n)] = (y, x, n)
+        #         bisect.insort(queue, (new_distance, (dy, dx, n)), key=lambda a: a[0])
+
+        # check each direction we can travel
+        if y > 0: # UP
+            up = y - 1
+            old_distance = distances.get((up, x, n), float("inf"))
+            new_distance = dist + cost_function(e, t, None, None, None, (up, x))
+            if new_distance < old_distance:
+                distances[(up, x, n)] = new_distance
+                prev[(up, x, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (up, x, n)), key=lambda a: a[0])
+        if x > 0: # LEFT
+            left = x - 1
+            old_distance = distances.get((y, left, n), float("inf"))
+            new_distance = dist + cost_function(e, t, None, None, None, (y, left))
+            if new_distance < old_distance:
+                distances[(y, left, n)] = new_distance
+                prev[(y, left, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (y, left, n)), key=lambda a: a[0])
+        if x < (len(e.cell_type[0]) - 1): # RIGHT
+            right = x + 1
+            old_distance = distances.get((y, right, n), float("inf"))
+            new_distance = dist + cost_function(e, t, None, None, None, (y, right))
+            if new_distance < old_distance:
+                distances[(y, right, n)] = new_distance
+                prev[(y, right, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (y, right, n)), key=lambda a: a[0])
+        if y < (len(e.cell_type) - 1): # DOWN
+            down = y + 1
+            old_distance = distances.get((down, x, n), float("inf"))
+            new_distance = dist + cost_function(e, t, None, None, None, (down, x))
+            if new_distance < old_distance:
+                distances[(down, x, n)] = new_distance
+                prev[(down, x, n)] = (y, x, n)
+                bisect.insort(queue, (new_distance, (down, x, n)), key=lambda a: a[0])
+
+        if current[1] == finish_pnode:
+            break
+
+    # calculate the shortest path and create a video while
+    shortest_path = []
+    current_node = finish_pnode
+    while current_node != start_pnode:
+        shortest_path.append(current_node)
+        current_node = prev[current_node]
+    shortest_path.append(start_pnode)
+
+    # print(shortest_path)
+
+    return shortest_path

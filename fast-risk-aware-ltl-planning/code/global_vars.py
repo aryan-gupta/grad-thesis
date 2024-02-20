@@ -3,7 +3,7 @@
 # 0 - nodebug
 # 1 - basic output
 # 2 -
-DEBUG = 10
+DEBUG = 1
 
 # GLOBAL VARS
 SEED = 1

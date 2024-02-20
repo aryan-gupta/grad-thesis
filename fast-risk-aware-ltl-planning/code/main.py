@@ -201,8 +201,8 @@ def main():
     e.create_final_image(gv.final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
     end_postprocessing = timer()
 
-    if gv.DEBUG >= 3: print(p.get_total_shortest_path())
-    if gv.DEBUG >= 3: print(len(p.get_total_shortest_path()))
+    if gv.DEBUG >= 1: print(p.get_total_shortest_path())
+    if gv.DEBUG >= 1: print(len(p.get_total_shortest_path()))
 
     if gv.DEBUG >= 3: print(vars(e))
     if gv.DEBUG >= 3: print(vars(m))
