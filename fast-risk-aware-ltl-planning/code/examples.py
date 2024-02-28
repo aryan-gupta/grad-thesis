@@ -51,10 +51,13 @@ class EnvironmentCreatorExample:
 
     def convert_to_rgb_nparray(self, array):
         nparray = []
+        green = [key for key, value in gv.CHAR_COLOR_MAP.items() if value == gv.START_CELL_CHAR][0]
         for r, row in enumerate(array):
             new_row = []
             for c, ele in enumerate(row):
-                if ele == 'T': new_row.append((   0, 255,   0))
+                if ele == 'T':
+                    new_row.append((   0, green,   0))
+                    green -= 25
                 if ele == ' ': new_row.append((   0,   0,   0))
                 if ele == 'X': new_row.append(( 255,   0,   0))
             nparray.append(new_row)
