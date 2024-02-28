@@ -207,8 +207,8 @@ class Enviroment(EnviromentCreator):
 
         self.height, self.width, _ = self.processed_img.shape
 
-        assert self.height == gv.map_h, f"Image height not same as gv.map_h"
-        assert self.width == gv.map_w, f"Image height not same as gv.map_h"
+        assert self.height == gv.map_h, f"Image height ({ self.height }) not same as gv.map_h ({ gv.map_h })"
+        assert self.width == gv.map_w, f"Image width ({ self.width }) not same as gv.map_w ({ gv.map_w })"
 
 
     # splits the images into the RGB channels
