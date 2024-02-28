@@ -288,31 +288,45 @@ class Task:
         return True
 
 
-    # returns the next target locations
+    # returns the next target locations that could validate an axiom
+    # for example, we could have 3 targets: A, B, C but only A and B
+    # are reachable by the current LTL state. Going to C would not
+    # cause a LTL path jump so only A and B are returned
+    #
+    # @param current_state the current state of the pathfinding algo
+    # @param reward_locations the locations of the rewards in the environment
     def get_reward_locations(self, current_state, reward_locations):
-        potential_reward_location = set([])
+        potential_reward_location = set()
 
+        # for each state that we have available LTL jumps
         for next_state in self.ltl_state_diag[current_state].keys():
-            this_state_reward_graph = None
             axon = self.ltl_state_diag[current_state][next_state].upper()
-            nomials = axon.split('&')
 
-            for nomial in nomials:
-                if nomial[0] != '!':
-                    if this_state_reward_graph is None:
-                        this_state_reward_graph = set(reward_locations[nomial[0]])
+            # split by the or
+            or_state_reward_graph = set()
+            for or_parts in axon.split(' | '):
+
+                # split by and
+                and_state_reward_graph = set()
+                for nomial in or_parts.split('&'):
+
+                    # check if the reward location is a valid jump by the ltl axiom
+                    if nomial[0] != '!':
+                        if not and_state_reward_graph:
+                            and_state_reward_graph = set(reward_locations[nomial[0]])
+                        else:
+                            and_state_reward_graph = and_state_reward_graph.intersection(reward_locations[nomial[0]])
                     else:
-                        this_state_reward_graph = this_state_reward_graph.intersection(reward_locations[nomial[0]])
-                else:
-                    if this_state_reward_graph is None:
-                        # @TODO place all cells in potential reward locations and then take union or intersection
-                        pass
-                    else:
-                        this_state_reward_graph = this_state_reward_graph.difference(reward_locations[nomial[1]])
+                        if not and_state_reward_graph:
+                            # @TODO place all cells in potential reward locations and then take union or intersection
+                            pass
+                        else:
+                            and_state_reward_graph = and_state_reward_graph.difference(reward_locations[nomial[1]])
 
+                or_state_reward_graph = or_state_reward_graph.union(and_state_reward_graph)
 
-            if this_state_reward_graph:
-                potential_reward_location = potential_reward_location.union(this_state_reward_graph)
+            if or_state_reward_graph:
+                potential_reward_location = potential_reward_location.union(or_state_reward_graph)
 
         return potential_reward_location
 
