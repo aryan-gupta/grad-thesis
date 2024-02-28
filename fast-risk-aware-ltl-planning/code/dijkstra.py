@@ -208,7 +208,6 @@ def _dj_algo_cfunc_hfunc(cell_type, points, cell_cost, cfunc, hfunc):
 # DJK's algorithm
 # @TODO figure out why this function is different from the function above this one
 # @TODO migrate this function to the above function
-#
 def dj_algo_et(e, t, epoints, tpoints, cost_function=None):
     # Start creating a video of the D's algo in working
     # visited_image = cv2.cvtColor(img_cells.copy(), cv2.COLOR_BGR2RGB)
