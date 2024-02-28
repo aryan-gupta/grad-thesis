@@ -8,7 +8,9 @@ import global_vars as gv
 class Examples(Enum):
     NORMAL_ENV_EX = 0
     ASYNC_ENV_EX = 1
-    EXAMPLES_NUM = 2
+    CHOIC_ENV_EX = 2
+    CHOIB_ENV_EX = 3
+    EXAMPLES_NUM = 4
 
 class EnvironmentCreatorExample:
     def __init__(self, example):
@@ -51,15 +53,15 @@ class EnvironmentCreatorExample:
 
     def convert_to_rgb_nparray(self, array):
         nparray = []
-        green = [key for key, value in gv.CHAR_COLOR_MAP.items() if value == gv.START_CELL_CHAR][0]
+
         for r, row in enumerate(array):
             new_row = []
             for c, ele in enumerate(row):
-                if ele == 'T':
+                if   ele == ' ': new_row.append((   0,   0,   0))
+                elif ele == 'X': new_row.append(( 255,   0,   0))
+                else:
+                    green = [key for key, value in gv.CHAR_COLOR_MAP.items() if value == ele][0]
                     new_row.append((   0, green,   0))
-                    green -= 25
-                if ele == ' ': new_row.append((   0,   0,   0))
-                if ele == 'X': new_row.append(( 255,   0,   0))
             nparray.append(new_row)
         print(nparray)
         return np.array(nparray, dtype=np.uint8)
@@ -73,10 +75,23 @@ class EnvironmentCreatorExample:
     def create_array(self, example):
         array = self.create_base()
 
+        array[0][0] = gv.START_CELL_CHAR
         if example == Examples.NORMAL_ENV_EX:
-            array[4][0] = 'T'
+            array[0][4] = 'B'
+            array[4][0] = 'C'
+            array[4][4] = gv.END_CELL_CHAR
         elif example == Examples.ASYNC_ENV_EX:
-            array[3][0] = 'T'
+            array[0][4] = 'B'
+            array[3][0] = 'C'
+            array[4][4] = gv.END_CELL_CHAR
+        elif example == Examples.CHOIC_ENV_EX:
+            array[0][4] = 'B'
+            array[4][0] = 'C'
+            array[4][2] = gv.END_CELL_CHAR
+        elif example == Examples.CHOIB_ENV_EX:
+            array[0][4] = 'B'
+            array[4][0] = 'C'
+            array[2][4] = gv.END_CELL_CHAR
         else:
             raise Exception("wrong example or example not specified")
 
@@ -84,11 +99,11 @@ class EnvironmentCreatorExample:
 
     def create_base(self):
         return [
-            [ 'T', ' ', ' ', ' ', 'T' ],
+            [ ' ', ' ', ' ', ' ', ' ' ],
             [ ' ', 'X', ' ', 'X', ' ' ],
             [ ' ', ' ', ' ', ' ', ' ' ],
             [ ' ', 'X', ' ', 'X', ' ' ],
-            [ ' ', ' ', ' ', ' ', 'T' ]
+            [ ' ', ' ', ' ', ' ', ' ' ]
         ]
 
     def show(self):
@@ -102,3 +117,5 @@ class EnvironmentCreatorExample:
 if __name__ == "__main__":
     e = EnvironmentCreatorExample(Examples.NORMAL_ENV_EX).save('../maps/normal-example.bmp')
     e = EnvironmentCreatorExample(Examples.ASYNC_ENV_EX).save('../maps/async-example.bmp')
+    e = EnvironmentCreatorExample(Examples.CHOIC_ENV_EX).save('../maps/choic-example.bmp')
+    e = EnvironmentCreatorExample(Examples.CHOIB_ENV_EX).save('../maps/choib-example.bmp')
