@@ -4,10 +4,12 @@ PYTHON='python3'
 EXE='main.py'
 ARGS='
 --seed 1
---cell-size 8
---view-cell-size 8
---env "../maps/002.png"
---assumed-risk-live
+--cell-size 32
+--view-cell-size 32
+--height 160
+--width 160
+--env "../maps/normal-example.bmp"
+--no-assumed-risk
 --task "../tasks/basic-ab.hoa.txt"
 --output "../../../tmp"
 '
