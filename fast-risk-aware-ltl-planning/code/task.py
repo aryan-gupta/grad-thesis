@@ -14,17 +14,20 @@ class Mission:
             self.env_state_x = 0
             self.env_state_y = 0
 
+
     def __init__(self, pretasks, posttasks, task_switch):
         self.tasks = pretasks # tasks to compleate
         self.posttasks = posttasks # tasks to switch to when finished
         self.switched = False
         self.task_switch_idx = task_switch
 
+
     def accepting_state(self, state):
         accept = True
         for idx, ele in enumerate(state.ltl_state):
             accept &= (self.tasks[idx].task_bounds[1] == ele)
         return accept
+
 
     # adds a task into the list of tasks the agent must follow
     def add_task(self, t):
@@ -332,7 +335,8 @@ class Task:
 
 
     # get the reward image based off the possible transitions from the current state
-    def get_reward_img_state(self, current_state, reward_graphs):
+    # @DEPRECATED
+    def ___dep_get_reward_img_state(self, current_state, reward_graphs):
         # get the image for each transition from the current state
         map_h, map_w = (gv.map_h, gv.map_w)
         ltl_reward_graph = np.zeros((map_h, map_w, 1), dtype = "uint8")
@@ -354,6 +358,8 @@ class Task:
 
 
     # get the next state of the ltl buchii automata
+    # checks the current_phys_loc to see what proposition we are activating
+    # if we are in a phys_loc that causes a path jump, return the next state
     def get_next_state(self, reward_graphs, current_ltl_state, current_phys_loc):
         next_state = None
         for next_state in self.ltl_state_diag[current_ltl_state]:
@@ -437,6 +443,7 @@ class Task:
                 pixel_valid = reward_graphs[axiom][y][x] != 0
                 if cell_type[row][col] == gv.LTL_TARGET_CELL_CHAR and pixel_valid:
                     return (col, row)
+
 
     def switch_tasks():
         pass
