@@ -263,9 +263,8 @@ class Task:
                         final_state = state
 
                 if line.startswith("["):
-                    splits = line.split(" ", maxsplit=1)
-                    next_state = int(splits[1])
-                    ap_temp = splits[0].replace("[", "").replace("]", "")
+                    next_state = int(line[ -1 : ])
+                    ap_temp = line[ 0: line.find(']') ].replace("[", "").replace("]", "")
                     for ap_num in range(len(self.aps)):
                         ap_temp = ap_temp.replace(str(ap_num), self.aps[ap_num])
                     next_state_dict[next_state] = ap_temp
