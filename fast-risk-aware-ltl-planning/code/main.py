@@ -96,6 +96,7 @@ def parse_args():
     parser.add_argument('--no-assumed-risk', action='store_true', help='Pathfind without any assumed risk. Use the real risk values')
     parser.add_argument('--no-risk-updates', action='store_true', help='Use the assumed risk values, but do not live update with real risk values')
     parser.add_argument('--assumed-risk-live', action='store_true', help='Use the assumed risk values, and live update with real risk values. Default')
+    parser.add_argument('--original-colors', action='store_true', help='Use the old red target and green hazard colors')
     parser.add_argument('--task', action='append', help='Input a file to use as the environment')
     parser.add_argument('--switch-task-idx', action='append', help='Index of step at which the task should be switched')
     parser.add_argument('--switch-task-node', action='append', help='Node number of when the task should switch. In format LTL_Node,PHYS_Node')

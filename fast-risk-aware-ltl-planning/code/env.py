@@ -214,7 +214,11 @@ class Enviroment(EnviromentCreator):
     # splits the images into the RGB channels
     # the R channel is the reward and the G channel is the RISK
     def channel_split(self):
-        self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
+        if gv.ORIGINAL_COLORS:
+            self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
+        else:
+            raw_risk_image, self.raw_reward_image, _ = cv2.split(self.processed_img)
+
         self.r = risk.Risk(raw_risk_image)
 
 
