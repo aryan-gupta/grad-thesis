@@ -81,10 +81,11 @@ class Pathfinder:
 
             # locate all the potential reward locations
             target_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_locations)
+            if gv.DEBUG >= 1: print(f"found potential targets: { target_locations }")
 
             # pick best one based off of task heuristic
             target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
-            if gv.DEBUG >= 1: print(target_phys_loc)
+            if gv.DEBUG >= 1: print(f"choosing target { target_phys_loc }")
 
             self.pathfind_env(
                 start_phys_loc=self.current_phys_loc,
