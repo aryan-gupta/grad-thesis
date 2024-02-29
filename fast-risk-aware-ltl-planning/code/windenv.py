@@ -20,11 +20,11 @@ class WindEnvironmentCreator:
     def __init__(self, targets=2):
         self.create_random(targets)
         self.create_risk()
-        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE)
 
         empty_channel = np.zeros(self.r.assumed_risk_image.shape, np.uint8)
         image = cv2.merge([self.raw_reward_image, self.r.assumed_risk_image, empty_channel])
-        self.ar_img_cells, _, _ = cell.create_cells(self.raw_reward_image, self.r.assumed_risk_image, image, show=False)
+        self.ar_img_cells, _, _ = cell.create_cells(self.raw_reward_image, self.r.assumed_risk_image, image)
         # plt.imshow(self.raw_reward_image)
         # plt.show()
 

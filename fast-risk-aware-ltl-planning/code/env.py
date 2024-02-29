@@ -97,6 +97,7 @@ class EnviromentCreator:
         # }
 
         color = 225
+        self.ltl_task_coord = []
         for i in range(self.num_targets):
             cell_drawn = False
 
@@ -105,6 +106,7 @@ class EnviromentCreator:
                 y = random.randrange(0, self.height)
 
                 cell_drawn = self.__try_draw_cell((x, y), color, 16)
+                if cell_drawn: self.ltl_task_coord.append((x,y)) # convert this to vector2
 
             color -= 25
 
@@ -205,27 +207,31 @@ class Enviroment(EnviromentCreator):
 
         self.height, self.width, _ = self.processed_img.shape
 
-        assert self.height == gv.map_h, f"Image height not same as gv.map_h"
-        assert self.width == gv.map_w, f"Image height not same as gv.map_h"
+        assert self.height == gv.map_h, f"Image height ({ self.height }) not same as gv.map_h ({ gv.map_h })"
+        assert self.width == gv.map_w, f"Image width ({ self.width }) not same as gv.map_w ({ gv.map_w })"
 
 
     # splits the images into the RGB channels
     # the R channel is the reward and the G channel is the RISK
     def channel_split(self):
-        self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
+        if gv.ORIGINAL_COLORS:
+            self.raw_reward_image, raw_risk_image, _ = cv2.split(self.processed_img)
+        else:
+            raw_risk_image, self.raw_reward_image, _ = cv2.split(self.processed_img)
+
         self.r = risk.Risk(raw_risk_image)
 
 
     # creates all the reward graphs for each axiom
     def create_reward_graphs(self):
         # create cells based off of map and risk and assign costs to cells
-        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img, show=False)
+        self.img_cells, self.cell_type, self.cell_cost = cell.create_cells(self.raw_reward_image, self.r.raw_risk_image, self.processed_img)
 
         # get start and finish locations from cell graph
         self.mission_phys_bounds = cell.get_start_finish_locations(self.cell_type)
 
         # get reward map for each objectives and goals
-        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE, show=False)
+        self.reward_graphs, self.reward_locations = img.get_reward_images(self.cell_type, self.raw_reward_image, gv.CELLS_SIZE)
 
 
     # creates the assumed risk by applying a blurring to it
@@ -249,7 +255,10 @@ class Enviroment(EnviromentCreator):
         image = cv2.merge([self.raw_reward_image,combined_risk_image,blue_channel])
 
         # create our img_cell
-        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image, show=False)
+        dj_path_image, _, _ = cell.create_cells(self.raw_reward_image, assumed_risk_image_filled, image)
+
+        r, g, b = cv2.split(dj_path_image)
+        dj_path_image = cv2.merge([g, r, b])
 
         # draw the path on img_cell
         dijkstra.draw_path_global(path, dj_path_image, self.mission_phys_bounds, gv.CELLS_SIZE)
@@ -284,7 +293,7 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         # create required data structures
         image = cv2.merge([ltl_reward_map, assumed_risk_image, empty_channel])
-        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image, show=False)
+        img_cells, cell_type, cell_cost = cell.create_cells(ltl_reward_map, assumed_risk_image, image)
 
         return img_cells, self.get_minimal_env(cell_type, cell_cost)
 
@@ -294,7 +303,7 @@ class Enviroment(EnviromentCreator):
         empty_channel = np.zeros((gv.map_h, gv.map_w), np.uint8)
         image = cv2.merge([self.raw_reward_image, assumed_risk_image, empty_channel])
 
-        self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image, show=False)
+        self.ar_img_cells, self.ar_cell_type, self.ar_cell_cost = cell.create_cells(self.raw_reward_image, assumed_risk_image, image)
 
     # updates a list of cells
     def update_cells(self, cells_updated, ltl_reward_map, assumed_risk_image, cell_type, cell_cost, img_cells, phys_loc):

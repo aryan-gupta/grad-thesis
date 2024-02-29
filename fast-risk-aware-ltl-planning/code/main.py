@@ -16,11 +16,13 @@ import task
 import dijkstra
 import env
 import random
-import optimizer
 import pathfinder
 import windenv
 
-# preprocessor
+
+# preprocessor. This loads and preprocesses the environment,
+# sets up the tasks and mission params, and creates the Pathfinder
+# object
 def preprocessor():
     e = None
     # SETTING: if we are creating an environment from scratch:
@@ -28,12 +30,15 @@ def preprocessor():
     # save a copy of the environment
     # preprocess the environment
     if gv.CREATE_NEW_ENVIRONMENT:
+        if gv.DEBUG >= 4: print(f"Creating new environment")
+
         e = env.EnviromentCreator(targets=6, size=(gv.map_h,gv.map_w), validate=False)
         e.save_env(gv.tmp_raw_env_save_file)
         e = e.preprocess()
     # SETTING: if we are using a preexisting environment, simply load it.
     # no pre processing is needed as the format is already processed
     else:
+        if gv.DEBUG >= 4: print(f"Loading environment")
         e = env.Enviroment(filename=gv.enviroment_file)
 
     # save the risk image if we need it
@@ -41,26 +46,41 @@ def preprocessor():
 
     # SETTING: pathfind without any risk
     if gv.PATHFIND_NO_ASSUMED_RISK: e.r.assumed_risk_image = e.r.raw_risk_image
+    if gv.DEBUG >= 4: print(f"Set no-assumed-risk")
 
     # SETTING: pathfinding on assumed risk without updating
     if gv.PATHFIND_IGNORE_RISK_UPDATES: e.r.raw_risk_image = e.r.assumed_risk_image
+    if gv.DEBUG >= 4: print(f"Set no-risk-updates")
 
     # process the image and create the needed cells
     # create the cells needed
+    if gv.DEBUG >= 4: print(f"Preprocessing environment")
     e.create_cells_ar(e.r.assumed_risk_image)
 
-    # load the LTL files into the mission array
+    # load the LTL files into the mission class
     # get the task details using LTL
-    t = task.Task(gv.ltl_hoa_file)
+    if gv.DEBUG >= 4: print(f"Preprocessing tasks and mission")
+    m = task.Mission([], [], float("inf"))
+    for filename in gv.ltl_hoa_files:
+        t = task.Task(filename)
+        t.create_task_heuristic(e)
+        m.tasks.append(t)
 
-    t.create_task_heuristic(e)
+    # if we are only using one task file use this
+    # @DEPRECATED
+    # t = task.Task(gv.ltl_hoa_file)
+    # t.create_task_heuristic(e)
 
-    p = pathfinder.Pathfinder(e, t)
+    # create the pathfinder object to run our algorithm
+    if gv.DEBUG >= 4: print(f"Created pathfinder object")
+    p = pathfinder.Pathfinder(e, m)
 
-    return e, t, p
+    return e, m, p
 
 
+# parse the args that the user passes. The processing of these args are done later
 def parse_args():
+    if gv.DEBUG >= 3: print("Parsing Args")
     # https://stackoverflow.com/questions/20063/
     parser = argparse.ArgumentParser(description='Fask Risk Aware LTL Planning')
 
@@ -76,6 +96,7 @@ def parse_args():
     parser.add_argument('--no-assumed-risk', action='store_true', help='Pathfind without any assumed risk. Use the real risk values')
     parser.add_argument('--no-risk-updates', action='store_true', help='Use the assumed risk values, but do not live update with real risk values')
     parser.add_argument('--assumed-risk-live', action='store_true', help='Use the assumed risk values, and live update with real risk values. Default')
+    parser.add_argument('--original-colors', action='store_true', help='Use the old red target and green hazard colors')
     parser.add_argument('--task', action='append', help='Input a file to use as the environment')
     parser.add_argument('--switch-task-idx', action='append', help='Index of step at which the task should be switched')
     parser.add_argument('--switch-task-node', action='append', help='Node number of when the task should switch. In format LTL_Node,PHYS_Node')
@@ -85,7 +106,23 @@ def parse_args():
     return parser.parse_args()
 
 
+# process the args given by the user. This takes the args and maps them from the lib vars
+# of this program
 def apply_args(args):
+    if gv.DEBUG >= 3: print("Applying Args")
+
+    # https://stackoverflow.com/questions/3085382
+    def dequote(s):
+        """
+        If a string has single or double quotes around it, remove them.
+        Make sure the pair of quotes match.
+        If a matching pair of quotes is not found,
+        or there are less than 2 characters, return the string unchanged.
+        """
+        if (len(s) >= 2 and s[0] == s[-1]) and s.startswith(("'", '"')):
+            return s[1:-1]
+        return s
+
     # a simple function that returns the default if the test value is None
     # some arguments will not be present in the command line arguments and in that case the default must be used
     # Im pretty sure argparse has a feature that does this automatically but I already wrote this code so a future
@@ -95,30 +132,45 @@ def apply_args(args):
 
     # set SEED to argument passed if available, keep it the same if user didnt pass one in
     gv.SEED = int(default_if_none(args.seed, gv.SEED))
-    #SEED = SEED if args.seed is None else args.seed
+    if gv.DEBUG >= 4: print(f"Applied Seed: { gv.SEED }")
 
     gv.CELLS_SIZE = int(default_if_none(args.cell_size, gv.CELLS_SIZE))
+    if gv.DEBUG >= 4: print(f"Applied Cell Size: { gv.CELLS_SIZE }")
 
     gv.VIEW_CELLS_SIZE = int(default_if_none(args.view_cell_size, gv.VIEW_CELLS_SIZE) )
+    if gv.DEBUG >= 4: print(f"Applied View Cell Distance: { gv.VIEW_CELLS_SIZE }")
 
     # global map_h,map_w
     gv.map_h = int(default_if_none(args.height, gv.map_h))
     gv.map_w = int(default_if_none(args.width, gv.map_w))
+    if gv.DEBUG >= 4: print(f"Applied Environment Size: w: { gv.map_w } h: { gv.map_h }")
 
     gv.CREATE_NEW_ENVIRONMENT = default_if_none(args.new_env, gv.CREATE_NEW_ENVIRONMENT)
+    if gv.DEBUG >= 4: print(f"Applied New Environment Creation Switch: { gv.CREATE_NEW_ENVIRONMENT }")
 
     gv.enviroment_file = default_if_none(args.env, gv.enviroment_file)
+    gv.enviroment_file = dequote(gv.enviroment_file)
+    if gv.DEBUG >= 4: print(f"Applied Environment File: { gv.enviroment_file }")
 
     # @TODO swap the before if and after else statement, read this carefully for logic issue
     # _                               = True if args.no_risk         is None else False
     gv.PATHFIND_NO_ASSUMED_RISK     = default_if_none(args.no_assumed_risk, gv.PATHFIND_NO_ASSUMED_RISK)
     gv.PATHFIND_IGNORE_RISK_UPDATES = default_if_none(args.no_risk_updates, gv.PATHFIND_IGNORE_RISK_UPDATES)
     # _                               = True if args.assumed_risk_live is None else False
+    if gv.DEBUG >= 4: print(f"Applied Pathfinding Style Switches:")
+    if gv.DEBUG >= 4: print(f"\t\t no-assumed-risk: { gv.PATHFIND_NO_ASSUMED_RISK }")
+    if gv.DEBUG >= 4: print(f"\t\t no-risk-updates: { gv.PATHFIND_IGNORE_RISK_UPDATES }")
 
     # @TODO convert this variable to an array and fix tasks to it can input multiple tasks
     gv.ltl_hoa_files = default_if_none(args.task, gv.ltl_hoa_files)
+    for idx, element in enumerate(gv.ltl_hoa_files):
+        gv.ltl_hoa_files[idx] = dequote(element)
     # gv.ltl_hoa_file  = default_if_none(args.task[0], gv.ltl_hoa_file)
     gv.ltl_hoa_file  = gv.ltl_hoa_file if args.task is None else args.task[0]
+    gv.ltl_hoa_file = dequote(gv.ltl_hoa_file)
+    if gv.DEBUG >= 4: print(f"Applied Task File: { gv.ltl_hoa_file }")
+    if gv.DEBUG >= 4: print(f"Applied Task File(s): { gv.ltl_hoa_files }")
+
 
     # @TODO FIX THIS
     # if output is true then
@@ -137,7 +189,7 @@ def main():
 
     start_preprocessing = timer()
     # preprocess all necessary data
-    e, t, p = preprocessor()
+    e, m, p = preprocessor()
     end_preprocessing = timer()
 
     start_processing = timer()
@@ -150,8 +202,12 @@ def main():
     e.create_final_image(gv.final_image_fspath, p.get_filled_assumed_risk(), p.get_total_shortest_path())
     end_postprocessing = timer()
 
-    print(p.get_total_shortest_path())
-    print(len(p.get_total_shortest_path()))
+    if gv.DEBUG >= 1: print(p.get_total_shortest_path())
+    if gv.DEBUG >= 1: print(len(p.get_total_shortest_path()))
+
+    if gv.DEBUG >= 3: print(vars(e))
+    if gv.DEBUG >= 3: print(vars(m))
+    if gv.DEBUG >= 3: print(vars(p))
 
     elapsed_housekeeping = end_housekeeping - start_housekeeping
     print(f"Housekeeping    took { elapsed_housekeeping } seconds")

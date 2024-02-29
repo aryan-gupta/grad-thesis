@@ -6,6 +6,92 @@ import matplotlib.pyplot as plt
 
 import global_vars as gv
 
+
+class Mission:
+    class MissionState:
+        def __init__(self, ltl):
+            self.ltl_state = ltl
+            self.env_state_x = 0
+            self.env_state_y = 0
+
+
+    def __init__(self, pretasks, posttasks, task_switch):
+        self.tasks = pretasks # tasks to compleate
+        self.posttasks = posttasks # tasks to switch to when finished
+        self.switched = False
+        self.task_switch_idx = task_switch
+
+
+    def accepting_state(self, state):
+        accept = True
+        for idx, ele in enumerate(state.ltl_state):
+            accept &= (self.tasks[idx].task_bounds[1] == ele)
+        return accept
+
+
+    # adds a task into the list of tasks the agent must follow
+    def add_task(self, t):
+        self.tasks.append(t)
+        self.task_state.append(t.task_bounds[0])
+
+
+    # adds the environment the agent is going through
+    def add_env(self, e):
+        self.env = e
+
+    # sets the task state for the specified task
+    # @TODO refactor this function out
+    def set_task_state(self, task_num, state):
+        self.task_state[task_num] = state
+
+    # checks if the direction the agent wants to go is valid
+    # if its not valid it will foll of the edge of the map and
+    # this function will return false
+    def is_valid_direction(self, current_phys_loc, direction):
+        x, y = current_phys_loc
+
+        if direction == 0:
+            if y > 0:
+                return True
+
+        if direction == 1:
+            if x > 0:
+                return True
+
+        if direction == 2:
+            if x < (len(self.env.cell_cost[0]) - 1):
+                return True
+
+        if direction == 3:
+            if y < (len(self.env.cell_cost) - 1):
+                return True
+
+        return False
+
+
+    # checks if the direction the agent wants to go is forbidden by any task
+    # if it is forbidden, the function will return false
+    def is_direction_forbidden_by_task(self, current_phys_loc, direction):
+        x, y = current_phys_loc
+
+        if direction == 0: y -= 1
+        if direction == 1: x -= 1
+        if direction == 2: x += 1
+        if direction == 3: y += 1
+
+        global_valid = True
+        for task_num in range(len(self.tasks)):
+            # get what value the direction optimizes
+            axiom = self.env.cell_type[y][x]
+            # check is that value is allowed by ltl
+            current_ltl_state = self.task_state[task_num]
+            valid = self.tasks[task_num].check_valid_jump(current_ltl_state, axiom)
+
+            global_valid &= valid
+
+        return not global_valid
+
+
 # stores an LTL task
 class Task:
     def __init__(self, filename=None, ltl_task=None):
@@ -30,6 +116,7 @@ class Task:
     # labels each node with the shortest path to the accepting state
     # this allows the algorithm to know which next nodes leads to the
     # accepting state the quickest
+    # @TODO this is just djk'a algo, use that
     def create_node_distance_heuristic(self):
         # ltw[start][finish] = weight
         # ltl_transiton_weights = {{}}
@@ -105,12 +192,13 @@ class Task:
             if n == node: continue # skip self loops
 
             ap = next_nodes[n] # get ap to satisfy
-            ap = ap.split('&') # split into indivisual targets
-            ap = [ x for x in ap if '!' not in x] # remove not targets
-            if len(ap) > 1: continue # skip targets with multiple aps to satisfy
+            for or_parts in ap.split(' | '):  # split into indivisual targets
+                and_parts = or_parts.split('&')
+                ts = [ x for x in and_parts if '!' not in x] # remove not targets
+                if len(ts) > 1: continue # skip targets with multiple aps to satisfy
 
-            next_target = ap[0]
-            self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
+                next_target = ts[0]
+                self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
 
 
     # calculates the euclidean distance of each path in the task automata
@@ -150,7 +238,7 @@ class Task:
 
 
     # parse an ltl HOA formatted file
-    def parse_ltl_hoa(self, filename, show=False):
+    def parse_ltl_hoa(self, filename):
         # The ltl graph is a dict{ current_state: dict{ next_state : str(AP) } }
         self.ltl_state_diag = {}
         self.aps = []
@@ -179,9 +267,8 @@ class Task:
                         final_state = state
 
                 if line.startswith("["):
-                    splits = line.split(" ", maxsplit=1)
-                    next_state = int(splits[1])
-                    ap_temp = splits[0].replace("[", "").replace("]", "")
+                    next_state = int(line[ -1 : ])
+                    ap_temp = line[ 0: line.find(']') ].replace("[", "").replace("]", "")
                     for ap_num in range(len(self.aps)):
                         ap_temp = ap_temp.replace(str(ap_num), self.aps[ap_num])
                     next_state_dict[next_state] = ap_temp
@@ -190,7 +277,7 @@ class Task:
             self.ltl_state_diag[state] = next_state_dict
             next_state_dict = {}
 
-        if show:
+        if gv.DEBUG >= 3:
             print(self.ltl_state_diag)
             print(start_state)
             print(final_state)
@@ -198,44 +285,59 @@ class Task:
         self.task_bounds = (start_state, final_state)
 
 
-    # @TODO
+    # @TODO <-------
     # checks if the axiom allows any jump to the next LTL state from the
     # \p current_ltl_state
     def check_valid_jump(self, current_ltl_state, axiom):
         return True
 
 
-    # returns the next target locations
+    # returns the next target locations that could validate an axiom
+    # for example, we could have 3 targets: A, B, C but only A and B
+    # are reachable by the current LTL state. Going to C would not
+    # cause a LTL path jump so only A and B are returned
+    #
+    # @param current_state the current state of the pathfinding algo
+    # @param reward_locations the locations of the rewards in the environment
     def get_reward_locations(self, current_state, reward_locations):
-        potential_reward_location = set([])
+        potential_reward_location = set()
 
+        # for each state that we have available LTL jumps
         for next_state in self.ltl_state_diag[current_state].keys():
-            this_state_reward_graph = None
             axon = self.ltl_state_diag[current_state][next_state].upper()
-            nomials = axon.split('&')
 
-            for nomial in nomials:
-                if nomial[0] != '!':
-                    if this_state_reward_graph is None:
-                        this_state_reward_graph = set(reward_locations[nomial[0]])
+            # split by the or
+            or_state_reward_graph = set()
+            for or_parts in axon.split(' | '):
+
+                # split by and
+                and_state_reward_graph = set()
+                for nomial in or_parts.split('&'):
+
+                    # check if the reward location is a valid jump by the ltl axiom
+                    if nomial[0] != '!':
+                        if not and_state_reward_graph:
+                            and_state_reward_graph = set(reward_locations[nomial[0]])
+                        else:
+                            and_state_reward_graph = and_state_reward_graph.intersection(reward_locations[nomial[0]])
                     else:
-                        this_state_reward_graph = this_state_reward_graph.intersection(reward_locations[nomial[0]])
-                else:
-                    if this_state_reward_graph is None:
-                        # @TODO place all cells in potential reward locations and then take union or intersection
-                        pass
-                    else:
-                        this_state_reward_graph = this_state_reward_graph.difference(reward_locations[nomial[1]])
+                        if not and_state_reward_graph:
+                            # @TODO place all cells in potential reward locations and then take union or intersection
+                            pass
+                        else:
+                            and_state_reward_graph = and_state_reward_graph.difference(reward_locations[nomial[1]])
 
+                or_state_reward_graph = or_state_reward_graph.union(and_state_reward_graph)
 
-            if this_state_reward_graph:
-                potential_reward_location = potential_reward_location.union(this_state_reward_graph)
+            if or_state_reward_graph:
+                potential_reward_location = potential_reward_location.union(or_state_reward_graph)
 
         return potential_reward_location
 
 
     # get the reward image based off the possible transitions from the current state
-    def get_reward_img_state(self, current_state, reward_graphs):
+    # @DEPRECATED
+    def ___dep_get_reward_img_state(self, current_state, reward_graphs):
         # get the image for each transition from the current state
         map_h, map_w = (gv.map_h, gv.map_w)
         ltl_reward_graph = np.zeros((map_h, map_w, 1), dtype = "uint8")
@@ -257,23 +359,52 @@ class Task:
 
 
     # get the next state of the ltl buchii automata
+    # checks the current_phys_loc to see what proposition we are activating
+    # if we are in a phys_loc that causes a path jump, return the next state
+    # @TODO replace reward_graphs with reward_locations
     def get_next_state(self, reward_graphs, current_ltl_state, current_phys_loc):
-        next_state = None
-        for next_state in self.ltl_state_diag[current_ltl_state]:
-            current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc)
-            axioms = self.ltl_state_diag[current_ltl_state][next_state].upper()
-            axioms = axioms.split('&')
 
-            valid = True
-            for axiom in axioms:
-                if axiom[0] == '!':
-                    if axiom[1] in current_cell_type:
-                        valid = False
-                else:
-                    if axiom[0] not in current_cell_type:
-                        valid = False
-            # plt.imshow(this_state_reward_graph); plt.show()
-            if valid:
+        # get the axiom the current physical state is activating
+        def get_current_phys_state_type(reward_graphs, current_phys_loc):
+            for axiom in reward_graphs.keys():
+                y = current_phys_loc[1] * gv.CELLS_SIZE
+                x = current_phys_loc[0] * gv.CELLS_SIZE
+
+                for u in range(y, y + gv.CELLS_SIZE, 1):
+                    for v in range(x, x + gv.CELLS_SIZE, 1):
+                        if reward_graphs[axiom][u,v]:
+                            return axiom
+
+            print("Illegal, didnt want to throw")
+            return gv.LTL_TARGET_CELL_CHAR
+
+        next_state = None
+        current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc)
+
+        # go through each next possible state in the LTL state diagram to find if the current
+        # location will cause a path jump
+        for next_state in self.ltl_state_diag[current_ltl_state]:
+            axioms = self.ltl_state_diag[current_ltl_state][next_state].upper()
+
+            or_valid = False
+            for or_parts in axioms.split(' | '):
+
+                and_valid = True
+                for axiom in or_parts.split('&'):
+                    if axiom[0] == '!':
+                        if axiom[1] in current_cell_type:
+                            and_valid = False
+                    else:
+                        if axiom[0] not in current_cell_type:
+                            and_valid = False
+
+                # plt.imshow(this_state_reward_graph); plt.show()
+
+                if and_valid:
+                    or_valid = True
+                    break
+
+            if or_valid:
                 break
 
         return next_state
@@ -341,20 +472,6 @@ class Task:
                 if cell_type[row][col] == gv.LTL_TARGET_CELL_CHAR and pixel_valid:
                     return (col, row)
 
+
     def switch_tasks():
         pass
-
-
-# get the axiom the current physical state is activating
-def get_current_phys_state_type(reward_graphs, current_phys_loc):
-    for axiom in reward_graphs.keys():
-        y = current_phys_loc[1] * gv.CELLS_SIZE
-        x = current_phys_loc[0] * gv.CELLS_SIZE
-
-        for u in range(y, y + gv.CELLS_SIZE, 1):
-            for v in range(x, x + gv.CELLS_SIZE, 1):
-                if reward_graphs[axiom][u,v]:
-                    return axiom
-
-    print("Illegal, didnt want to throw")
-    return gv.LTL_TARGET_CELL_CHAR

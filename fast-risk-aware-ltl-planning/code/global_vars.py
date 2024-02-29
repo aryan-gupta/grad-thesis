@@ -1,4 +1,10 @@
 
+# debug var
+# 0 - nodebug
+# 1 - basic output
+# 2 -
+DEBUG = 1
+
 # GLOBAL VARS
 SEED = 1
 
@@ -17,6 +23,15 @@ UPDATE_WEIGHT = 0 #5
 map_h = 640
 map_w = 576
 
+# for some dumb reason I chose the red color to be target
+# cells and the green cells to be the hazard cells. However
+# I know realize that that was dumb and this is a small fix
+# if the input image is red target and green hazard (original)
+# this should be true and
+# if the input image is green target and red hazard (proper)
+# this should be false
+ORIGINAL_COLORS = False
+
 # directory the progress images, images can then be combined with
 # `ffmpeg -framerate 5 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mkv`
 output_images_dir = '../../../tmp'
@@ -27,9 +42,8 @@ tmp_raw_env_save_file = f"{output_images_dir}/raw_env.png"
 # agent traveled, and LTL targets
 final_image_fspath = f"{ output_images_dir }/!picfinal.png"
 
-# input for the LTL hoa file, @TODO will become a array to support
-# multiple HOA files
-ltl_hoa_file = '../tasks/basic-ab.hoa.txt'
+# input for the LTL hoa file
+ltl_hoa_file =   '../tasks/basic-ab.hoa.txt' # @TODO deprecate this
 ltl_hoa_files = ['../tasks/basic-ab.hoa.txt']
 
 # the environment file the agent is in. This file must be a

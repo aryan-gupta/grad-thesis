@@ -14,7 +14,6 @@ import task
 import dijkstra
 import env
 import random
-import optimizer
 
 # This simple enum tells how to output the intermediary images
 class OutputType(Enum):
@@ -27,11 +26,13 @@ class OutputType(Enum):
 # This class holds information about one single pathfinding instance
 # this class holds the high level algorithm for this paper
 class Pathfinder:
-    def __init__(self, e, t):
+    def __init__(self, e, m):
         self.env = e
-        self.task = t
+        self.mission = m
 
         # get the start conditions
+        # @TODO make mission class have this variable ready to go, this shouldnt work
+        self.task = self.mission.tasks[0]
         self.current_ltl_state = self.task.task_bounds[0]
         self.current_phys_loc = self.env.mission_phys_bounds[0]
 
@@ -47,21 +48,23 @@ class Pathfinder:
         # how to show the results
         self.output = OutputType.DISK
 
-        #  the index for ltl steps for the image output
+        #  the index for ltl steps for the image name in output
         self.img_tmp_idx_ltl = 0
-
-        # the index for phys steps for the image output
         self.img_tmp_idx_phys = 0
 
+        self.task_switch_curr_idx = 0
+        self.task_switch_idx = self.mission.task_switch_idx
 
     # pathfinds on LTL space
     def pathfind_task(self, start_task_node=None, final_task_node=None):
         # set the start node as the start task node
         if start_task_node is None:
+            if gv.DEBUG >= 2: print(f"Start Task Node not found, using task.task_bounds[0]") # @TODO use mission to get this info
             start_task_node = self.task.task_bounds[0]
 
         # set the final node as the final task node
         if final_task_node is None:
+            if gv.DEBUG >= 2: print(f"Final Task Node not found, using task.task_bounds[1]") # @TODO use mission to get this info
             final_task_node = self.task.task_bounds[1]
 
         # reset the counter:
@@ -69,55 +72,52 @@ class Pathfinder:
 
         # start the ltl pathfinding loop
         self.current_ltl_state = start_task_node
-        while self.current_ltl_state != final_task_node:
+        # @TODO move the MissionState variable outside this loop
+        while not self.mission.accepting_state(task.Mission.MissionState(ltl=[ self.current_ltl_state ])): # @TODO
+        # while self.current_ltl_state != final_task_node:
+        # while not self.mission.accepting_state(current_ltl_state): # @TODO
             # get reward locations
             # @TODO move self.env.reward_graphs to task class
 
             # locate all the potential reward locations
             target_locations = self.task.get_reward_locations(self.current_ltl_state, self.env.reward_locations)
+            if gv.DEBUG >= 1: print(f"found potential targets: { target_locations }")
 
             # pick best one based off of task heuristic
             target_phys_loc = self.env.pick_best_target_location(target_locations, self.task, self.current_ltl_state, self.current_phys_loc)
+            if gv.DEBUG >= 1: print(f"choosing target { target_phys_loc }")
 
-            # self.pathfind_env(
-            #     start_phys_loc=self.current_phys_loc,
-            #     final_phys_loc=target_phys_loc
-            # )
-
-            print(target_phys_loc)
-            self.pathfind_until_final_loc(
-                target_phys_loc,
-                self.env.ar_img_cells,
-                self.env.get_ar_minimal_env()
+            self.pathfind_env(
+                start_phys_loc=self.current_phys_loc,
+                final_phys_loc=target_phys_loc
             )
+
+            # task switching if its time
+            # if self.task_switch_curr_idx == self.task_switch_idx:
+            #     self.mission.switch_tasks()
+            #     start_task_node = self.task.task_bounds[0]
+            #     final_task_node = self.task.task_bounds[1]
+            #     self.current_ltl_state = start_task_node
+            # self.task_switch_curr_idx += 1
 
             # find next state that we should go to and setup next interation
             self.current_ltl_state = self.task.get_next_state(self.env.reward_graphs, self.current_ltl_state, self.current_phys_loc)
             self.img_tmp_idx_ltl += 1
 
 
-    def pathfind_env(self, start_phys_loc=None, final_phys_loc=None):
-        if final_phys_loc == None:
-            pass
-
-        if start_phys_loc == None:
-            start_phys_loc = self.current_phys_loc
-
-        # This is needed so we can do partial replans
-        current_planned_path = []
-
-        # reset the counter:
-        self.img_tmp_idx_phys = 0
-
-        while self.current_phys_loc != final_phys_loc:
-            pass
-
     # pathfinds from the physical environment
     # starts from the \param self.current_phys_loc to the final_phys_loc
     # @TODO instead of passing in current_ltl_state_reward_graph, pass in a list of the cell locations it can go to
     # @TODO This function, in theory, should move the agent from the current loc to the next loc that would minimize the LTL jumps
-    def pathfind_until_final_loc(self, final_phys_loc, risk_reward_img_cells_local, env_min):
-        show = False
+    def pathfind_env(self, start_phys_loc=None, final_phys_loc=None):
+        if start_phys_loc is None:
+            start_phys_loc = self.current_phys_loc,
+
+        if final_phys_loc is None:
+            raise Exception(msg="No final phys loc defined")
+
+        risk_reward_img_cells_local = self.env.ar_img_cells
+        env_min = self.env.get_ar_minimal_env() # @TODO remove this
 
         # This is needed so we can do partial replans
         current_planned_path = []
@@ -125,36 +125,55 @@ class Pathfinder:
         # reset the counter:
         self.img_tmp_idx_phys = 0
 
+        # if we ever find hint to a better path this will become true and we will return to the previous calling function
         early_ltl_path_jump = False
 
         # the loop to traverse the phys enviroment
+        # while we havent reached the final_phy_loc or we havent found a "early_ltl_path_jump"
         while self.current_phys_loc != final_phys_loc:
             # update risk map everytime we move
-            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(self.assumed_risk_image_filled, self.env.r.raw_risk_image, self.current_phys_loc, gv.CELLS_SIZE, gv.VIEW_CELLS_SIZE, gv.UPDATE_WEIGHT)
+            self.assumed_risk_image_filled, amount_risk_updated, cells_updated = img.update_local_risk_image(
+                self.assumed_risk_image_filled,
+                self.env.r.raw_risk_image,
+                self.current_phys_loc,
+                gv.CELLS_SIZE,
+                gv.VIEW_CELLS_SIZE,
+                gv.UPDATE_WEIGHT
+            )
+            if gv.DEBUG >= 3: print(amount_risk_updated)
 
-            # the temp target for partial astar algorithm
-            astar_target = None
-
+            # then update the internal representation of the environment
             # instead of recreating out required data structures, just update the ones we "saw"
             # these are the same calls as full_replan except update_cells instead of create_cells
-            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(cells_updated, self.env.raw_reward_image, self.assumed_risk_image_filled, env_min.cell_type, env_min.cell_cost, risk_reward_img_cells_local, self.current_phys_loc)
+            risk_reward_img_cells_local, env_min.cell_type, env_min.cell_cost = self.env.update_cells(
+                cells_updated,
+                self.env.raw_reward_image,
+                self.assumed_risk_image_filled,
+                env_min.cell_type,
+                env_min.cell_cost,
+                risk_reward_img_cells_local,
+                self.current_phys_loc
+            )
 
-            if show: print(amount_risk_updated)
+            # the reason this is global is for debugging and outputting it after this
+            astar_target = None
 
             if amount_risk_updated >= 0:
-                if show: print("full astar replanning")
-                opt = optimizer.Optimizer(env_min, self.task)
-                opt.set_task_state(0, self.current_ltl_state)
+                if gv.DEBUG >= 3: print("full astar replanning")
+
                 if gv.PATHFIND_ALGO_FRALTLP:
                     current_planned_path = dijkstra.astar_algo(env_min.cell_type, (self.current_phys_loc, final_phys_loc), env_min.cell_cost)
                 elif gv.PATHFIND_ALGO_PRODUCT_AUTOMATA:
                     # @TODO remove self.task.task_bounds[1] and replace it with final_task_node
                     tmp_path = dijkstra.dj_algo_et(self.env, self.task, (self.current_phys_loc, final_phys_loc), (self.current_ltl_state, self.task.task_bounds[1]), dijkstra.default_djk_cost_function)
+
                     if tmp_path[-2][2] != self.current_ltl_state:
                         early_ltl_path_jump = True
+
                     current_planned_path = dijkstra.prune_product_automata_djk(tmp_path)
+
             elif amount_risk_updated > 0:
-                if show: print("part astar replanning")
+                if gv.DEBUG >= 3: print("part astar replanning")
 
                 # get astar's target cell
                 # this target cell will be somewhere on the current_planned_path line
@@ -167,11 +186,12 @@ class Pathfinder:
                 # splice our two shortest_paths together
                 current_planned_path = current_planned_path[0:idx]
                 current_planned_path = current_planned_path + shortest_path_astar_target
-                if show: print(len(current_planned_path))
+                if gv.DEBUG >= 3: print(len(current_planned_path))
 
             # add current node to path
             self.total_shortest_path.insert(0, self.current_phys_loc)
 
+            # if we find another ltl task that we can shortcut to, switch to that one
             if early_ltl_path_jump: break
 
             # get the next location in the shortest path
@@ -180,6 +200,7 @@ class Pathfinder:
 
             # increment our image file counter
             self.img_tmp_idx_phys += 1
+            self.task_switch_curr_idx += 1
 
 
     # outputs the current state of the pathfinding class
@@ -214,7 +235,9 @@ class Pathfinder:
 
 
         if self.output is OutputType.DISK:
-            cv2.imwrite(f"{ gv.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local, cv2.COLOR_RGB2BGR) )
+            r, g, b = cv2.split(dj_path_image_local)
+            dj_path_image_local_recolor = cv2.merge([g, r, b])
+            cv2.imwrite(f"{ gv.output_images_dir }/pic{ img_tmp_idx_ltl_str }-{ img_tmp_idx_phys_str }.png", cv2.cvtColor(dj_path_image_local_recolor, cv2.COLOR_RGB2BGR) )
 
 
     # returns the shortest path the algo has determined
