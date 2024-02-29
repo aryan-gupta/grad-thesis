@@ -362,6 +362,21 @@ class Task:
     # if we are in a phys_loc that causes a path jump, return the next state
     # @TODO replace reward_graphs with reward_locations
     def get_next_state(self, reward_graphs, current_ltl_state, current_phys_loc):
+
+        # get the axiom the current physical state is activating
+        def get_current_phys_state_type(reward_graphs, current_phys_loc):
+            for axiom in reward_graphs.keys():
+                y = current_phys_loc[1] * gv.CELLS_SIZE
+                x = current_phys_loc[0] * gv.CELLS_SIZE
+
+                for u in range(y, y + gv.CELLS_SIZE, 1):
+                    for v in range(x, x + gv.CELLS_SIZE, 1):
+                        if reward_graphs[axiom][u,v]:
+                            return axiom
+
+            print("Illegal, didnt want to throw")
+            return gv.LTL_TARGET_CELL_CHAR
+
         next_state = None
         current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc)
 
@@ -459,18 +474,3 @@ class Task:
 
     def switch_tasks():
         pass
-
-
-# get the axiom the current physical state is activating
-def get_current_phys_state_type(reward_graphs, current_phys_loc):
-    for axiom in reward_graphs.keys():
-        y = current_phys_loc[1] * gv.CELLS_SIZE
-        x = current_phys_loc[0] * gv.CELLS_SIZE
-
-        for u in range(y, y + gv.CELLS_SIZE, 1):
-            for v in range(x, x + gv.CELLS_SIZE, 1):
-                if reward_graphs[axiom][u,v]:
-                    return axiom
-
-    print("Illegal, didnt want to throw")
-    return gv.LTL_TARGET_CELL_CHAR
