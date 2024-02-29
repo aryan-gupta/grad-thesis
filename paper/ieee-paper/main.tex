@@ -116,6 +116,18 @@ Email: 		{\{agupta40, dmaity\}@charlotte.edu}
 \section{Simulation Results}
 
 \subsection{Experiment 1: Indoor office-like environment}
+In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in \fig{}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell).
+
+In experiment 2 and 3 we move the D cell closer to cell one of the middle cells (B or C), this creates a path that is more favorable. As you can see the agent chooses the shorter path depending on the shorter path.
+
+
+In experiment 4, we revert to the original environment but change the LTL equation so the agent must visit both B and C cells before visiting the D cell. This example is rudamentry and will be used to build to the next example
+
+In experiment 5, we change the environment so the C cell is closer to the A cell. This creates a asynconosous path. The A -> C -> B -> D path is shorter than the A -> B -> C -> D and so the agent chooses the former
+
+For experiment 6, we introduce task switching.
+
+
 In this experiment we consider the environment shown in \Cref{fig:env1}.
 The environment consists of 9 cells. The corner cells contain targets and the center cell is a hazard.
 % minimal viable example:
