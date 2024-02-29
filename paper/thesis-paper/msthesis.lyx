@@ -109,7 +109,7 @@ fbmatterchapterformat
 \begin_layout Plain Layout
 
 % If you're getting a master's, specify "thesis" below.
-  
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -148,7 +148,7 @@ doctype{thesis}
 
 % 1.
  Only the first letter of the entire title should be capitalized to allow
- the 
+ the
 \end_layout
 
 \begin_layout Plain Layout
@@ -300,7 +300,7 @@ makecopyright
 \begin_layout Abstract
 You must have an abstract.
  The content of your abstract goes here.
- 
+
 \end_layout
 
 \begin_layout Abstract
@@ -399,7 +399,7 @@ nomname}{LIST OF SYMBOLS}
 \begin_layout Plain Layout
 
 % NOTE: IF YOU USE A LIST OF ABBREVIATIONS / LIST OF SYMBOLS and are using
- command-line LaTeX (not LyX) 
+ command-line LaTeX (not LyX)
 \end_layout
 
 \begin_layout Plain Layout
@@ -510,7 +510,7 @@ bodychapterformat
 \begin_layout Preface
 If you decide to have an introduction page, your introduction text would
  go here.
- 
+
 \end_layout
 
 \begin_layout Preface
@@ -526,7 +526,7 @@ INTRODUCTION
 This is my introduction.
  Here is an example of a citation using BiB\SpecialChar TeX
  that cites the GNU project,
- a major force in free software advocacy 
+ a major force in free software advocacy
 \begin_inset CommandInset citation
 LatexCommand cite
 key "gpl"
@@ -555,7 +555,7 @@ Do not use bold, underline or create unusual fonts for chapter titles; do
 \begin_inset Quotes erd
 \end_inset
 
- 
+
 \emph on
 –
 \begin_inset space ~
@@ -614,7 +614,7 @@ Translational displcmnt.
 \begin_layout Plain Layout
 
 \size small
-Total 
+Total
 \begin_inset Formula $\alpha$
 \end_inset
 
@@ -629,7 +629,7 @@ Total
 \begin_layout Plain Layout
 
 \size small
-Total 
+Total
 \begin_inset Formula $\beta$
 \end_inset
 
@@ -644,11 +644,11 @@ Total
 \begin_layout Plain Layout
 
 \size small
-Total 
+Total
 \begin_inset Formula $\gamma$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -918,14 +918,14 @@ Problem Statement
 
 \begin_layout Standard
 This is an example of a subsection.
- I have included Table 
+ I have included Table
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "tab:Table1"
 
 \end_inset
 
- and Table 
+ and Table
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "tab:Table2"
@@ -933,7 +933,7 @@ reference "tab:Table2"
 \end_inset
 
  as examples of how to place tables and table cross-references in your document.
- I have also included Figure 
+ I have also included Figure
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:LinearFit"
@@ -946,7 +946,7 @@ reference "fig:LinearFit"
  text will ensure that the list of figures and list of tables generated
  automatically will always be correct even when you move figures and tables
  to new locations in your document.
- 
+
 \begin_inset Float table
 placement H
 wide false
@@ -1040,7 +1040,7 @@ Translation
 \begin_layout Plain Layout
 
 \size small
- 
+
 \begin_inset Formula $\alpha$
 \end_inset
 
@@ -1175,7 +1175,7 @@ name "tab:Table2"
 \end_inset
 
 This is an example of a table having a long caption whose caption in the
- list of tables is much shorter (from the 
+ list of tables is much shorter (from the
 \begin_inset Quotes eld
 \end_inset
 
@@ -1226,7 +1226,7 @@ status open
 
 \begin_layout Plain Layout
 Translational displacement vs.
- Savg; a linear fit 
+ Savg; a linear fit
 \end_layout
 
 \end_inset
@@ -1263,7 +1263,7 @@ status open
 
 \begin_layout Plain Layout
 Translational displacement vs.
- KL; a linear fit 
+ KL; a linear fit
 \end_layout
 
 \end_inset
@@ -1397,7 +1397,7 @@ chaptertitlename}{APPENDIX}
 \begin_layout Plain Layout
 
 % 1 - Appendices, Sections / 2 - Appendices, Sections, Subsections / 3 -
- etc 
+ etc
 \end_layout
 
 \begin_layout Plain Layout

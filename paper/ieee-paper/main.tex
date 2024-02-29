@@ -1,0 +1,146 @@
+\documentclass[letter paper, 10 pt, conference]{ieeeconf}
+
+
+\IEEEoverridecommandlockouts                              % This command is only needed if
+                                                          % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+\usepackage[utf8]{inputenc}
+% \usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\graphicspath{{arXiv_Figures/}}
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{alphabeta}
+\usetikzlibrary{calc,intersections,through,backgrounds, math, angles, quotes}
+% \usepackage[]{commath}
+% \usepackage[]{enumitem}
+\usepackage{tikzscale}
+\tikzset{point/.style={circle, fill, inner sep=1.7}}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{nicefrac}
+\usepackage{cite}
+
+
+\usepackage{cleveref}
+\crefmultiformat{equation}{(#2#1#3)}%
+   { and~(#2#1#3)}{, (#2#1#3)}{ and~(#2#1#3)}
+\crefrangeformat{equation}{(#3#1#4) to~(#5#2#6)}
+\crefformat{equation}{(#2#1#3)}
+\crefmultiformat{figure}{Fig.~#2#1#3}%
+{ and~Fig.~#2#1#3}{, Fig.~#2#1#3}{ and~Fig.~#2#1#3}
+\crefrangeformat{figure}{Figs.~#3#1#4 to~#5#2#6}
+\crefformat{figure}{Fig.~#2#1#3}
+
+\renewcommand{\H}{\mathscr{H}}
+\DeclareMathOperator*{\argmin}{\arg\min}
+\DeclareMathOperator*{\argmax}{\arg\max}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator*{\atan}{atan2}
+
+\usepackage{bm}
+
+\usepackage{enumerate}
+
+%==========================================================
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{example}{Example}
+
+% \let\proof\relax
+% \let\endproof\relax
+% =====================================================
+
+\newcommand{\re}[1]{\textcolor{red}{#1}}
+\newcommand{\bl}[1]{\textcolor{blue}{#1}}
+\newcommand{\avm}[1]{\textcolor{green!40!black}{[Alex: #1]}}
+\newcommand{\ds}[1]{\textcolor{violet}{[Daigo: #1]}}
+\newcommand{\dm}[1]{\textcolor{orange!80!black}{[Dipankar: #1]}}
+\newcommand{\mike}[1]{\textcolor{olive!80!black}{[Mike: #1]}}
+\newcommand{\todo}[1]{\textcolor{red}{[ToDO: #1]}}
+% \renewcommand{\baselinestretch}{0.9}
+%=========================================================
+
+
+\renewenvironment{proof}{\textit{Proof:}}{\hfill $\blacksquare$}
+
+\title{\LARGE\bf TITLE }
+
+\author{Aryan Gupta and Dipankar Maity
+\thanks{
+We gratefully acknowledge the support of ARL grant ARL DCIST CRA W911NF-17-2-0181. The views expressed in this paper are those of the authors and do not reflect the official policy or position of the United States Government, Department of Defense, or its components.
+}
+\thanks{A. Gupta and D. Maity are with the Department of Electrical and Computer Engineering, University of North Carolina at Charlotte,  NC, 28223, USA.
+Email: 		{\{agupta40, dmaity\}@charlotte.edu}
+}
+}
+
+
+\makeatletter
+\newcommand{\linebreakand}{%
+  \end{@IEEEauthorhalign}
+  \hfill\mbox{}\par\vspace{10pt}\hspace{20pt}
+  \mbox{}\hfill\begin{@IEEEauthorhalign}
+}
+\makeatother
+
+
+\begin{document}
+
+\maketitle
+% \thispagestyle{empty}
+% \pagestyle{empty}
+
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+
+\section{Problem Formulation}
+
+
+\section{Simulation Results}
+
+\subsection{Experiment 1: Indoor office-like environment}
+In this experiment we consider the environment shown in \Cref{fig:env1}.
+The environment consists of 9 cells. The corner cells contain targets and the center cell is a hazard.
+% minimal viable example:
+% [IMAGE CREATED] 5x5 or 3x3 grid with one or two cells that are the targets
+% the center of the grid and maybe few other cells are hazards
+% LTL task: `Fz & (!z U c) & (!z U b)`
+% LTL eng task: go to c and b in any order then go to z
+We consider the LTL task ``insert LTL Fomula here'' which specifies that the robot performs ``insert english language description of the task here" .
+The solution obtained from our algorithm is shown by the magenta path of the robot.
+** What did we learn/observe from this experiment:**
+% the algorithm can create a basic environment graph and optimally pathfind from the start to the end
+How good is your solution compared to the optimal one if we implemented the product automata framework?
+% INSERT graph of timing here
+How long did it take your framework to obtain the solution?
+% discuss timing results
+Which part of the code was most time consuming?
+How much computationally efficient is your code  (e.g., memory/time requirements) compared to the product automata approach?
+\begin{figure}
+    \centering
+    \includegraphics[scale = .2, width = 0.9 \linewidth]{figs/hospital-cells.png}
+    \caption{Environment for Experiment-1.}
+    \label{fig:env1}
+\end{figure}
+
+\bibliographystyle{ieeetr}
+% \bibliography{references}
+
+\end{document}
