@@ -360,23 +360,35 @@ class Task:
     # get the next state of the ltl buchii automata
     # checks the current_phys_loc to see what proposition we are activating
     # if we are in a phys_loc that causes a path jump, return the next state
+    # @TODO replace reward_graphs with reward_locations
     def get_next_state(self, reward_graphs, current_ltl_state, current_phys_loc):
         next_state = None
-        for next_state in self.ltl_state_diag[current_ltl_state]:
-            current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc)
-            axioms = self.ltl_state_diag[current_ltl_state][next_state].upper()
-            axioms = axioms.split('&')
+        current_cell_type = get_current_phys_state_type(reward_graphs, current_phys_loc)
 
-            valid = True
-            for axiom in axioms:
-                if axiom[0] == '!':
-                    if axiom[1] in current_cell_type:
-                        valid = False
-                else:
-                    if axiom[0] not in current_cell_type:
-                        valid = False
-            # plt.imshow(this_state_reward_graph); plt.show()
-            if valid:
+        # go through each next possible state in the LTL state diagram to find if the current
+        # location will cause a path jump
+        for next_state in self.ltl_state_diag[current_ltl_state]:
+            axioms = self.ltl_state_diag[current_ltl_state][next_state].upper()
+
+            or_valid = False
+            for or_parts in axioms.split(' | '):
+
+                and_valid = True
+                for axiom in or_parts.split('&'):
+                    if axiom[0] == '!':
+                        if axiom[1] in current_cell_type:
+                            and_valid = False
+                    else:
+                        if axiom[0] not in current_cell_type:
+                            and_valid = False
+
+                # plt.imshow(this_state_reward_graph); plt.show()
+
+                if and_valid:
+                    or_valid = True
+                    break
+
+            if or_valid:
                 break
 
         return next_state
