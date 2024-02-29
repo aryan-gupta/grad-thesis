@@ -192,12 +192,13 @@ class Task:
             if n == node: continue # skip self loops
 
             ap = next_nodes[n] # get ap to satisfy
-            ap = ap.split('&') # split into indivisual targets
-            ap = [ x for x in ap if '!' not in x] # remove not targets
-            if len(ap) > 1: continue # skip targets with multiple aps to satisfy
+            for or_parts in ap.split(' | '):  # split into indivisual targets
+                and_parts = or_parts.split('&')
+                ts = [ x for x in and_parts if '!' not in x] # remove not targets
+                if len(ts) > 1: continue # skip targets with multiple aps to satisfy
 
-            next_target = ap[0]
-            self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
+                next_target = ts[0]
+                self.__create_euclidean_heuristic_recurse(path.copy(), n, next_target, depth + 1)
 
 
     # calculates the euclidean distance of each path in the task automata
