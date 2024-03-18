@@ -110,10 +110,20 @@ Email: 		{\{agupta40, dmaity\}@charlotte.edu}
 
 \section{Introduction}
 
-\section{Problem Formulation}
 
+\section{Problem Formulation}
+In typical motion planning problems, a task or mission and an environment is given. The agent then must satisfy the task while minimizing the movement in the environment. In more difficult agent assignments, risk is added to the environment that prevent the agent from moving into certain areas. To add another layer of complexity, the risk can be unknown or change over time; similarly, the task can change without the knowledge of the agent.
+
+In previous work, in order to satisfy the task while maintaining a maximal level of risk aversion while minimizing the distance traveled in the environment, a cross product of the environment and task is used. First, the environment is discretized into cells, then the cells are used to construct a graph where the individual cells are the nodes in the graph and the possible movement into the surrounding cells are the edges of the graph. In this paper, only 4 edges are considered: moving up, down, left, and right; moving diagonally is not considered, and is outside of the scope of this paper. Next, the task is also converted into a graph. For this, the task is inputted as an LTL equation, this allows a modular way to assign tasks to the agent and also allows an easy method of converting this task into a graph, typically a Buchii Automata. Thirdly, once the environment and task are converted into a graph, a product of those two graphs are taken. This creates a larger graph of all possible states that the agent can be in and move into, in the combined context of the environment and the task. Finally, a path finding algorithm is used such as Dijkstra's or A* to create a path from the start node to the accepting state of the task.
+
+Issues start to arise when unknown risks, unknown environment, and unknown tasks are introduced. If any of the risk areas or any part of the environment changes, the weights of the edges and the respective cells must change, typically to avoid a large computational overhead, the entire process is repeated. The changed environment or risk must be rediscretized and the product graph recalculated. A similar problem arises when the task changes.
+
+In this paper, an alternative method will be discussed that sacrifices some determinicy for a lower computation overhead. By calculating some heuristical data, the agent can calculate the product automata, on the fly without the need to calculate it in full. This has the additional value if large parts of the environment or task space will not be traversed through.
+
+% In a typical pathfinding situation, an agent uses a popular technique that involves cellifying an environment into a graph, creating a task graph of the mission at hand, createing a product automata of these two graphs, and finally applying Dijkstra's algorithm on the final graph. This is highly deterministic and will guarentee the agent will find the shortest path that will complete the mission and travel the shortest path in the environment. However, issues arise when the environment and the task are dynamic. The agent must recreate the environment graph each time the environment changes, then recompute the product automata and then rerun the Dijkstra's algoirithm. If the task changes, the agent must convert the mission into a graph and recompute the product automata. In this paper, we peopose an alternative algorithm that sacrifices some determinicy for speed and computational efficiency.
 
 \section{Simulation Results}
+In this paper, six experiments will be done to exemplify the novel method. Each example will use this environment as the base and change the environment in order to exemplify the exact problem being solved.
 
 \subsection{Experiment 1: Indoor office-like environment}
 In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in \fig{}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell).
