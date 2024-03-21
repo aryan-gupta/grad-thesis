@@ -15,7 +15,7 @@
 \usepackage{ulem}
 \usepackage{subcaption}
 \usepackage{tikz}
-\usepackage{alphabeta}
+% \usepackage{alphabeta}
 \usetikzlibrary{calc,intersections,through,backgrounds, math, angles, quotes}
 % \usepackage[]{commath}
 % \usepackage[]{enumitem}
@@ -123,12 +123,76 @@ In this paper, an alternative method will be discussed that sacrifices some dete
 % In a typical pathfinding situation, an agent uses a popular technique that involves cellifying an environment into a graph, creating a task graph of the mission at hand, createing a product automata of these two graphs, and finally applying Dijkstra's algorithm on the final graph. This is highly deterministic and will guarentee the agent will find the shortest path that will complete the mission and travel the shortest path in the environment. However, issues arise when the environment and the task are dynamic. The agent must recreate the environment graph each time the environment changes, then recompute the product automata and then rerun the Dijkstra's algoirithm. If the task changes, the agent must convert the mission into a graph and recompute the product automata. In this paper, we peopose an alternative algorithm that sacrifices some determinicy for speed and computational efficiency.
 
 \section{Simulation Results}
-In this paper, six experiments will be done to exemplify the novel method. Each example will use this environment as the base and change the environment in order to exemplify the exact problem being solved.
+In this paper, six experiments will be done to exemplify the novel method. Each example will use this environment as the base and change the environment in order to exemplify the exact problem being solved. The command used for the examples are shown below. This command example will be moified for each example.
 
-\subsection{Experiment 1: Indoor office-like environment}
-In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in \fig{}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell).
+\begin{verbatim}
+$ cd fast-risk-aware-ltl-planning/code
+$ export PYTHON='python3'
+$ export EXE='main.py'
+$ export ARGS='
+  --seed 1
+  --cell-size 32
+  --view-cell-size 32
+  --height 160
+  --width 160
+  --env "../maps/normal-example.bmp"
+  --no-assumed-risk
+  --task "../tasks/basic-ab.hoa.txt"
+  --output "../../../tmp"
+'
+$ exec $PYTHON $EXE $ARGS
+\end{verbatim}
 
-In experiment 2 and 3 we move the D cell closer to cell one of the middle cells (B or C), this creates a path that is more favorable. As you can see the agent chooses the shorter path depending on the shorter path.
+\subsection{Experiment 1}
+In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in Figure \ref{fig:env1}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell). Reference equation \ref{equ:basic-ab} and Figure \ref{fig:buchii-basic-ab} for the resultant Buchii automata.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{figs/normal-example.png}
+  \caption{Environment for Experiment 1}
+  \label{fig:env1}
+\end{figure}
+
+\begin{equation}
+  Fz \& (!z U c) \& (!z U b)
+  \label{equ:basic-ab}
+\end{equation}
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{figs/basic-ab-ltl-buchii-full.png}
+  \caption{Full Buchii Automata for Equation \ref{equ:basic-ab}}
+  \label{fig:buchii-basic-ab}
+\end{figure}
+
+As seen in the buchii automata, if the agent compleates the B target first, it will be in state 2 of the buchii automata. If the agent compleates the C task first then it will be in state 4. Then the states combine into state 1 so the agent may compleate task Z. Figure \ref{fig:exp1-final-path} shows the path the agent took in light blue. As seen, the agent chooses task C first, then task B then task Z. The agent also could have taken task B first, C second, and lastly task Z. The reason it chose one over the other is random since they both have the same cell length path. In further experiments, a asynconosous shorter path will be created to see if the agent chooses the shorter of the two paths.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{figs/exp1-final-path.png}
+  \caption{Environment for Experiment 1}
+  \label{fig:exp1-final-path}
+\end{figure}
+
+\subsection{Experiment 2 \& 3}
+In experiment 2 and 3 we move the D cell closer to cell one of the middle cells (B or C), this creates a path that is more favorable. Figure \ref{fig:env2-choib} shows the environment that favors the B path and Figure \ref{fig:env3-choic} showd the environment that favors the C path. The LTL equation will remain the same as Equation \ref{equ:basic-ab}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{figs/choib-example.png}
+  \caption{Environment for Experiment 2 -- Choose B}
+  \label{fig:env2-choib}
+\end{figure}
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{figs/choic-example.png}
+  \caption{Environment for Experiment 2 -- Choose B}
+  \label{fig:env2-choib}
+\end{figure}
+
+
+As you can see the agent chooses the shorter path depending on the shorter path.
 
 
 In experiment 4, we revert to the original environment but change the LTL equation so the agent must visit both B and C cells before visiting the D cell. This example is rudamentry and will be used to build to the next example
@@ -138,7 +202,7 @@ In experiment 5, we change the environment so the C cell is closer to the A cell
 For experiment 6, we introduce task switching.
 
 
-In this experiment we consider the environment shown in \Cref{fig:env1}.
+In this experiment we consider the environment shown in \ref{fig:env1}.
 The environment consists of 9 cells. The corner cells contain targets and the center cell is a hazard.
 % minimal viable example:
 % [IMAGE CREATED] 5x5 or 3x3 grid with one or two cells that are the targets
@@ -155,12 +219,12 @@ How long did it take your framework to obtain the solution?
 % discuss timing results
 Which part of the code was most time consuming?
 How much computationally efficient is your code  (e.g., memory/time requirements) compared to the product automata approach?
-\begin{figure}
-    \centering
-    \includegraphics[scale = .2, width = 0.9 \linewidth]{figs/hospital-cells.png}
-    \caption{Environment for Experiment-1.}
-    \label{fig:env1}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[scale = .2, width = 0.9 \linewidth]{figs/hospital-cells.png}
+%     \caption{Environment for Experiment-1.}
+%     \label{fig:env1}
+% \end{figure}
 
 \bibliographystyle{ieeetr}
 % \bibliography{references}

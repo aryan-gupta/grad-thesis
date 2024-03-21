@@ -8,7 +8,7 @@ ARGS='
 --view-cell-size 32
 --height 160
 --width 160
---env "../maps/async-example.bmp"
+--env "../maps/normal-example.bmp"
 --no-assumed-risk
 --task "../tasks/basic-ab.hoa.txt"
 --output "../../../tmp"
