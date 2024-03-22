@@ -144,7 +144,7 @@ $ exec $PYTHON $EXE $ARGS
 \end{verbatim}
 
 \subsection{Experiment 1}
-In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in Figure \ref{fig:env1}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell). Reference equation \ref{equ:basic-ab} and Figure \ref{fig:buchii-basic-ab} for the resultant Buchii automata.
+In this experiment we consider a simple 5 cell by 5 cell environment with 4 "targets" and 4 hazard cells as seen in Figure \ref{fig:env1}. Further experiments will expand on this basic example with small changes to exemplify the various experiments. The LTL equation is also very simple. The agent starts at A is required to visit one of the cells (B or C) before finishing the mission (D cell). Reference equation \ref{equ:basic-choice} and Figure \ref{fig:buchii-basic-ab} for the resultant Buchii automata.
 
 \begin{figure}[htb]
   \centering
@@ -154,14 +154,14 @@ In this experiment we consider a simple 5 cell by 5 cell environment with 4 "tar
 \end{figure}
 
 \begin{equation}
-  Fz \& (!z U c) \& (!z U b)
-  \label{equ:basic-ab}
+  Fz & (!z U (b | c))
+  \label{equ:basic-choice}
 \end{equation}
 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=\linewidth]{figs/basic-ab-ltl-buchii-full.png}
-  \caption{Full Buchii Automata for Equation \ref{equ:basic-ab}}
+  \caption{Full Buchii Automata for Equation \ref{equ:basic-choice}}
   \label{fig:buchii-basic-ab}
 \end{figure}
 
@@ -175,7 +175,7 @@ As seen in the buchii automata, if the agent compleates the B target first, it w
 \end{figure}
 
 \subsection{Experiment 2 \& 3}
-In experiment 2 and 3 we move the D cell closer to cell one of the middle cells (B or C), this creates a path that is more favorable. Figure \ref{fig:env2-choib} shows the environment that favors the B path and Figure \ref{fig:env3-choic} showd the environment that favors the C path. The LTL equation will remain the same as Equation \ref{equ:basic-ab}.
+In experiment 2 and 3 we move the D cell closer to cell one of the middle cells (B or C), this creates a path that is more favorable. Figure \ref{fig:env2-choib} shows the environment that favors the B path and Figure \ref{fig:env3-choic} showd the environment that favors the C path. The LTL equation will remain the same as Equation \ref{equ:basic-choice}.
 
 \begin{figure}[htb]
   \centering
@@ -187,17 +187,34 @@ In experiment 2 and 3 we move the D cell closer to cell one of the middle cells 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=\linewidth]{figs/choic-example.png}
-  \caption{Environment for Experiment 2 -- Choose B}
+  \caption{Environment for Experiment 3 -- Choose C}
   \label{fig:env2-choib}
 \end{figure}
 
+As you can see the agent chooses the shorter path depending on the environment. The algorithm will create the euclidean distance heuristic function and decide that A -> B -> Z is shorter in experiment 2 and decide that A -> C -> Z is shorter in experiment 3. In experiment 2 output \ref{output:euclidean-distance-exp2} and experiment 3 output \ref{output:euclidean-distance-exp3}, the potential paths and their euclidean can be seen. For experiment 3, the path A -> C -> Z is shorter than the A -> B -> Z by 2.47 units.
 
-As you can see the agent chooses the shorter path depending on the shorter path.
+\begin{verbatim}
+[
+  (
+    6.0,
+    [(2, 'a'), (1, 'c'), (0, 'z')]
+  ),
+  (
+    8.47213595499958,
+    [(2, 'a'), (1, 'b'),(0, 'z')]
+  )
+]
+\end{verbatim}
 
+\subsection{Experiment 4}
+In experiment 4, we revert to the original environment but change the LTL equation so the agent must visit both B and C cells before visiting the Z cell. This example is rudimentary and will be used to build to the next example similar to how Experiment 1 was used as a base for Experiments 2 and 3. The LTL equation is detailed in Equation \ref{equ:basic-ab}.
 
-In experiment 4, we revert to the original environment but change the LTL equation so the agent must visit both B and C cells before visiting the D cell. This example is rudamentry and will be used to build to the next example
+\begin{equation}
+  Fz \& (!z U c) \& (!z U b)
+  \label{equ:basic-ab}
+\end{equation}
 
-In experiment 5, we change the environment so the C cell is closer to the A cell. This creates a asynconosous path. The A -> C -> B -> D path is shorter than the A -> B -> C -> D and so the agent chooses the former
+In experiment 5, we change the environment so the C cell is closer to the A cell. This creates a asynchronous path. The A -> C -> B -> D path is shorter than the A -> B -> C -> D and so the agent chooses the former
 
 For experiment 6, we introduce task switching.
 
